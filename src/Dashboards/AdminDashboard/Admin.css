@@ -1,0 +1,16 @@
+/* .AdminSideBar :global(.active){
+    background-color: red;
+    color: white;
+} */
+
+/* .AdminSideBar a {
+  transition: background-color 0.3s, color 0.3s;
+}
+.AdminSideBar a:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+.AdminSideBar a.active {
+  background-color: #1d4ed8;
+  color: #fff;
+} */

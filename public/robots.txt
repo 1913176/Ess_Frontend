@@ -1,0 +1,9 @@
+user-agent: *
+
+disallow: /admin/
+disallow: /manager/
+disallow: /hr/
+disallow: /supervisor/
+disallow: /employee/
+
+sitemap: https://ess-frontent.vercel.app/sitemap.xml

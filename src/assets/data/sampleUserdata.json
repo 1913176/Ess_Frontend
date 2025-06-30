@@ -1,0 +1,32 @@
+[
+  {
+    "username": "admin",
+    "emailId": "admin@ess.com",
+    "password": "admin",
+    "role": "admin"
+  },
+  {
+    "username": "manager",
+    "emailId": "manager@ess.com",
+    "password": "manager",
+    "role": "manager"
+  },
+  {
+    "username": "hr",
+    "emailId": "hr@ess.com",
+    "password": "hr",
+    "role": "hr"
+  },
+  {
+    "username": "employee",
+    "emailId": "employee@ess.com",
+    "password": "employee",
+    "role": "employee"
+  },
+  {
+    "username": "supervisor",
+    "emailId": "supervisor@ess.com",
+    "password": "supervisor",
+    "role": "supervisor"
+  }
+]
