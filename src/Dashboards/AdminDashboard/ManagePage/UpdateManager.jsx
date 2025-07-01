@@ -356,6 +356,7 @@
 
 import axios from "axios";
 import React, { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   Dialog,
@@ -386,13 +387,14 @@ const UpdateManager = ({
     department: "",
     shift: "",
     hired_date: "",
-    location: "", // Location field included
+    location: "",
   });
 
   const [errors, setErrors] = useState({});
-  const [LocationList, setLocationList] = useState([]); // State for location list
+  const [LocationList, setLocationList] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch locations when component mounts
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -428,7 +430,7 @@ const UpdateManager = ({
           department: data.department,
           shift: data.shift,
           hired_date: data.hired_date,
-          location: data.location || "", // Initialize location
+          location: data.location || "",
         });
       } catch (err) {
         console.error(err);
@@ -467,6 +469,8 @@ const UpdateManager = ({
     e.preventDefault();
     if (!validateForm()) return;
 
+    setIsSubmitting(true);
+
     const formData = new FormData();
     Object.entries(ManagerData).forEach(([key, value]) => {
       if (key === "manager_image" && !value) return;
@@ -495,25 +499,25 @@ const UpdateManager = ({
       } else {
         toast.error("Failed to update manager.");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[600px] bg-white rounded-lg shadow-lg">
         <DialogHeader>
-          <DialogTitle>Update Manager</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-gray-900">Update Manager</DialogTitle>
         </DialogHeader>
-        <form className="space-y-2" onSubmit={handleSubmit}>
-          {/* PERSONAL DETAILS */}
-          <div className="grid gap-2">
-            {/* Name */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Name</label>
+        <form className="space-y-4 w-full p-4" onSubmit={handleSubmit}>
+          <div className="grid gap-4">
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Name</label>
               <div className="col-span-2">
                 <input
                   type="text"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={ManagerData.manager_name}
                   onChange={(e) =>
                     setManagerData({
@@ -523,18 +527,17 @@ const UpdateManager = ({
                   }
                 />
                 {errors.manager_name && (
-                  <p className="text-red-500 text-xs">{errors.manager_name}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.manager_name}</p>
                 )}
               </div>
             </div>
 
-            {/* Email */}
-            <div className="grid grid-cols-3 gap-2 items-start">
-              <label>Email</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Email</label>
               <div className="col-span-2">
                 <input
                   type="email"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={ManagerData.email}
                   onChange={(e) =>
                     setManagerData({ ...ManagerData, email: e.target.value })
@@ -545,11 +548,11 @@ const UpdateManager = ({
                 )}
               </div>
             </div>
-            {/* Gender */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Gender</label>
+
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Gender</label>
               <select
-                className="col-span-2 border px-3 py-2 rounded"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={ManagerData.gender}
                 onChange={(e) =>
                   setManagerData({ ...ManagerData, gender: e.target.value })
@@ -562,30 +565,28 @@ const UpdateManager = ({
               </select>
             </div>
 
-            {/* DOB */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Date of Birth</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Date of Birth</label>
               <div className="col-span-2">
                 <input
                   type="date"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={ManagerData.dob}
                   onChange={(e) =>
                     setManagerData({ ...ManagerData, dob: e.target.value })
                   }
                 />
                 {errors.dob && (
-                  <p className="text-red-500 text-xs">{errors.dob}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.dob}</p>
                 )}
               </div>
             </div>
 
-            {/* Profile image */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Profile Image</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Profile Image</label>
               <input
                 type="file"
-                className="col-span-2 border px-3 py-2 rounded"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 onChange={(e) =>
                   setManagerData({
                     ...ManagerData,
@@ -594,15 +595,11 @@ const UpdateManager = ({
                 }
               />
             </div>
-          </div>
 
-          {/* WORK DETAILS */}
-          <div className="grid gap-2">
-            {/* Department */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Department</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Department</label>
               <select
-                className="col-span-2 border px-3 py-2 rounded"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={ManagerData.department}
                 onChange={(e) =>
                   setManagerData({ ...ManagerData, department: e.target.value })
@@ -617,40 +614,44 @@ const UpdateManager = ({
               </select>
             </div>
 
-            {/* Manager ID (read-only) */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>User ID</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">User ID</label>
               <input
-                className="col-span-2 border px-3 py-2 rounded bg-gray-100"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm bg-gray-100 col-span-2"
                 value={ManagerData.manager_id}
                 disabled
               />
             </div>
 
-            {/* Password */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Password</label>
-              <div className="col-span-2">
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Password</label>
+              <div className="col-span-2 relative">
                 <input
-                  type="text"
-                  className="w-full border px-3 py-2 rounded"
+                  type={showPassword ? "text" : "password"}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
                   value={ManagerData.password}
                   onChange={(e) =>
                     setManagerData({ ...ManagerData, password: e.target.value })
                   }
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                </button>
                 {errors.password && (
-                  <p className="text-red-500 text-xs">{errors.password}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
                 )}
               </div>
             </div>
 
-            {/* Location */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Location</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Location</label>
               <select
-                className="col-span-2 border px-3 py-2 rounded"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={ManagerData.location}
                 onChange={(e) =>
                   setManagerData({ ...ManagerData, location: e.target.value })
@@ -667,35 +668,33 @@ const UpdateManager = ({
                 ))}
               </select>
               {errors.location && (
-                <p className="text-red-500 text-xs">{errors.location}</p>
+                <p className="text-red-500 text-xs mt-1">{errors.location}</p>
               )}
             </div>
 
-            {/* Username */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Username</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Username</label>
               <div className="col-span-2">
                 <input
                   type="text"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={ManagerData.username}
                   onChange={(e) =>
                     setManagerData({ ...ManagerData, username: e.target.value })
                   }
                 />
                 {errors.username && (
-                  <p className="text-red-500 text-xs">{errors.username}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.username}</p>
                 )}
               </div>
             </div>
 
-            {/* Hired Date */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Hired Date</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Hired Date</label>
               <div className="col-span-2">
                 <input
                   type="date"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={ManagerData.hired_date}
                   onChange={(e) =>
                     setManagerData({
@@ -705,16 +704,15 @@ const UpdateManager = ({
                   }
                 />
                 {errors.hired_date && (
-                  <p className="text-red-500 text-xs">{errors.hired_date}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.hired_date}</p>
                 )}
               </div>
             </div>
 
-            {/* Shift */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Shift</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Shift</label>
               <select
-                className="col-span-2 border px-3 py-2 rounded"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={ManagerData.shift}
                 onChange={(e) =>
                   setManagerData({ ...ManagerData, shift: e.target.value })
@@ -730,19 +728,25 @@ const UpdateManager = ({
             </div>
           </div>
 
-          <div className="flex justify-end gap-4 mt-6">
+          <div className="flex justify-end gap-3 mt-6">
             <button
               type="button"
-              className="px-4 py-2 bg-gray-200 rounded-lg"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 shadow-md hover:shadow-lg transition-all duration-300"
               onClick={() => setOpen(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              className={`px-4 py-2 text-sm font-medium text-white rounded-full shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-br from-purple-600 to-blue-500 hover:-translate-y-0.5"
+              }`}
+              disabled={isSubmitting}
             >
-              Update
+              {isSubmitting ? "Updating..." : "Update"}
             </button>
           </div>
         </form>
