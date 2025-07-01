@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
 
@@ -26,14 +27,23 @@ const AddSupervisorSalary = ({
   });
 
   const [errors, setErrors] = useState({
+    user_id: "",
     annual_salary: "",
     bonus: "",
     effective_date: "",
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const validateForm = () => {
     let valid = true;
-    let newErrors = { annual_salary: "", bonus: "", effective_date: "" };
+    let newErrors = { user_id: "", annual_salary: "", bonus: "", effective_date: "" };
+
+    // Validate Supervisor Selection
+    if (!SalaryData.user_id) {
+      newErrors.user_id = "Please select a supervisor.";
+      valid = false;
+    }
 
     // Validate Annual Salary
     if (!/^\d+$/.test(SalaryData.annual_salary)) {
@@ -48,11 +58,16 @@ const AddSupervisorSalary = ({
     }
 
     // Validate Effective Date (Future only)
-    const currentDate = new Date();
-    const selectedDate = new Date(SalaryData.effective_date);
-    if (selectedDate <= currentDate) {
-      newErrors.effective_date = "Effective date must be in the future.";
+    if (!SalaryData.effective_date) {
+      newErrors.effective_date = "Effective date is required.";
       valid = false;
+    } else {
+      const currentDate = new Date();
+      const selectedDate = new Date(SalaryData.effective_date + "-01"); // Append day for Date parsing
+      if (selectedDate <= currentDate) {
+        newErrors.effective_date = "Effective date must be in the future.";
+        valid = false;
+      }
     }
 
     setErrors(newErrors);
@@ -66,153 +81,147 @@ const AddSupervisorSalary = ({
       return; // Stop form submission if validation fails
     }
 
+    setIsSubmitting(true);
     try {
-      const { data } = await axios.post(
+      await axios.post(
         `${apiBaseUrl}/supervisor-salary/create/`,
         SalaryData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        },
+        }
       );
-
-      setOpen(false);
+      toast.success("Salary added successfully.");
       fetchSalaryList();
-      toast.success(`${data}`);
+      setOpen(false);
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to add Salary");
+      toast.error(error.response?.data?.detail || "Failed to add salary.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} asChild>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Supervisor Salary</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">Add Supervisor Salary</DialogTitle>
         </DialogHeader>
-        <form className="space-y-2 w-full" onSubmit={HandleAddSalary}>
-          <div className="grid gap-2 w-full">
-            {/* Left Column */}
-            <div className="space-y-2">
-              {/* <h2 className="font-medium text-gray-700">Salary Details</h2> */}
-              <div className="space-y-4">
-                {/* Manager Name */}
-                <div className="grid grid-cols-3 items-center gap-2 w-full">
-                  <label className="text-sm font-medium">Supervisor Name</label>
-                  <select
-                    id="user_id"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
-                    value={SalaryData.user_id}
-                    onChange={(e) =>
-                      setSalaryData({ ...SalaryData, user_id: e.target.value })
-                    }
+        <form className="space-y-6" onSubmit={HandleAddSalary}>
+          <div className="space-y-4">
+            {/* Supervisor Name */}
+            <div>
+              <label className="text-sm text-gray-600">Supervisor Name</label>
+              <select
+                id="user_id"
+                value={SalaryData.user_id}
+                onChange={(e) =>
+                  setSalaryData({ ...SalaryData, user_id: e.target.value })
+                }
+                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  errors.user_id
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-purple-500"
+                }`}
+              >
+                <option value="" disabled>
+                  Select Supervisor
+                </option>
+                {SupervisorList.map((supervisor) => (
+                  <option
+                    key={supervisor.supervisor_id}
+                    value={supervisor.supervisor_id}
                   >
-                    <option value="" disabled>
-                      Select Supervisor
-                    </option>
-                    {SupervisorList.map((supervisor) => (
-                      <option
-                        key={supervisor.supervisor_id}
-                        value={supervisor.supervisor_id}
-                      >
-                        {supervisor.supervisor_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    {supervisor.supervisor_name}
+                  </option>
+                ))}
+              </select>
+              {errors.user_id && (
+                <span className="text-red-500 text-sm">{errors.user_id}</span>
+              )}
+            </div>
 
-                {/* Annual Salary (Only Numbers) */}
-                <div className="grid grid-cols-3 items-center gap-2 w-full">
-                  <label className="text-sm font-medium">Annual Salary</label>
-                  <input
-                    type="number"
-                    placeholder="Enter Annual Salary"
-                    className={`w-full px-3 py-2 rounded-md border ${
-                      errors.annual_salary
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2`}
-                    value={SalaryData.annual_salary}
-                    onChange={(e) =>
-                      setSalaryData({
-                        ...SalaryData,
-                        annual_salary: e.target.value,
-                      })
-                    }
-                  />
-                  {errors.annual_salary && (
-                    <span className="text-red-500 text-sm col-span-3">
-                      {errors.annual_salary}
-                    </span>
-                  )}
-                </div>
+            {/* Annual Salary */}
+            <div>
+              <label className="text-sm text-gray-600">Annual Salary</label>
+              <input
+                type="number"
+                placeholder="Enter Annual Salary"
+                value={SalaryData.annual_salary}
+                onChange={(e) =>
+                  setSalaryData({ ...SalaryData, annual_salary: e.target.value })
+                }
+                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  errors.annual_salary
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-purple-500"
+                }`}
+              />
+              {errors.annual_salary && (
+                <span className="text-red-500 text-sm">{errors.annual_salary}</span>
+              )}
+            </div>
 
-                {/* Bonus (Only Numbers) */}
-                <div className="grid grid-cols-3 items-center gap-2 w-full">
-                  <label className="text-sm font-medium">Bonus</label>
-                  <input
-                    type="number"
-                    placeholder="Enter Bonus"
-                    className={`w-full px-3 py-2 rounded-md border ${
-                      errors.bonus ? "border-red-500" : "border-gray-300"
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2`}
-                    value={SalaryData.bonus}
-                    onChange={(e) =>
-                      setSalaryData({ ...SalaryData, bonus: e.target.value })
-                    }
-                  />
-                  {errors.bonus && (
-                    <span className="text-red-500 text-sm col-span-3">
-                      {errors.bonus}
-                    </span>
-                  )}
-                </div>
+            {/* Bonus */}
+            <div>
+              <label className="text-sm text-gray-600">Bonus</label>
+              <input
+                type="number"
+                placeholder="Enter Bonus"
+                value={SalaryData.bonus}
+                onChange={(e) =>
+                  setSalaryData({ ...SalaryData, bonus: e.target.value })
+                }
+                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  errors.bonus
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-purple-500"
+                }`}
+              />
+              {errors.bonus && (
+                <span className="text-red-500 text-sm">{errors.bonus}</span>
+              )}
+            </div>
 
-                {/* Effective Date (Only Future Dates) */}
-                <div className="grid grid-cols-3 items-center gap-2 w-full">
-                  <label className="text-sm font-medium">Effective Date</label>
-                  <input
-                    type="month"
-                    className={`w-full px-3 py-2 rounded-md border ${
-                      errors.effective_date
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2`}
-                    value={SalaryData.effective_date}
-                    onChange={(e) =>
-                      setSalaryData({
-                        ...SalaryData,
-                        effective_date: e.target.value,
-                      })
-                    }
-                  />
-                  {errors.effective_date && (
-                    <span className="text-red-500 text-sm col-span-3">
-                      {errors.effective_date}
-                    </span>
-                  )}
-                </div>
-              </div>
+            {/* Effective Date */}
+            <div>
+              <label className="text-sm text-gray-600">Effective Date</label>
+              <input
+                type="month"
+                value={SalaryData.effective_date}
+                onChange={(e) =>
+                  setSalaryData({ ...SalaryData, effective_date: e.target.value })
+                }
+                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  errors.effective_date
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-purple-500"
+                }`}
+              />
+              {errors.effective_date && (
+                <span className="text-red-500 text-sm">{errors.effective_date}</span>
+              )}
             </div>
           </div>
 
-          {/* Buttons */}
-          <div className="flex justify-end gap-4 mt-8">
-            <button
+          <div className="flex justify-end gap-3">
+            <Button
               type="button"
               onClick={() => setOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-300 transition-all duration-300"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isSubmitting}
+              className={`bg-gradient-to-br from-purple-600 to-blue-500 text-white px-4 py-2 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              Submit
-            </button>
+              {isSubmitting ? "Submitting..." : "Submit"}
+            </Button>
           </div>
         </form>
       </DialogContent>

@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Eye, EyeOff } from "lucide-react"; // For show/hide icons
+import { Eye, EyeOff } from "lucide-react";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
 
@@ -17,6 +17,7 @@ const UpdateSupervisor = ({
   supervisorId,
   ShiftList,
   DepartmentList,
+  LocationList,
   fetchSupervisorList,
 }) => {
   const [SupervisorData, setSupervisorData] = useState({
@@ -27,14 +28,16 @@ const UpdateSupervisor = ({
     supervisor_image: null,
     supervisor_id: "",
     username: "",
-    plain_password: "", // Use plain_password
+    plain_password: "",
     department: "",
     shift: "",
     hired_date: "",
+    location: "",
   });
 
   const [errors, setErrors] = useState({});
-  const [showPassword, setShowPassword] = useState(false); // Toggle for password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchSupervisorData = async () => {
@@ -52,10 +55,11 @@ const UpdateSupervisor = ({
           supervisor_image: null,
           supervisor_id: data.supervisor_id,
           username: data.username,
-          plain_password: data.plain_password || "", // Pre-fill with plain_password
+          plain_password: data.plain_password || "",
           department: data.department,
           shift: data.shift,
           hired_date: data.hired_date,
+          location: data.location || "",
         });
       } catch (err) {
         console.error(err);
@@ -68,29 +72,51 @@ const UpdateSupervisor = ({
 
   const validateForm = () => {
     const newErrors = {};
-    if (!/^[A-Za-z\s]*$/.test(SupervisorData.supervisor_name))
-      newErrors.supervisor_name = "Only letters allowed in name";
+    let isValid = true;
 
-    if (!/^[A-Za-z\s]*$/.test(SupervisorData.username))
+    if (!/^[A-Za-z\s]*$/.test(SupervisorData.supervisor_name)) {
+      newErrors.supervisor_name = "Only letters allowed in name";
+      isValid = false;
+    }
+
+    if (!/^[A-Za-z\s]*$/.test(SupervisorData.username)) {
       newErrors.username = "Only letters allowed in username";
+      isValid = false;
+    }
 
     const today = new Date().toISOString().split("T")[0];
-    if (SupervisorData.dob > today)
+    if (SupervisorData.dob > today) {
       newErrors.dob = "Date of Birth cannot be a future date";
+      isValid = false;
+    }
 
-    if (SupervisorData.hired_date > today)
+    if (SupervisorData.hired_date > today) {
       newErrors.hired_date = "Hired Date cannot be a future date";
+      isValid = false;
+    }
 
-    if (SupervisorData.plain_password && SupervisorData.plain_password.length < 8)
+    if (!SupervisorData.plain_password) {
+      newErrors.plain_password = "Password is required";
+      isValid = false;
+    } else if (SupervisorData.plain_password.length < 8) {
       newErrors.plain_password = "Password must be at least 8 characters";
+      isValid = false;
+    }
+
+    if (!SupervisorData.location) {
+      newErrors.location = "Please select a location";
+      isValid = false;
+    }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
+
+    setIsSubmitting(true);
 
     const formData = new FormData();
     Object.entries(SupervisorData).forEach(([key, value]) => {
@@ -119,41 +145,40 @@ const UpdateSupervisor = ({
       } else {
         toast.error("Failed to update supervisor.");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[600px] bg-white rounded-lg shadow-lg">
         <DialogHeader>
-          <DialogTitle>Update Supervisor</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-gray-900">Update Supervisor</DialogTitle>
         </DialogHeader>
-        <form className="space-y-2" onSubmit={handleSubmit}>
-          {/* PERSONAL DETAILS */}
-          <div className="grid gap-2">
-            {/* Name */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Name</label>
+        <form className="space-y-4 w-full p-4" onSubmit={handleSubmit}>
+          <div className="grid gap-4">
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Name</label>
               <div className="col-span-2">
                 <input
                   type="text"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={SupervisorData.supervisor_name}
                   onChange={(e) =>
                     setSupervisorData({ ...SupervisorData, supervisor_name: e.target.value })
                   }
                 />
-                {errors.supervisor_name && <p className="text-red-500 text-xs">{errors.supervisor_name}</p>}
+                {errors.supervisor_name && <p className="text-red-500 text-xs mt-1">{errors.supervisor_name}</p>}
               </div>
             </div>
 
-            {/* Email */}
-            <div className="grid grid-cols-3 gap-2 items-start">
-              <label>Email</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Email</label>
               <div className="col-span-2">
                 <input
                   type="email"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={SupervisorData.email}
                   onChange={(e) =>
                     setSupervisorData({ ...SupervisorData, email: e.target.value })
@@ -163,11 +188,10 @@ const UpdateSupervisor = ({
               </div>
             </div>
 
-            {/* Gender */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Gender</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Gender</label>
               <select
-                className="col-span-2 border px-3 py-2 rounded"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.gender}
                 onChange={(e) =>
                   setSupervisorData({ ...SupervisorData, gender: e.target.value })
@@ -180,28 +204,26 @@ const UpdateSupervisor = ({
               </select>
             </div>
 
-            {/* DOB */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Date of Birth</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Date of Birth</label>
               <div className="col-span-2">
                 <input
                   type="date"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={SupervisorData.dob}
                   onChange={(e) =>
                     setSupervisorData({ ...SupervisorData, dob: e.target.value })
                   }
                 />
-                {errors.dob && <p className="text-red-500 text-xs">{errors.dob}</p>}
+                {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}
               </div>
             </div>
 
-            {/* Profile image */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Profile Image</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Profile Image</label>
               <input
                 type="file"
-                className="col-span-2 border px-3 py-2 rounded"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 onChange={(e) =>
                   setSupervisorData({
                     ...SupervisorData,
@@ -210,15 +232,11 @@ const UpdateSupervisor = ({
                 }
               />
             </div>
-          </div>
 
-          {/* WORK DETAILS */}
-          <div className="grid gap-2">
-            {/* Department */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Department</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Department</label>
               <select
-                className="col-span-2 border px-3 py-2 rounded"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.department}
                 onChange={(e) =>
                   setSupervisorData({ ...SupervisorData, department: e.target.value })
@@ -233,77 +251,95 @@ const UpdateSupervisor = ({
               </select>
             </div>
 
-            {/* Supervisor ID (read-only) */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>User ID</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">User ID</label>
               <input
-                className="col-span-2 border px-3 py-2 rounded bg-gray-100"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm bg-gray-100 col-span-2"
                 value={SupervisorData.supervisor_id}
                 disabled
               />
             </div>
 
-            {/* Password */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Password</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Password</label>
               <div className="col-span-2 relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
                   value={SupervisorData.plain_password}
                   onChange={(e) =>
                     setSupervisorData({ ...SupervisorData, plain_password: e.target.value })
                   }
                   placeholder="Enter password"
+                  required
                 />
                 <button
                   type="button"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                  {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                 </button>
-                {errors.plain_password && <p className="text-red-500 text-xs">{errors.plain_password}</p>}
+                {errors.plain_password && <p className="text-red-500 text-xs mt-1">{errors.plain_password}</p>}
               </div>
             </div>
 
-            {/* Username */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Username</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Location</label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
+                value={SupervisorData.location}
+                onChange={(e) =>
+                  setSupervisorData({ ...SupervisorData, location: e.target.value })
+                }
+                required
+              >
+                <option value="" disabled>
+                  Select Location
+                </option>
+                {LocationList.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.location_name}
+                  </option>
+                ))}
+              </select>
+              {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
+            </div>
+
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Username</label>
               <div className="col-span-2">
                 <input
                   type="text"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={SupervisorData.username}
                   onChange={(e) =>
                     setSupervisorData({ ...SupervisorData, username: e.target.value })
                   }
                 />
-                {errors.username && <p className="text-red-500 text-xs">{errors.username}</p>}
+                {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
               </div>
             </div>
 
-            {/* Hired Date */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Hired Date</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Hired Date</label>
               <div className="col-span-2">
                 <input
                   type="date"
-                  className="w-full border px-3 py-2 rounded"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={SupervisorData.hired_date}
                   onChange={(e) =>
                     setSupervisorData({ ...SupervisorData, hired_date: e.target.value })
                   }
                 />
-                {errors.hired_date && <p className="text-red-500 text-xs">{errors.hired_date}</p>}
+                {errors.hired_date && <p className="text-red-500 text-xs mt-1">{errors.hired_date}</p>}
               </div>
             </div>
 
-            {/* Shift */}
-            <div className="grid grid-cols-3 items-center gap-2">
-              <label>Shift</label>
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Shift</label>
               <select
-                className="col-span-2 border px-3 py-2 rounded"
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.shift}
                 onChange={(e) =>
                   setSupervisorData({ ...SupervisorData, shift: e.target.value })
@@ -319,19 +355,25 @@ const UpdateSupervisor = ({
             </div>
           </div>
 
-          <div className="flex justify-end gap-4 mt-6">
+          <div className="flex justify-end gap-3 mt-6">
             <button
               type="button"
-              className="px-4 py-2 bg-gray-200 rounded-lg"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 shadow-md hover:shadow-lg transition-all duration-300"
               onClick={() => setOpen(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              className={`px-4 py-2 text-sm font-medium text-white rounded-full shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-br from-purple-600 to-blue-500 hover:-translate-y-0.5"
+              }`}
+              disabled={isSubmitting}
             >
-              Update
+              {isSubmitting ? "Updating..." : "Update"}
             </button>
           </div>
         </form>

@@ -64,6 +64,11 @@ const fetchShiftList = async () => {
   return data || [];
 };
 
+const fetchLocationList = async () => {
+  const { data } = await axios.get(`${apiBaseUrl}/admin/overall-location/`);
+  return data || [];
+};
+
 const SupervisorList = () => {
   const queryClient = useQueryClient();
   const [addSupervisorPopup, setAddSupervisorPopup] = useState(false);
@@ -92,6 +97,14 @@ const SupervisorList = () => {
   const { data: shiftList = [], isFetching: isFetchingShifts } = useQuery({
     queryKey: ["shifts"],
     queryFn: fetchShiftList,
+    placeholderData: [],
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: locationList = [], isFetching: isFetchingLocations } = useQuery({
+    queryKey: ["locations"],
+    queryFn: fetchLocationList,
     placeholderData: [],
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
@@ -171,7 +184,7 @@ const SupervisorList = () => {
 
   return (
     <div className="p-2 sm:p-4 min-h-screen">
-      {(isFetchingSupervisors || isFetchingDepartments || isFetchingShifts) ? (
+      {(isFetchingSupervisors || isFetchingDepartments || isFetchingShifts || isFetchingLocations) ? (
         <SkeletonLoading />
       ) : (isErrorSupervisors) ? (
         <Alert variant="destructive" className="text-center my-4">
@@ -235,7 +248,7 @@ const SupervisorList = () => {
               <div className="mt-2 md:mt-0 flex gap-3">
                 <Button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="bg-gradient-to-br from-purple-600 to-blue-500 text-white px-4 py-1 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all Ahmad, [05/05/2025 23:15:22] duration-300"
+                  className="bg-gradient-to-br from-purple-600 to-blue-500 text-white px-4 py-1 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
                 >
                   {showFilters ? "Hide Filters" : "Show Filters"}
                 </Button>
@@ -332,6 +345,9 @@ const SupervisorList = () => {
                           <TableCell onClick={() => handleSort("shift")} className="cursor-pointer">
                             Shift {getSortIcon("shift")}
                           </TableCell>
+                          <TableCell onClick={() => handleSort("location")} className="cursor-pointer">
+                            Location {getSortIcon("location")}
+                          </TableCell>
                           <TableCell onClick={() => handleSort("hired_date")} className="cursor-pointer">
                             Hired Date {getSortIcon("hired_date")}
                           </TableCell>
@@ -373,6 +389,9 @@ const SupervisorList = () => {
                             </TableCell>
                             <TableCell className="text-base">
                               {shiftList.find((shift) => shift.id === supervisor.shift)?.shift_number || "N/A"}
+                            </TableCell>
+                            <TableCell className="text-base">
+                              {locationList.find((loc) => loc.id === supervisor.location)?.location_name || "N/A"}
                             </TableCell>
                             <TableCell className="text-base">
                               {supervisor.hired_date}
@@ -444,6 +463,8 @@ const SupervisorList = () => {
                               departmentList.find((dep) => dep.id === supervisor.department)?.department_name || "N/A",
                             shift_number:
                               shiftList.find((shift) => shift.id === supervisor.shift)?.shift_number || "N/A",
+                            location_name:
+                              locationList.find((loc) => loc.id === supervisor.location)?.location_name || "N/A",
                           }}
                         />
                       ))}
@@ -459,6 +480,7 @@ const SupervisorList = () => {
               setOpen={setAddSupervisorPopup}
               DepartmentList={departmentList}
               ShiftList={shiftList}
+              LocationList={locationList}
               fetchSupervisorList={() => queryClient.invalidateQueries(["supervisors"])}
             />
           )}
@@ -469,6 +491,7 @@ const SupervisorList = () => {
               supervisorId={selectedSupervisor}
               DepartmentList={departmentList}
               ShiftList={shiftList}
+              LocationList={locationList}
               fetchSupervisorList={() => queryClient.invalidateQueries(["supervisors"])}
             />
           )}
