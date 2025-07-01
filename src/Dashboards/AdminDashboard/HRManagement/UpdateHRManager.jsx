@@ -31,10 +31,28 @@ const UpdateHRManager = ({
     department: "",
     shift: "",
     hired_date: "",
+    location: "", // Location field included
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // New loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [LocationList, setLocationList] = useState([]); // State for location list
+
+  // Fetch locations when component mounts
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await axios.get(
+          `${apiBaseUrl}/admin/overall-location/`,
+        );
+        setLocationList(response.data);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        toast.error("Failed to load locations");
+      }
+    };
+    fetchLocations();
+  }, []);
 
   useEffect(() => {
     const fetchHrData = async () => {
@@ -54,6 +72,7 @@ const UpdateHRManager = ({
           department: data.department,
           shift: data.shift,
           hired_date: data.hired_date,
+          location: data.location || "", // Initialize location
         });
       } catch (err) {
         console.error(err);
@@ -82,6 +101,8 @@ const UpdateHRManager = ({
     if (HrData.plain_password && HrData.plain_password.length < 8)
       newErrors.plain_password = "Password must be at least 8 characters";
 
+    if (!HrData.location) newErrors.location = "Please select a location";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -90,7 +111,7 @@ const UpdateHRManager = ({
     e.preventDefault();
     if (!validateForm()) return;
 
-    setIsSubmitting(true); // Set loading state to true
+    setIsSubmitting(true);
 
     const formData = new FormData();
     Object.entries(HrData).forEach(([key, value]) => {
@@ -118,7 +139,7 @@ const UpdateHRManager = ({
         toast.error("Failed to update HR.");
       }
     } finally {
-      setIsSubmitting(false); // Reset loading state
+      setIsSubmitting(false);
     }
   };
 
@@ -256,6 +277,29 @@ const UpdateHRManager = ({
                 </button>
                 {errors.plain_password && <p className="text-red-500 text-xs mt-1">{errors.plain_password}</p>}
               </div>
+            </div>
+
+            {/* Location */}
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Location</label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
+                value={HrData.location}
+                onChange={(e) =>
+                  setHrData({ ...HrData, location: e.target.value })
+                }
+                required
+              >
+                <option value="" disabled>
+                  Select Location
+                </option>
+                {LocationList.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.location_name}
+                  </option>
+                ))}
+              </select>
+              {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
             </div>
 
             {/* Department */}

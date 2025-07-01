@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -29,15 +29,31 @@ const AddHRManager = ({
     department: "",
     shift: "",
     hired_date: "",
+    location: "", // Added location field
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // New loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({
     hr_name: "",
     username: "",
     dob: "",
     hired_date: "",
   });
+  const [LocationList, setLocationList] = useState([]); // State for location list
+
+  // Fetch locations when component mounts
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await axios.get(`${apiBaseUrl}/admin/overall-location/`);
+        setLocationList(response.data); // Assuming the endpoint returns a list of locations
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        toast.error("Failed to load locations");
+      }
+    };
+    fetchLocations();
+  }, []);
 
   const validateForm = () => {
     let isValid = true;
@@ -87,6 +103,11 @@ const AddHRManager = ({
       isValid = false;
     }
 
+    if (!ManagerData.location) {
+      toast.error("Please select a location");
+      isValid = false;
+    }
+
     if (!ManagerData.password || ManagerData.password.length < 6) {
       toast.error("Password must be at least 6 characters long");
       isValid = false;
@@ -102,11 +123,13 @@ const AddHRManager = ({
       return;
     }
 
-    setIsSubmitting(true); // Set loading state to true
+    setIsSubmitting(true);
 
     const formData = new FormData();
     Object.entries(ManagerData).forEach(([key, value]) => {
-      formData.append(key, value);
+      if (value !== null && value !== "") {
+        formData.append(key, value);
+      }
     });
 
     try {
@@ -133,7 +156,7 @@ const AddHRManager = ({
         toast.error(Array.isArray(msg) ? msg[0] : msg || "Failed to add HR");
       }
     } finally {
-      setIsSubmitting(false); // Reset loading state
+      setIsSubmitting(false);
     }
   };
 
@@ -328,6 +351,28 @@ const AddHRManager = ({
               </div>
             </div>
 
+            {/* Location */}
+            <div className="grid grid-cols-3 items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Location</label>
+              <select
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
+                value={ManagerData.location}
+                onChange={(e) =>
+                  setManagerData({ ...ManagerData, location: e.target.value })
+                }
+              >
+                <option value="" disabled>
+                  Select Location
+                </option>
+                {LocationList.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.location_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Department */}
             <div className="grid grid-cols-3 items-center gap-3">
               <label className="text-sm font-medium text-gray-700">Department</label>
@@ -416,7 +461,7 @@ const AddHRManager = ({
               type="button"
               onClick={() => setOpen(false)}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 shadow-md hover:shadow-lg transition-all duration-300"
-              disabled={isSubmitting} // Disable Cancel button during submission
+              disabled={isSubmitting}
             >
               Cancel
             </button>
@@ -427,7 +472,7 @@ const AddHRManager = ({
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-br from-purple-600 to-blue-500 hover:-translate-y-0.5"
               }`}
-              disabled={isSubmitting} // Disable Submit button during submission
+              disabled={isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Submit"}
             </button>

@@ -64,6 +64,11 @@ const fetchShiftList = async () => {
   return data || [];
 };
 
+const fetchLocationList = async () => {
+  const { data } = await axios.get(`${apiBaseUrl}/admin/overall-location/`);
+  return data || [];
+};
+
 const ManagerHRList = () => {
   const queryClient = useQueryClient();
   const [addHrPopup, setAddHrPopup] = useState(false);
@@ -92,6 +97,14 @@ const ManagerHRList = () => {
   const { data: shiftList = [], isFetching: isFetchingShifts } = useQuery({
     queryKey: ["shifts"],
     queryFn: fetchShiftList,
+    placeholderData: [],
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: locationList = [], isFetching: isFetchingLocations } = useQuery({
+    queryKey: ["locations"],
+    queryFn: fetchLocationList,
     placeholderData: [],
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
@@ -160,8 +173,7 @@ const ManagerHRList = () => {
     }
   };
 
-  const handleResetFilter = 
-  () => {
+  const handleResetFilter = () => {
     setSearchTerm("");
     setShowFilters(false);
   };
@@ -172,7 +184,7 @@ const ManagerHRList = () => {
 
   return (
     <div className="p-2 sm:p-4 min-h-screen">
-      {(isFetchingHr || isFetchingDepartments || isFetchingShifts) ? (
+      {(isFetchingHr || isFetchingDepartments || isFetchingShifts || isFetchingLocations) ? (
         <SkeletonLoading />
       ) : (isErrorHr) ? (
         <Alert variant="destructive" className="text-center my-4">
@@ -333,6 +345,9 @@ const ManagerHRList = () => {
                           <TableCell onClick={() => handleSort("shift")} className="cursor-pointer">
                             Shift {getSortIcon("shift")}
                           </TableCell>
+                          <TableCell onClick={() => handleSort("location")} className="cursor-pointer">
+                            Location {getSortIcon("location")}
+                          </TableCell>
                           <TableCell onClick={() => handleSort("hired_date")} className="cursor-pointer">
                             Hired Date {getSortIcon("hired_date")}
                           </TableCell>
@@ -374,6 +389,9 @@ const ManagerHRList = () => {
                             </TableCell>
                             <TableCell className="text-base">
                               {shiftList.find((shift) => shift.id === hr.shift)?.shift_number}
+                            </TableCell>
+                            <TableCell className="text-base">
+                              {locationList.find((loc) => loc.id === hr.location)?.location_name || "N/A"}
                             </TableCell>
                             <TableCell className="text-base">
                               {hr.hired_date}
