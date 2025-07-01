@@ -32,9 +32,11 @@ const UpdateEmployee = ({
     shift: "",
     hired_date: "",
     streams: {},
+    location: "", // Location field included
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [LocationList, setLocationList] = useState([]); // State for location list
 
   const streamOptions = [
     "Accounts",
@@ -47,6 +49,22 @@ const UpdateEmployee = ({
     "Help Desk",
   ];
   const subComponents = ["Admin", "Manager", "User", "Management"];
+
+  // Fetch locations when component mounts
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await axios.get(
+          `${apiBaseUrl}/admin/overall-location/`,
+        );
+        setLocationList(response.data);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        toast.error("Failed to load locations");
+      }
+    };
+    fetchLocations();
+  }, []);
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
@@ -69,6 +87,7 @@ const UpdateEmployee = ({
           shift: data.shift,
           hired_date: data.hired_date,
           streams: data.streams || {}, // Assuming API returns streams as an object
+          location: data.location || "", // Initialize location
         });
       } catch (err) {
         console.error(err);
@@ -99,6 +118,8 @@ const UpdateEmployee = ({
 
     if (Object.keys(EmployeeData.streams).length === 0)
       newErrors.streams = "Please select at least one stream";
+
+    if (!EmployeeData.location) newErrors.location = "Please select a location";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -133,6 +154,7 @@ const UpdateEmployee = ({
     e.preventDefault();
     if (!validateForm()) {
       if (errors.streams) toast.error(errors.streams);
+      if (errors.location) toast.error(errors.location);
       return;
     }
 
@@ -166,6 +188,8 @@ const UpdateEmployee = ({
         setErrors({ plain_password: Array.isArray(err.plain_password) ? err.plain_password[0] : err.plain_password });
       } else if (err?.streams) {
         setErrors({ streams: Array.isArray(err.streams) ? err.streams[0] : err.streams });
+      } else if (err?.location) {
+        setErrors({ location: Array.isArray(err.location) ? err.location[0] : err.location });
       } else {
         toast.error("Failed to update employee.");
       }
@@ -186,31 +210,33 @@ const UpdateEmployee = ({
               {/* Left Column */}
               <div className="space-y-6">
                 {/* Name */}
-                <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Name</label>
-                  <div className="col-span-2">
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      value={EmployeeData.employee_name}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^[A-Za-z\s]*$/.test(value)) {
-                          setEmployeeData({ ...EmployeeData, employee_name: value });
-                          setErrors({ ...errors, employee_name: "" });
-                        } else {
-                          setErrors({
-                            ...errors,
-                            employee_name: "Only letters and spaces allowed in name",
-                          });
-                        }
-                      }}
-                    />
-                    {errors.employee_name && (
-                      <p className="text-red-500 text-xs mt-1">{errors.employee_name}</p>
-                    )}
-                  </div>
-                </div>
+               <div className="grid grid-cols-3 items-center gap-3">
+  <label className="text-sm font-medium text-gray-700">Name</label>
+  <div className="col-span-2">
+    <div style={{ marginTop: '4px' }}>
+      <input
+        type="text"
+        className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+        value={EmployeeData.employee_name}
+        onChange={(e) => {
+          const value = e.target.value;
+          if (/^[A-Za-z\s]*$/.test(value)) {
+            setEmployeeData({ ...EmployeeData, employee_name: value });
+            setErrors({ ...errors, employee_name: "" });
+          } else {
+            setErrors({
+              ...errors,
+              employee_name: "Only letters and spaces allowed in name",
+            });
+          }
+        }}
+      />
+    </div>
+    {errors.employee_name && (
+      <p className="text-red-500 text-xs mt-1">{errors.employee_name}</p>
+    )}
+  </div>
+</div>
 
                 {/* Email */}
                 <div className="grid grid-cols-3 items-center gap-3">
@@ -412,6 +438,31 @@ const UpdateEmployee = ({
                       </option>
                     ))}
                   </select>
+                </div>
+
+                {/* Location */}
+                <div className="grid grid-cols-3 items-center gap-3">
+                  <label className="text-sm font-medium text-gray-700">Location</label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
+                    value={EmployeeData.location}
+                    onChange={(e) =>
+                      setEmployeeData({ ...EmployeeData, location: e.target.value })
+                    }
+                    required
+                  >
+                    <option value="" disabled>
+                      Select Location
+                    </option>
+                    {LocationList.map((location) => (
+                      <option key={location.id} value={location.id}>
+                        {location.location_name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.location && (
+                    <p className="text-red-500 text-xs mt-1">{errors.location}</p>
+                  )}
                 </div>
 
                 {/* Shift */}

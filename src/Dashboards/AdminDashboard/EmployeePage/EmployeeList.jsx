@@ -64,6 +64,11 @@ const fetchShiftList = async () => {
   return data || [];
 };
 
+const fetchLocationList = async () => {
+  const { data } = await axios.get(`${apiBaseUrl}/admin/overall-location/`);
+  return data || [];
+};
+
 const EmployeeList = () => {
   const queryClient = useQueryClient();
   const [addEmployeePopup, setAddEmployeePopup] = useState(false);
@@ -92,6 +97,14 @@ const EmployeeList = () => {
   const { data: shiftList = [], isFetching: isFetchingShifts } = useQuery({
     queryKey: ["shifts"],
     queryFn: fetchShiftList,
+    placeholderData: [],
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: locationList = [], isFetching: isFetchingLocations } = useQuery({
+    queryKey: ["locations"],
+    queryFn: fetchLocationList,
     placeholderData: [],
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
@@ -171,7 +184,7 @@ const EmployeeList = () => {
 
   return (
     <div className="p-2 sm:p-4 min-h-screen">
-      {(isFetchingEmployees || isFetchingDepartments || isFetchingShifts) ? (
+      {(isFetchingEmployees || isFetchingDepartments || isFetchingShifts || isFetchingLocations) ? (
         <SkeletonLoading />
       ) : (isErrorEmployees) ? (
         <Alert variant="destructive" className="text-center my-4">
@@ -332,6 +345,9 @@ const EmployeeList = () => {
                           <TableCell onClick={() => handleSort("shift")} className="cursor-pointer">
                             Shift {getSortIcon("shift")}
                           </TableCell>
+                          <TableCell onClick={() => handleSort("location")} className="cursor-pointer">
+                            Location {getSortIcon("location")}
+                          </TableCell>
                           <TableCell onClick={() => handleSort("hired_date")} className="cursor-pointer">
                             Hired Date {getSortIcon("hired_date")}
                           </TableCell>
@@ -373,6 +389,9 @@ const EmployeeList = () => {
                             </TableCell>
                             <TableCell className="text-base">
                               {shiftList.find((shift) => shift.id === employee.shift)?.shift_number}
+                            </TableCell>
+                            <TableCell className="text-base">
+                              {locationList.find((loc) => loc.id === employee.location)?.location_name || "N/A"}
                             </TableCell>
                             <TableCell className="text-base">
                               {employee.hired_date}

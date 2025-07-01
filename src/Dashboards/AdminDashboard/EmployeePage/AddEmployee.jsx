@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -30,16 +30,32 @@ const AddEmployee = ({
     shift: "",
     hired_date: "",
     streams: {},
+    location: "", // Added location field
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({
-   社員_name: "",
+    employee_name: "",
     username: "",
     dob: "",
     hired_date: "",
     password: "",
   });
+  const [LocationList, setLocationList] = useState([]); // State for location list
+
+  // Fetch locations when component mounts
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await axios.get(`${apiBaseUrl}/admin/overall-location/`);
+        setLocationList(response.data); // Assuming the endpoint returns a list of locations
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        toast.error("Failed to load locations");
+      }
+    };
+    fetchLocations();
+  }, []);
 
   const streamOptions = [
     "Accounts",
@@ -109,6 +125,11 @@ const AddEmployee = ({
       isValid = false;
     }
 
+    if (!EmployeeData.location) {
+      toast.error("Please select a location");
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   };
@@ -126,6 +147,7 @@ const AddEmployee = ({
       shift: "",
       hired_date: "",
       streams: {},
+      location: "", // Added location field
     });
     setErrors({
       employee_name: "",
@@ -172,13 +194,13 @@ const AddEmployee = ({
 
     const formData = new FormData();
 
-Object.entries(EmployeeData).forEach(([key, value]) => {
-  if (key === "streams") {
-    formData.append("streams", JSON.stringify(value)); 
-  } else if (value !== null && value !== "") {
-    formData.append(key, value);
-  }
-});
+    Object.entries(EmployeeData).forEach(([key, value]) => {
+      if (key === "streams") {
+        formData.append("streams", JSON.stringify(value)); 
+      } else if (value !== null && value !== "") {
+        formData.append(key, value);
+      }
+    });
 
     try {
       const response = await axios.post(`${apiBaseUrl}/admin/employees/add/`, formData, {
@@ -234,36 +256,36 @@ Object.entries(EmployeeData).forEach(([key, value]) => {
               {/* Left Column */}
               <div className="space-y-6">
                 {/* Name */}
-                <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Name</label>
-                  <div className="col-span-2">
-                    <input
-                      type="text"
-                      placeholder="Enter name"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      value={EmployeeData.employee_name}
-                      required
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^[A-Za-z\s]*$/.test(value)) {
-                          setEmployeeData({
-                            ...EmployeeData,
-                            employee_name: value,
-                          });
-                          setErrors({ ...errors, employee_name: "" });
-                        } else {
-                          setErrors({
-                            ...errors,
-                            employee_name: "Name should only contain alphabets and spaces",
-                          });
-                        }
-                      }}
-                    />
-                    {errors.employee_name && (
-                      <p className="text-red-500 text-xs mt-1">{errors.employee_name}</p>
-                    )}
-                  </div>
-                </div>
+             <div className="grid grid-cols-3 items-center gap-3" style={{ marginTop: '4px' }}>
+  <label className="text-sm font-medium text-gray-700">Name</label>
+  <div className="col-span-2">
+    <input
+      type="text"
+      placeholder="Enter name"
+      className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+      value={EmployeeData.employee_name}
+      required
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^[A-Za-z\s]*$/.test(value)) {
+          setEmployeeData({
+            ...EmployeeData,
+            employee_name: value,
+          });
+          setErrors({ ...errors, employee_name: "" });
+        } else {
+          setErrors({
+            ...errors,
+            employee_name: "Name should only contain alphabets and spaces",
+          });
+        }
+      }}
+    />
+    {errors.employee_name && (
+      <p className="text-red-500 text-xs mt-1">{errors.employee_name}</p>
+    )}
+  </div>
+</div>
 
                 {/* Email */}
                 <div className="grid grid-cols-3 items-center gap-3">
@@ -377,7 +399,7 @@ Object.entries(EmployeeData).forEach(([key, value]) => {
               <div className="space-y-6">
                 {/* Profile Image */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Profile Image</label>
+                  <label className="text-sm font-medium text-gray-7site00">Profile Image</label>
                   <input
                     type="file"
                     accept="image/*"
@@ -457,13 +479,34 @@ Object.entries(EmployeeData).forEach(([key, value]) => {
                   </div>
                 </div>
 
+                {/* Location */}
+                <div className="grid grid-cols-3 items-center gap-3">
+                  <label className="text-sm font-medium text-gray-700">Location</label>
+                  <select
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
+                    value={EmployeeData.location}
+                    onChange={(e) =>
+                      setEmployeeData({ ...EmployeeData, location: e.target.value })
+                    }
+                  >
+                    <option value="" disabled>
+                      Select Location
+                    </option>
+                    {LocationList.map((location) => (
+                      <option key={location.id} value={location.id}>
+                        {location.location_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* Department */}
                 <div className="grid grid-cols-3 items-center gap-3">
                   <label className="text-sm font-medium text-gray-700">Department</label>
                   <select
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
-                    value={EmployeeData.department}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2 "                    value={EmployeeData.department}
                     onChange={(e) =>
                       setEmployeeData({
                         ...EmployeeData,
