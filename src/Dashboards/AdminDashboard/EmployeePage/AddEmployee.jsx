@@ -183,65 +183,70 @@ const AddEmployee = ({
       return { ...prev, streams: newStreams };
     });
   };
+const HandleAddEmployee = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) {
+    return;
+  }
 
-  const HandleAddEmployee = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      return;
+  setIsSubmitting(true);
+
+  const formData = new FormData();
+
+  Object.entries(EmployeeData).forEach(([key, value]) => {
+    if (key === "streams") {
+      formData.append("streams", JSON.stringify(value)); 
+    } else if (value !== null && value !== "") {
+      formData.append(key, value);
     }
+  });
 
-    setIsSubmitting(true);
-
-    const formData = new FormData();
-
-    Object.entries(EmployeeData).forEach(([key, value]) => {
-      if (key === "streams") {
-        formData.append("streams", JSON.stringify(value)); 
-      } else if (value !== null && value !== "") {
-        formData.append(key, value);
-      }
+  try {
+    const response = await axios.post(`${apiBaseUrl}/admin/employees/add/`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
 
-    try {
-      const response = await axios.post(`${apiBaseUrl}/admin/employees/add/`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (response.status >= 200 && response.status < 300) {
-        if (response.data.message?.includes("Hr")) {
-          console.warn("API response contains 'Hr' instead of 'Employee':", response.data);
-        }
-        toast.success("Employee added successfully!");
-        resetForm();
-        if (typeof fetchEmployeeList === "function") {
-          fetchEmployeeList();
-        } else {
-          console.warn("fetchEmployeeList is not a function");
-        }
-        setOpen(false);
+    if (response.status >= 200 && response.status < 300) {
+      toast.success("Employee added successfully!");
+      resetForm();
+      if (typeof fetchEmployeeList === "function") {
+        fetchEmployeeList();
       } else {
-        throw new Error("Unexpected response status");
+        console.warn("fetchEmployeeList is not a function");
       }
-    } catch (error) {
-      console.error("Error adding employee:", error);
-      const errData = error.response?.data;
-
-      if (errData?.email) {
-        toast.error(Array.isArray(errData.email) ? errData.email[0] : errData.email);
-      } else if (errData?.errors) {
-        toast.error(Array.isArray(errData.errors) ? errData.errors[0] : errData.errors);
-      } else if (errData?.message && !errData.message.includes("successfully")) {
-        toast.error(errData.message);
-      } else {
-        toast.error(error.message || "Failed to add employee");
-      }
-    } finally {
-      setIsSubmitting(false);
+      setOpen(false);
+    } else {
+      throw new Error("Unexpected response status");
     }
-  };
+  } catch (error) {
+    console.error("Error adding employee:", error);
+    const errData = error.response?.data;
 
+    if (errData) {
+      // Check for specific error fields and display the first error message
+      const errorMessages = [];
+      if (errData.username) errorMessages.push(Array.isArray(errData.username) ? errData.username[0] : errData.username);
+      if (errData.email) errorMessages.push(Array.isArray(errData.email) ? errData.email[0] : errData.email);
+      if (errData.password || errData.plain_password) errorMessages.push(Array.isArray(errData.password || errData.plain_password) ? (errData.password || errData.plain_password)[0] : (errData.password || errData.plain_password));
+      if (errData.streams) errorMessages.push(Array.isArray(errData.streams) ? errData.streams[0] : errData.streams);
+      if (errData.location) errorMessages.push(Array.isArray(errData.location) ? errData.location[0] : errData.location);
+      if (errData.message && !errData.message.includes("successfully")) errorMessages.push(errData.message);
+      if (errData.non_field_errors) errorMessages.push(Array.isArray(errData.non_field_errors) ? errData.non_field_errors[0] : errData.non_field_errors);
+
+      if (errorMessages.length > 0) {
+        toast.error(errorMessages[0]); // Display the first specific error
+      } else {
+        toast.error("Failed to add employee"); // Generic fallback
+      }
+    } else {
+      toast.error(error.message || "Failed to add employee"); // Handle network errors
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[5000px] bg-white rounded-lg shadow-lg">
