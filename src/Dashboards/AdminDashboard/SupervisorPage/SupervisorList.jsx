@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import axios from "axios";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -50,23 +51,44 @@ const SkeletonLoading = () => {
 };
 
 const fetchSupervisorList = async () => {
-  const { data } = await axios.get(`${apiBaseUrl}/api/supervisor_list/`);
-  return data || [];
+  try {
+    const { data } = await axios.get(`${apiBaseUrl}/api/supervisor_list/`);
+    // Ensure data is an array; fallback to empty array if not
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Error fetching supervisor list:", error);
+    return []; // Return empty array on error
+  }
 };
 
 const fetchDepartmentList = async () => {
-  const { data } = await axios.get(`${apiBaseUrl}/admin/overall-departments/`);
-  return data || [];
+  try {
+    const { data } = await axios.get(`${apiBaseUrl}/admin/overall-departments/`);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Error fetching department list:", error);
+    return [];
+  }
 };
 
 const fetchShiftList = async () => {
-  const { data } = await axios.get(`${apiBaseUrl}/admin/show-shift/`);
-  return data || [];
+  try {
+    const { data } = await axios.get(`${apiBaseUrl}/admin/show-shift/`);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Error fetching shift list:", error);
+    return [];
+  }
 };
 
 const fetchLocationList = async () => {
-  const { data } = await axios.get(`${apiBaseUrl}/admin/overall-location/`);
-  return data || [];
+  try {
+    const { data } = await axios.get(`${apiBaseUrl}/admin/overall-location/`);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Error fetching location list:", error);
+    return [];
+  }
 };
 
 const SupervisorList = () => {
@@ -111,7 +133,9 @@ const SupervisorList = () => {
   });
 
   const filteredData = useMemo(() => {
-    let filtered = [...supervisorList];
+    // Ensure supervisorList is an array before spreading
+    const safeSupervisorList = Array.isArray(supervisorList) ? supervisorList : [];
+    let filtered = [...safeSupervisorList];
     if (searchTerm) {
       filtered = filtered.filter(
         (supervisor) =>
@@ -133,10 +157,11 @@ const SupervisorList = () => {
   }, [searchTerm, sortConfig, supervisorList]);
 
   const calculateSummaryStats = () => {
-    const totalSupervisors = supervisorList.length;
-    const maleSupervisors = supervisorList.filter((s) => s.gender === "Male").length;
-    const femaleSupervisors = supervisorList.filter((s) => s.gender === "Female").length;
-    const departmentsCovered = new Set(supervisorList.map((s) => s.department)).size;
+    const safeSupervisorList = Array.isArray(supervisorList) ? supervisorList : [];
+    const totalSupervisors = safeSupervisorList.length;
+    const maleSupervisors = safeSupervisorList.filter((s) => s.gender === "Male").length;
+    const femaleSupervisors = safeSupervisorList.filter((s) => s.gender === "Female").length;
+    const departmentsCovered = new Set(safeSupervisorList.map((s) => s.department)).size;
     return { totalSupervisors, maleSupervisors, femaleSupervisors, departmentsCovered };
   };
 
@@ -502,3 +527,6 @@ const SupervisorList = () => {
 };
 
 export default SupervisorList;
+
+
+

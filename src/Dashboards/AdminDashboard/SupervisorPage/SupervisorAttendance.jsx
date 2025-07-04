@@ -46,8 +46,9 @@ const SkeletonLoading = () => {
 
 const fetchSupervisors = async () => {
   const { data } = await axios.get(`${apiBaseUrl}/api/supervisor_list/`);
-  return data || [];
+  return Array.isArray(data.supervisors) ? data.supervisors : [];
 };
+
 
 const fetchAttendanceRecords = async (supervisorId) => {
   if (!supervisorId) return [];

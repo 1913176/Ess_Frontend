@@ -16,14 +16,35 @@ const SupervisorChart = () => {
     categories: [],
   });
 
-  useEffect(() => {
-    axios
-      .get(`${apiBaseUrl}/api/supervisor_list/`)
-      .then((response) => {
-        setSupervisors(response.data);
-      })
-      .catch((error) => console.error("Error fetching supervisors:", error));
-  }, []);
+ useEffect(() => {
+  axios
+    .get(`${apiBaseUrl}/api/supervisor_list/`)
+    .then((response) => {
+      let supList = [];
+
+      if (Array.isArray(response.data)) {
+        supList = response.data;
+      } else if (response.data && Array.isArray(response.data.supervisors)) {
+        supList = response.data.supervisors;
+      } else {
+        supList = [];
+      }
+
+      setSupervisors(supList);
+
+      if (supList.length > 0) {
+        setSelectedSupervisor(supList[0].supervisor_id);
+      } else {
+        setSelectedSupervisor("");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching supervisors:", error);
+      setSupervisors([]);
+      setSelectedSupervisor("");
+    });
+}, []);
+
 
   useEffect(() => {
     if (selectedSupervisor) {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -49,31 +50,39 @@ const SupervisorLateLoginReason = () => {
 
   const handleApprove = async (reasonId) => {
     try {
-      await axios.post(
+      const response = await axios.post(
         `${apiBaseUrl}/approve_late_login_reason/${reasonId}/`,
         {},
         { withCredentials: true }
       );
-      toast.success("Reason approved successfully. Associated leave marked as rejected.");
+      toast.success(response.data.message || "Reason approved successfully. Associated leave marked as rejected.");
       fetchLateLoginReasons();
     } catch (error) {
       console.error("Error approving reason:", error);
-      toast.error(error.response?.data?.error || "Failed to approve reason.");
+      const errorMessage = error.response?.data?.error || "Failed to approve reason.";
+      toast.error(errorMessage);
     }
   };
 
   const handleReject = async (reasonId) => {
+    // Add confirmation dialog to inform user about potential leave balance deduction
+    if (!window.confirm("Rejecting this reason will keep the leave approved and may deduct from the supervisor's leave balance. Continue?")) {
+      return;
+    }
+
     try {
-      await axios.post(
+      const response = await axios.post(
         `${apiBaseUrl}/reject_late_login_reason/${reasonId}/`,
         {},
         { withCredentials: true }
       );
-      toast.success("Reason rejected successfully. Associated leave marked as approved.");
+      toast.success(response.data.message || "Reason rejected successfully. Associated leave remains approved.");
       fetchLateLoginReasons();
     } catch (error) {
       console.error("Error rejecting reason:", error);
-      toast.error(error.response?.data?.error || "Failed to reject reason.");
+      const errorMessage = error.response?.data?.error || "Failed to reject reason.";
+      toast.error(errorMessage);
+      // Do not refresh data on error to prevent showing incorrect state
     }
   };
 
@@ -155,6 +164,7 @@ const SupervisorLateLoginReason = () => {
                     >
                       Reject
                     </Button>
+                  
                   </TableCell>
                 </TableRow>
               ))
@@ -173,3 +183,4 @@ const SupervisorLateLoginReason = () => {
 };
 
 export default SupervisorLateLoginReason;
+
