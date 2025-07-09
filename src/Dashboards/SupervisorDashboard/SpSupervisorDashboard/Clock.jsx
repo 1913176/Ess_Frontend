@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { ArrowRight } from "lucide-react";
+import { Sun, Calendar, LogIn, LogOut } from "lucide-react";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
 axios.defaults.withCredentials = true;
 
 const Clock = () => {
   const [currentTime, setCurrentTime] = useState("");
+  const [currentDate, setCurrentDate] = useState("");
   const userInfo = JSON.parse(localStorage.getItem("userdata"));
   const [attendance, setAttendance] = useState({
     firstInTime: "--:--",
@@ -20,18 +21,29 @@ const Clock = () => {
   const [shift, setShift] = useState(null);
   const [location, setLocation] = useState(null);
 
-  // Update current time every second
+  // Update current time and date every second
   useEffect(() => {
-    const timer = setInterval(() => {
+    const updateTime = () => {
       const now = new Date();
       setCurrentTime(
-        `${now.toLocaleTimeString()} - ${now.toLocaleDateString("en-US", {
-          day: "2-digit",
-          month: "short",
-        })}`
+        now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        })
       );
-    }, 1000);
+      setCurrentDate(
+        now.toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      );
+    };
 
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -56,12 +68,12 @@ const Clock = () => {
         if (response.data.on_leave) {
           setMessage({
             type: "error",
-            text: "You are on leave today. Check-in is not allowed.",
+            text: "You are on leave today. Punch-in is not allowed.",
           });
         } else if (response.data.already_checked_out) {
           setMessage({
             type: "error",
-            text: "You have already checked out for today.",
+            text: "You have already punched out for today.",
           });
         } else {
           setMessage({ type: "", text: "" });
@@ -77,34 +89,42 @@ const Clock = () => {
       }
     };
 
-    fetchStatus();
-  }, [userInfo.supervisor_id]);
+    if (userInfo?.supervisor_id) {
+      fetchStatus();
+    } else {
+      setMessage({ type: "error", text: "User information not found." });
+      setIsLoading(false);
+      setInitialLoad(false);
+    }
+  }, [userInfo?.supervisor_id]);
 
+  // Adjust message reactively
   useEffect(() => {
     if (initialLoad) return;
 
     if (onLeave) {
       setMessage({
         type: "error",
-        text: "You are on leave today. Check-in is not allowed.",
+        text: "You are on leave today. Punch-in is not allowed.",
       });
     } else if (alreadyCheckedOut) {
       setMessage({
         type: "error",
-        text: "You have already checked out for today.",
+        text: "You have already punched out for today.",
       });
     } else {
       setMessage({ type: "", text: "" });
     }
   }, [onLeave, alreadyCheckedOut, initialLoad]);
 
+  // Handle punch in/out
   const handleClockInOut = async () => {
     if (isLoading) return;
 
     if (onLeave) {
       setMessage({
         type: "error",
-        text: "You are on leave today. Check-in is not allowed.",
+        text: "You are on leave today. Punch-in is not allowed.",
       });
       return;
     }
@@ -112,7 +132,7 @@ const Clock = () => {
     if (alreadyCheckedOut) {
       setMessage({
         type: "error",
-        text: "You have already checked out for today.",
+        text: "You have already punched out for today.",
       });
       return;
     }
@@ -127,7 +147,6 @@ const Clock = () => {
 
     try {
       const operation = attendance.firstInTime === "--:--" ? "check_in" : "check_out";
-
       const payload = {
         user_id: userInfo.supervisor_id,
         operation,
@@ -136,29 +155,22 @@ const Clock = () => {
         notes: "Attendance via dashboard clock",
       };
 
-      const response = await axios.post(
-        `${apiBaseUrl}/supervisor/submit-attendance/`,
-        payload
-      );
-
+      const response = await axios.post(`${apiBaseUrl}/supervisor/submit-attendance/`, payload);
       const now = new Date();
-      const time = now.toLocaleTimeString();
+      const time = now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).replace(/^0/, "");
 
       if (operation === "check_in") {
-  setAttendance((prev) => ({
-    ...prev,
-    firstInTime: time,
-  }));
-  setMessage({ type: "success", text: "Checked in successfully." });
-} else {
-  setAttendance((prev) => ({
-    ...prev,
-    lastOutTime: time,
-  }));
-  setMessage({ type: "success", text: "Checked out successfully." });
-  setAlreadyCheckedOut(true);
-}
-
+        setAttendance((prev) => ({ ...prev, firstInTime: time }));
+        setMessage({ type: "success", text: "Punched in successfully." });
+      } else {
+        setAttendance((prev) => ({ ...prev, lastOutTime: time }));
+        setMessage({ type: "success", text: "Punched out successfully." });
+        setAlreadyCheckedOut(true);
+      }
     } catch (error) {
       const errorMsg = error.response?.data?.error || "Failed to submit attendance.";
       setMessage({ type: "error", text: errorMsg });
@@ -173,50 +185,68 @@ const Clock = () => {
   };
 
   return (
-    <div className="bg-white lg:w-[450px] shadow-md p-4 sm:flex flex-col w-full">
-      <div className="flex flex-col gap-5">
-        <div className="flex justify-between gap-5 text-xl text-black">
-          <p className="font-semibold text-base">Clock IN/Out</p>
-          <p className="font-semibold text-sm">{currentTime}</p>
+    <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-md">
+      {/* Header Section with Time and Message */}
+      <div className="flex flex-col items-center mb-8">
+        <div className="flex items-center gap-2 mb-3">
+          <Sun className="text-blue-600 w-7 h-7" />
+          <span className="text-4xl font-bold text-black">{currentTime}</span>
+        </div>
+        {message.text && (
+          <p className={`text-sm ${message.type === "success" ? "text-green-500" : "text-red-500"}`}>
+            {message.text}
+          </p>
+        )}
+      </div>
+
+      {/* Date Section */}
+      <div className="flex items-center justify-center gap-2 mb-8 text-gray-600">
+        <Calendar className="w-5 h-5" />
+        <span className="text-lg">
+          Today: {currentDate.replace(/(\d+)(?:st|nd|rd|th)/, "$1th")}
+        </span>
+      </div>
+
+      {/* Punch In/Out Section */}
+      <div className="flex gap-4">
+        {/* Punch In Box */}
+        <div className="flex-1 flex flex-col items-center p-4 bg-green-100 rounded-lg">
+          <div
+            className={`flex items-center gap-2 ${
+              onLeave || isLoading || !shift?.id || !location
+                ? "cursor-not-allowed opacity-50"
+                : "cursor-pointer"
+            }`}
+            onClick={
+              !onLeave && !isLoading && shift?.id && location && attendance.firstInTime === "--:--"
+                ? handleClockInOut
+                : undefined
+            }
+          >
+            <LogIn className="text-gray-700 w-5 h-5" />
+            <span className="text-gray-700 font-medium text-lg">Punch In</span>
+          </div>
+          <span className="text-xl font-bold text-gray-800 mt-2">{attendance.firstInTime}</span>
         </div>
 
-        {message.text && (
+        {/* Punch Out Box */}
+        <div className="flex-1 flex flex-col items-center p-4 bg-red-100 rounded-lg">
           <div
-            className={`text-center ${
-              message.type === "success" ? "text-green-500" : "text-red-500"
+            className={`flex items-center gap-2 ${
+              alreadyCheckedOut || onLeave || isLoading || !shift?.id || !location || attendance.firstInTime === "--:--"
+                ? "cursor-not-allowed opacity-50"
+                : "cursor-pointer"
             }`}
+            onClick={
+              !alreadyCheckedOut && !onLeave && !isLoading && shift?.id && location && attendance.firstInTime !== "--:--"
+                ? handleClockInOut
+                : undefined
+            }
           >
-            {message.text}
+            <LogOut className="text-gray-700 w-5 h-5" />
+            <span className="text-gray-700 font-medium text-lg">Punch Out</span>
           </div>
-        )}
-
-        <div className="flex flex-col gap-5">
-          <span className="bg-gray-200 p-2 font-normal text-base">
-            First in: {attendance.firstInTime}
-          </span>
-          <span className="bg-gray-200 p-2 font-normal text-base">
-            Last Out: {attendance.lastOutTime}
-          </span>
-
-          <span
-            className={`flex items-center p-2 gap-3 ${
-              alreadyCheckedOut || onLeave
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-800 cursor-pointer"
-            }`}
-            onClick={!alreadyCheckedOut && !onLeave ? handleClockInOut : undefined}
-          >
-            <ArrowRight />
-            <p className="font-semibold text-base text-white">
-              {alreadyCheckedOut
-                ? "Checked Out"
-                : onLeave
-                ? "On Leave"
-                : attendance.firstInTime === "--:--"
-                ? "Clock In"
-                : "Clock Out"}
-            </p>
-          </span>
+          <span className="text-xl font-bold text-gray-800 mt-2">{attendance.lastOutTime}</span>
         </div>
       </div>
     </div>
@@ -224,3 +254,4 @@ const Clock = () => {
 };
 
 export default Clock;
+

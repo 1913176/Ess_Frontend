@@ -1,238 +1,282 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
-import { SelectValue } from "@radix-ui/react-select";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Sun, Calendar, LogIn, LogOut } from "lucide-react";
 
-const userInfo = JSON.parse(localStorage.getItem("userdata"));
 const apiBaseUrl = process.env.VITE_BASE_API;
+axios.defaults.withCredentials = true;
 
 const Attendance = () => {
-  const [shift, setShift] = useState("");
-  const [location, setLocation] = useState("");
-  const [notes, setNotes] = useState("");
-  const [shifts, setShifts] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [thankYouMessage, setThankYouMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [currentTime, setCurrentTime] = useState("");
+  const [currentDate, setCurrentDate] = useState("");
+  const userInfo = JSON.parse(localStorage.getItem("userdata"));
+  const [attendance, setAttendance] = useState({
+    firstInTime: "--:--",
+    lastOutTime: "--:--",
+  });
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [alreadyCheckedOut, setAlreadyCheckedOut] = useState(false);
+  const [onLeave, setOnLeave] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [shift, setShift] = useState(null);
+  const [location, setLocation] = useState(null);
 
+  // Update current time and date every second
   useEffect(() => {
-    const fetchAttendanceData = async () => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(
+        now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        })
+      );
+      setCurrentDate(
+        now.toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      );
+    };
+
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Fetch attendance status and shift/location info
+  useEffect(() => {
+    const fetchStatus = async () => {
       try {
         const response = await axios.post(
-          `${apiBaseUrl}/hr/attendance/form/${userInfo.hr_id}/`,
+          `${apiBaseUrl}/hr/attendance/form/${userInfo.hr_id}/`
         );
+        setAlreadyCheckedOut(response.data.already_checked_out || false);
+        setOnLeave(false); 
+        setShift(response.data.shift || null);
+        setLocation(response.data.locations?.[0]?.location_name || null);
 
-        setShifts([response.data.shift || []]);
-        setLocations(response.data.locations || []);
-        setShowCheckout(response.data.show_checkout || false);
-        setThankYouMessage(
-          response.data.thank_you_message || response.data.message || "",
-        );
+        setAttendance({
+          firstInTime: response.data.first_in_time || "--:--",
+          lastOutTime: response.data.last_out_time || "--:--",
+        });
+
+        //------- when login after the shift time it will automatically show leave instead of showing it while clicking the punch in button ---------
+        //  if (response.data.on_leave) {
+        //    setMessage({
+        //      type: "error",
+        //      text: "You are on leave today. Punch-in is not allowed.",
+        //    });
+        //  } else if (response.data.already_checked_out) {
+        //    setMessage({
+        //      type: "error",
+        //      text: "You have already punched out for today.",
+        //    });
+        // } else {
+        //    setMessage({ type: "", text: "" });
+        //  }
+        if (response.data.already_checked_out) {
+          setMessage({
+            type: "error",
+            text: "You have already punched out for today.",
+          });
+        } else {
+          setMessage({ type: "", text: "" });
+        }
+
+        setIsLoading(false);
+        setInitialLoad(false);
       } catch (error) {
-        console.error("Error fetching attendance form data:", error);
-        setErrorMessage("Failed to load attendance form data.");
+        setMessage({ type: "error", text: "Failed to fetch attendance status." });
+        setIsLoading(false);
+        setInitialLoad(false);
       }
     };
 
-    fetchAttendanceData();
-  }, []);
+    if (userInfo?.hr_id) {
+      fetchStatus();
+    } else {
+      setMessage({ type: "error", text: "User information not found." });
+      setIsLoading(false);
+      setInitialLoad(false);
+    }
+  }, [userInfo?.hr_id]);
 
-  // Function to validate Notes field (only allows letters, numbers, and spaces)
-  const handleNotesChange = (e) => {
-    const value = e.target.value;
-    const validPattern = /^[A-Za-z0-9\s]*$/; // Allows only letters, numbers, and spaces
+  //------- when login after the shift time it will automatically show leave instead of showing it while clicking the punch in button ---------
+  // Adjust message reactively
+  // useEffect(() => {
+  //  if (initialLoad) return;
+  //
+  //  if (onLeave) {
+  //   setMessage({
+  //     type: "error",
+  //    text: "You are on leave today. Punch-in is not allowed.",
+  //   });
+  // } else if (alreadyCheckedOut) {
+  //   setMessage({
+  //     type: "error",
+  //    text: "You have already punched out for today.",
+  //   });
+  // } else {
+  //    setMessage({ type: "", text: "" });
+  //  }
+  //}, [onLeave, alreadyCheckedOut, initialLoad]);
 
-    if (!validPattern.test(value)) {
-      alert("Notes should only contain letters, numbers, and spaces.");
+  useEffect(() => {
+    if (initialLoad) return;
+    if (alreadyCheckedOut) {
+      setMessage({
+        type: "error",
+        text: "You have already punched out for today.",
+      });
+    } else {
+      setMessage({ type: "", text: "" });
+    }
+  }, [alreadyCheckedOut, initialLoad]);
+
+  // Handle clock in/out
+  const handleClockInOut = async () => {
+    if (isLoading) return;
+
+    try {
+      const response = await axios.post(
+        `${apiBaseUrl}/hr/attendance/form/${userInfo.hr_id}/`
+      );
+      if (response.data.on_leave) {
+        setMessage({
+          type: "error",
+          text: "You are on leave today. Punch-in is not allowed.",
+        });
+        setOnLeave(true); // Update onLeave to reflect API state
+        return;
+      }
+    } catch (error) {
+    }
+
+    if (alreadyCheckedOut) {
+      setMessage({
+        type: "error",
+        text: "You have already punched out for today.",
+      });
       return;
     }
 
-    setNotes(value);
-  };
+    if (!shift?.id || !location) {
+      setMessage({
+        type: "error",
+        text: "Shift or Location not found. Try again.",
+      });
+      return;
+    }
 
-  const handleSubmit = async (operation) => {
     try {
+      const operation = attendance.firstInTime === "--:--" ? "check_in" : "check_out";
       const payload = {
         user_id: userInfo.hr_id,
         operation,
-        shift: shift,
+        shift: shift.id,
         location: location,
-        notes: notes,
+        notes: "Attendance via dashboard clock",
       };
 
-      const response = await axios.post(
-        `${apiBaseUrl}/hr/submit-attendance/`,
-        payload,
-      );
+      const response = await axios.post(`${apiBaseUrl}/hr/submit-attendance/`, payload);
+      const now = new Date();
+      const time = now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).replace(/^0/, "");
 
       if (operation === "check_in") {
-        setSuccessMessage("Checked in successfully.");
-        setErrorMessage("");
-        setShowCheckout(true);
-      } else if (operation === "check_out") {
-        setSuccessMessage("Checked out successfully.");
-        setErrorMessage("");
-        setShowCheckout(false);
+        setAttendance((prev) => ({ ...prev, firstInTime: time }));
+        setMessage({ type: "success", text: "Punched in successfully." });
+      } else {
+        setAttendance((prev) => ({ ...prev, lastOutTime: time }));
+        setMessage({ type: "success", text: "Punched out successfully." });
+        setAlreadyCheckedOut(true);
       }
-
-      setThankYouMessage(response.data.message || "");
     } catch (error) {
-      console.error("Error submitting attendance:", error);
-      setErrorMessage(error.response?.data?.error || "Submission failed.");
-      setSuccessMessage("");
+      const errorMsg = error.response?.data?.error || "Failed to submit attendance.";
+      setMessage({ type: "error", text: errorMsg });
+
+      if (errorMsg.toLowerCase().includes("already checked out")) {
+        setAlreadyCheckedOut(true);
+      }
+      if (errorMsg.toLowerCase().includes("leave")) {
+        setOnLeave(true);
+      }
     }
   };
 
   return (
-    <>
-      {/* <div className="bg-white shadow-md p-4 h-full rounded-lg">
-      <h2 className="text-lg font-bold mb-4">Attendance Form</h2>
-
-      <>
-        <div className="mb-4">
-          <label className="block mb-2">Assigned Shift:</label>
-          <select
-            value={shift}
-            onChange={(e) => setShift(e.target.value)}
-            className="border border-gray-300 rounded-md p-2 w-full"
-            >
-            <option value="">Select Shift</option>
-            {shifts.map((s) => (
-              <option key={s.shift_number} value={s.id}>
-                {s.shift_name} ({s.shift_start_time} - {s.shift_end_time})
-              </option>
-            ))}
-          </select>
+    <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-md">
+      {/* Header Section with Time and Message */}
+      <div className="flex flex-col items-center mb-8">
+        <div className="flex items-center gap-2 mb-3">
+          <Sun className="text-blue-600 w-7 h-7" />
+          <span className="text-4xl font-bold text-black">{currentTime}</span>
         </div>
-
-        <div className="mb-4">
-          <label className="block mb-2">Location:</label>
-          <select
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="border border-gray-300 rounded-md p-2 w-full"
-            >
-            <option value="">Select Location</option>
-            {locations.map((loc) => (
-              <option key={loc.location_id} value={loc.location_name}>
-                {loc.location_name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block mb-2">Notes:</label>
-          <textarea
-            value={notes}
-            onChange={handleNotesChange}
-            className="border border-gray-300 rounded-md p-2 w-full"
-            rows="3"
-            />
-        </div>
-
-        {!showCheckout ? (
-          <button
-          onClick={() => handleSubmit("check_in")}
-          className="bg-blue-500 text-white py-2 px-4 rounded-md w-full"
-          >
-            Check In
-          </button>
-        ) : (
-          <button
-          onClick={() => handleSubmit("check_out")}
-          className="bg-red-500 text-white py-2 px-4 rounded-md w-full"
-          >
-            Check Out
-          </button>
+        {message.text && (
+          <p className={`text-sm ${message.type === "success" ? "text-green-500" : "text-red-500"}`}>
+            {message.text}
+          </p>
         )}
+      </div>
 
-        {thankYouMessage && (
-          <p className="text-green-600 mt-4">{thankYouMessage}</p>
-        )}
-        {errorMessage && <p className="text-red-600 mt-4">{errorMessage}</p>}
-      </>
-    </div> */}
+      {/* Date Section */}
+      <div className="flex items-center justify-center gap-2 mb-8 text-gray-600">
+        <Calendar className="w-5 h-5" />
+        <span className="text-lg">
+          Today: {currentDate.replace(/(\d+)(?:st|nd|rd|th)/, "$1th")}
+        </span>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Attendance</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Select
-            placeholder="Select Shift"
-            value={shift}
-            onValueChange={(e) => setShift(e)}
+      {/* Punch In/Out Section */}
+      <div className="flex gap-4">
+        {/* Punch In Box */}
+        <div className="flex-1 flex flex-col items-center p-4 bg-green-100 rounded-lg">
+          <div
+            className={`flex items-center gap-2 ${
+              onLeave || isLoading || !shift?.id || !location
+                ? "cursor-not-allowed opacity-50"
+                : "cursor-pointer"
+            }`}
+            onClick={
+              !onLeave && !isLoading && shift?.id && location && attendance.firstInTime === "--:--"
+                ? handleClockInOut
+                : undefined
+            }
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a Shift" />
-            </SelectTrigger>
-            <SelectContent>
-              {/* <SelectItem value="qwe">i</SelectItem> */}
-              {shifts.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.shift_name} ({s.shift_start_time} - {s.shift_end_time})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            placeholder="Select Location"
-            value={location}
-            onValueChange={(e) => setLocation(e)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a location" />
-            </SelectTrigger>
-            <SelectContent>
-              {/* <SelectItem value="qwe">i</SelectItem> */}
-              {locations.map((loc) => (
-                <SelectItem key={loc.location_id} value={loc.location_name}>
-                  {loc.location_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Textarea
-            value={notes}
-            onChange={handleNotesChange}
-            placeholder="Write notes"
-          />
-          {!showCheckout ? (
-            <Button
-              onClick={() => handleSubmit("check_in")}
-              className="bg-blue-500 text-white py-2 px-4 rounded-md w-full"
-            >
-              Check In
-            </Button>
-          ) : (
-            <Button
-              onClick={() => handleSubmit("check_out")}
-              className="bg-red-500 text-white py-2 px-4 rounded-md w-full"
-            >
-              Check Out
-            </Button>
-          )}
+            <LogIn className="text-gray-700 w-5 h-5" />
+            <span className="text-gray-700 font-medium text-lg">Punch In</span>
+          </div>
+          <span className="text-xl font-bold text-gray-800 mt-2">{attendance.firstInTime}</span>
+        </div>
 
-          {/* {thankYouMessage && (
-            <p className="text-green-600 mt-4">{thankYouMessage}</p>
-          )} */}
-          {/* {errorMessage && <p className="text-red-600 mt-4">{errorMessage}</p>} */}
-        </CardContent>
-      </Card>
-    </>
+        {/* Punch Out Box */}
+        <div className="flex-1 flex flex-col items-center p-4 bg-red-100 rounded-lg">
+          <div
+            className={`flex items-center gap-2 ${
+              alreadyCheckedOut || onLeave || isLoading || !shift?.id || !location || attendance.firstInTime === "--:--"
+                ? "cursor-not-allowed opacity-50"
+                : "cursor-pointer"
+            }`}
+            onClick={
+              !alreadyCheckedOut && !onLeave && !isLoading && shift?.id && location && attendance.firstInTime !== "--:--"
+                ? handleClockInOut
+                : undefined
+            }
+          >
+            <LogOut className="text-gray-700 w-5 h-5" />
+            <span className="text-gray-700 font-medium text-lg">Punch Out</span>
+          </div>
+          <span className="text-xl font-bold text-gray-800 mt-2">{attendance.lastOutTime}</span>
+        </div>
+      </div>
+    </div>
   );
 };
-
 export default Attendance;
