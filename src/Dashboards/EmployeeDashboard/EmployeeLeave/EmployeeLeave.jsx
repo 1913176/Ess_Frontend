@@ -1,7 +1,8 @@
 import { Plus, X } from "lucide-react";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import {
   Table,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/table";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
+axios.defaults.withCredentials = true;
 
 const StatusProgressBar = ({ status }) => {
   const isApproved = status.toLowerCase() === "approved";
@@ -66,7 +68,10 @@ const StatusProgressBar = ({ status }) => {
 const EmployeeLeave = () => {
   const [isOpenRequest, setIsOpenRequest] = useState(false);
   const [isOpenFilter, setIsOpenFilter] = useState(false);
+  const [isOpenReasonModal, setIsOpenReasonModal] = useState(false);
   const [selectedLeave, setSelectedLeave] = useState(null);
+  const [detailsLeave, setDetailsLeave] = useState(null);
+  const [reasonInput, setReasonInput] = useState("");
   const [leaveData, setLeaveData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
@@ -74,22 +79,77 @@ const EmployeeLeave = () => {
     endDate: "",
     status: "",
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const userdata = JSON.parse(localStorage.getItem("userdata") || "{}");
-  const employeeId = userdata.employee_id;
+  const userInfo = JSON.parse(localStorage.getItem("userdata") || "{}");
+  const employeeId = userInfo.employee_id;
 
-  const fetchLeaveData = async () => {
+  const fetchLeaveData = useCallback(async () => {
+    if (!employeeId) {
+      setError("User information is missing. Please log in again.");
+      setLoading(false);
+      navigate("/login");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
     try {
-      const response = await axios.get(`${apiBaseUrl}/leave-history-id/${employeeId}/`);
-      setLeaveData(response.data);
+      const response = await axios.get(
+        `${apiBaseUrl}/leave-history-id/${employeeId}/`,
+        { withCredentials: true }
+      );
+      const normalizedData = response.data.map((leave) => ({
+        ...leave,
+        status: leave.status.charAt(0).toUpperCase() + leave.status.slice(1),
+      }));
+      setLeaveData(normalizedData || []);
+      setError(null);
     } catch (error) {
       console.error("Error fetching leave data:", error);
+      const errorMessage =
+        error.response?.data?.error || "Failed to fetch leave data.";
+
+      if (errorMessage === "No LeaveRequest matches the given query.") {
+        setLeaveData([]);
+        setError(null);
+      } else {
+        setError(errorMessage);
+        toast.error(errorMessage);
+
+        if (error.response?.status === 401) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.removeItem("userdata");
+          navigate("/login");
+        }
+      }
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [employeeId, navigate]);
 
   useEffect(() => {
     fetchLeaveData();
-  }, [employeeId]);
+  }, [fetchLeaveData]);
+
+  const handleNewLeave = (updatedLeave) => {
+    setLeaveData((prevLeaveData) => {
+      const normalizedNewLeave = {
+        ...updatedLeave,
+        status: updatedLeave.status.charAt(0).toUpperCase() + updatedLeave.status.slice(1),
+      };
+      if (selectedLeave) {
+        return prevLeaveData.map((leave) =>
+          leave.id === updatedLeave.id ? normalizedNewLeave : leave
+        );
+      }
+      return [...prevLeaveData, normalizedNewLeave];
+    });
+    setSelectedLeave(null);
+    fetchLeaveData();
+  };
 
   const filteredData = leaveData.filter((leave) => {
     const isStartDateMatch =
@@ -108,24 +168,6 @@ const EmployeeLeave = () => {
 
     return isStartDateMatch && isEndDateMatch && isStatusMatch && isSearchMatch;
   });
-
-  const handleDelete = async (leaveId) => {
-    if (window.confirm("Are you sure you want to delete this leave request?")) {
-      try {
-        await axios.delete(`${apiBaseUrl}/leave/${leaveId}/`);
-        fetchLeaveData();
-        toast.success("Leave deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting leave:", error);
-        toast.error("Failed to delete leave.");
-      }
-    }
-  };
-
-  const handleEdit = (leave) => {
-    setSelectedLeave(leave);
-    setIsOpenRequest(true);
-  };
 
   return (
     <div className="p-4 sm:p-6 min-h-screen">
@@ -222,7 +264,9 @@ const EmployeeLeave = () => {
         </div>
 
         <div className="border rounded-lg overflow-x-auto">
-          {filteredData.length === 0 ? (
+          {loading ? (
+            <p className="text-center text-gray-500 my-4">Loading...</p>
+          ) : filteredData.length === 0 ? (
             <p className="text-center text-gray-500 my-4">No leave data available.</p>
           ) : (
             <Table className="min-w-full">
@@ -235,6 +279,7 @@ const EmployeeLeave = () => {
                   <TableHead className="whitespace-nowrap px-2 sm:px-4">Status</TableHead>
                   <TableHead className="whitespace-nowrap px-2 sm:px-4">Start Date</TableHead>
                   <TableHead className="whitespace-nowrap px-2 sm:px-4">End Date</TableHead>
+                  <TableHead className="whitespace-nowrap px-2 sm:px-4">Leave Type</TableHead>
                   <TableHead className="px-2 sm:px-4">Reason</TableHead>
                   <TableHead className="px-2 sm:px-4">Action</TableHead>
                 </TableRow>
@@ -251,6 +296,9 @@ const EmployeeLeave = () => {
                     </TableCell>
                     <TableCell className="whitespace-nowrap px-2 sm:px-4">{leave.start_date}</TableCell>
                     <TableCell className="whitespace-nowrap px-2 sm:px-4">{leave.end_date}</TableCell>
+                    <TableCell className="whitespace-nowrap px-2 sm:px-4">
+                      {leave.leave_type.charAt(0).toUpperCase() + leave.leave_type.slice(1) || "N/A"}
+                    </TableCell>
                     <TableCell className="px-2 sm:px-4 truncate max-w-[120px] sm:max-w-none">{leave.reason}</TableCell>
                     <TableCell className="px-2 sm:px-4">
                       <div className="flex gap-2">
@@ -258,7 +306,14 @@ const EmployeeLeave = () => {
                           variant="contained"
                           color="primary"
                           size="small"
-                          onClick={() => handleEdit(leave)}
+                          onClick={() => {
+                            if (leave.status !== "Pending") {
+                              toast.error("Only pending leave requests can be edited.");
+                              return;
+                            }
+                            setSelectedLeave(leave);
+                            setIsOpenRequest(true);
+                          }}
                         >
                           Edit
                         </Button>
@@ -266,10 +321,43 @@ const EmployeeLeave = () => {
                           variant="contained"
                           color="error"
                           size="small"
-                          onClick={() => handleDelete(leave.id)}
+                          onClick={() => {
+                            if (leave.status !== "Pending") {
+                              toast.error("Only pending leave requests can be deleted.");
+                              return;
+                            }
+                            if (window.confirm(`Are you sure you want to delete Leave ID ${leave.id}?`)) {
+                              axios.delete(`${apiBaseUrl}/delete_employee_leave/${leave.id}/`, {
+                                withCredentials: true,
+                              })
+                                .then(() => {
+                                  toast.success(`Leave ID ${leave.id} deleted successfully.`);
+                                  setLeaveData((prev) => prev.filter((l) => l.id !== leave.id));
+                                })
+                                .catch((error) => {
+                                  console.error("Error deleting leave:", error);
+                                  toast.error(
+                                    error.response?.data?.detail || "Failed to delete leave record."
+                                  );
+                                });
+                            }
+                          }}
                         >
                           Delete
                         </Button>
+                        {(leave.reason === "Auto Leave: Late or No Login" || leave.is_auto_leave) && (
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            onClick={() => {
+                              setDetailsLeave(leave);
+                              setIsOpenReasonModal(true);
+                            }}
+                          >
+                            Submit Reason
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -278,20 +366,29 @@ const EmployeeLeave = () => {
             </Table>
           )}
         </div>
-      </div>
 
-      {isOpenRequest && (
-        <RequestLeave
-          setIsOpenRequest={setIsOpenRequest}
-          fetchLeaveData={fetchLeaveData}
-          selectedLeave={selectedLeave}
-        />
-      )}
+        {isOpenRequest && (
+          <RequestLeave
+            setIsOpenRequest={setIsOpenRequest}
+            onNewLeave={handleNewLeave}
+            leave={selectedLeave}
+          />
+        )}
+
+        {isOpenReasonModal && (
+          <SubmitReasonModal
+            leave={detailsLeave}
+            setIsOpenReasonModal={setIsOpenReasonModal}
+            reasonInput={reasonInput}
+            setReasonInput={setReasonInput}
+            fetchLeaveData={fetchLeaveData}
+          />
+        )}
+      </div>
     </div>
   );
 };
 
-// Filter Component
 const FilterLeave = ({ filters, setFilters }) => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -344,148 +441,170 @@ const FilterLeave = ({ filters, setFilters }) => {
   );
 };
 
-// Request Leave Component
-const RequestLeave = ({ setIsOpenRequest, fetchLeaveData, selectedLeave }) => {
-  const userdata = useMemo(() => JSON.parse(localStorage.getItem("userdata")), []);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [leaveType, setLeaveType] = useState("");
-  const [leaveReason, setLeaveReason] = useState("");
-  const [leaveDocUpload, setLeaveDocUpload] = useState(null);
-  const [leaveBalance, setLeaveBalance] = useState(null);
-  const [leaveDaysRequested, setLeaveDaysRequested] = useState(0);
-  const [isBalanceInsufficient, setIsBalanceInsufficient] = useState(false);
-
-  const apiBaseUrl = process.env.VITE_BASE_API;
-  const todayDate = new Date().toISOString().split("T")[0];
-
-  useEffect(() => {
-    if (selectedLeave) {
-      setStartDate(selectedLeave.start_date);
-      setEndDate(selectedLeave.end_date);
-      setLeaveType(selectedLeave.leave_type);
-      setLeaveReason(selectedLeave.reason);
-    } else {
-      setStartDate("");
-      setEndDate("");
-      setLeaveType("");
-      setLeaveReason("");
-      setLeaveDocUpload(null);
-    }
-  }, [selectedLeave]);
-
-  const fetchLeaveBalance = async () => {
-    if (!userdata || !userdata.employee_id) {
-      toast.error("User data not found. Please log in again.");
+const SubmitReasonModal = ({ leave, setIsOpenReasonModal, reasonInput, setReasonInput, fetchLeaveData }) => {
+  const handleSubmitReason = async () => {
+    if (!reasonInput.trim()) {
+      toast.error("Please provide a valid reason.");
       return;
     }
 
     try {
-      const response = await axios.get(`${apiBaseUrl}/api/leave-balance/`, {
-        params: {
-          user_id: userdata.employee_id,
+      const response = await axios.post(
+        `${apiBaseUrl}/submit_employee_late_login_reason/`,
+        {
+          leave_id: leave.id,
+          reason: reasonInput.trim(),
         },
-      });
-      if (!response.data || typeof response.data.vacation_leave === "undefined") {
-        throw new Error("Invalid leave balance response: Missing required fields");
-      }
-      setLeaveBalance(response.data);
+        { withCredentials: true }
+      );
+      toast.success("Reason submitted successfully.");
+      setReasonInput("");
+      setIsOpenReasonModal(false);
+      fetchLeaveData();
     } catch (error) {
-      console.error("Error fetching leave balance:", error);
-      toast.error(error.message || "Failed to fetch leave balance.");
+      console.error("Error submitting reason:", error);
+      const errorMessage =
+        error.response?.data?.error || "Failed to submit reason.";
+      toast.error(errorMessage);
     }
   };
 
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg max-w-md w-full">
+        <h3 className="text-lg font-medium mb-4">Submit Reason for Late Login</h3>
+        <div className="mb-4">
+          <p>
+            <strong>Leave Date:</strong> {leave.start_date}
+          </p>
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Reason
+          </label>
+          <textarea
+            value={reasonInput}
+            onChange={(e) => setReasonInput(e.target.value)}
+            className="border rounded w-full p-2 text-sm"
+            rows="4"
+            placeholder="Enter your reason for the late login..."
+          />
+        </div>
+        <div className="flex gap-4">
+          <Button
+            variant="contained"
+            color="primary"
+            className="w-full"
+            onClick={handleSubmitReason}
+          >
+            Submit
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            className="w-full"
+            onClick={() => {
+              setReasonInput("");
+              setIsOpenReasonModal(false);
+            }}
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const RequestLeave = ({ setIsOpenRequest, onNewLeave, leave }) => {
+  const isEditMode = !!leave;
+  const [startDate, setStartDate] = useState(leave ? leave.start_date : "");
+  const [endDate, setEndDate] = useState(leave ? leave.end_date : "");
+  const [leaveType, setLeaveType] = useState(leave ? leave.leave_type : "");
+  const [leaveReason, setLeaveReason] = useState(leave ? leave.reason : "");
+  const [minDate, setMinDate] = useState("");
+
   useEffect(() => {
-    let isMounted = true;
-
-    if (isMounted) {
-      fetchLeaveBalance();
-    }
-
-    return () => {
-      isMounted = false;
-    };
-  }, [apiBaseUrl, userdata.employee_id]);
-
-  useEffect(() => {
-    if (startDate && endDate && leaveBalance && leaveType) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-      const sundays = Array.from({ length: totalDays }, (_, i) => {
-        const date = new Date(start);
-        date.setDate(start.getDate() + i);
-        return date.getDay() === 0 ? 1 : 0;
-      }).reduce((sum, day) => sum + day, 0);
-      const leaveDays = totalDays - sundays;
-      setLeaveDaysRequested(leaveDays);
-
-      const leaveTypeMap = {
-        medical: "medical_leave",
-        vacation: "vacation_leave",
-        personal: "personal_leave",
-      };
-      const leaveField = leaveTypeMap[leaveType];
-      const availableBalance = leaveBalance[leaveField] || 0;
-      setIsBalanceInsufficient(availableBalance < leaveDays);
-    } else {
-      setIsBalanceInsufficient(false);
-    }
-  }, [startDate, endDate, leaveType, leaveBalance]);
+    const today = new Date().toISOString().split("T")[0];
+    setMinDate(today);
+  }, []);
 
   const handleReasonChange = (e) => {
     const value = e.target.value;
-    const regex = /^[a-zA-Z0-9\s]+$/;
-    if (value === "" || regex.test(value)) {
+    const regex = /^[a-zA-Z0-9\s]*$/;
+    if (regex.test(value)) {
       setLeaveReason(value);
     } else {
-      toast.error("Special characters are not allowed in the reason field.");
+      toast.error("Special characters are not allowed in the reason field");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (isBalanceInsufficient) {
-      toast.error("Insufficient leave balance for the selected leave type!");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("start_date", startDate);
-    formData.append("end_date", endDate);
-    formData.append("leave_type", leaveType);
-    formData.append("reason", leaveReason);
-    if (leaveDocUpload) {
-      formData.append("leave_proof", leaveDocUpload);
-    }
-    formData.append("user_id", userdata.employee_id);
-    formData.append("user", userdata.username);
-    formData.append("email", userdata.email);
-
     try {
-      if (selectedLeave) {
-        await axios.put(`${apiBaseUrl}/api/leave/${selectedLeave.id}/`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        toast.success("Leave updated successfully!");
+      const leaveTypeMap = {
+        Medical: "medical",
+        Vacation: "vacation",
+        Personal: "personal",
+        medical: "medical",
+        vacation: "vacation",
+        personal: "personal",
+      };
+      const backendLeaveType = leaveTypeMap[leaveType] || leaveType;
+
+      const userInfo = JSON.parse(localStorage.getItem("userdata"));
+      const formData = new FormData();
+      formData.append("start_date", startDate);
+      formData.append("end_date", endDate);
+      formData.append("leave_type", backendLeaveType);
+      formData.append("reason", leaveReason);
+      formData.append("user", userInfo.employee_name);
+      formData.append("user_id", userInfo.employee_id);
+      formData.append("email", userInfo.email);
+
+      let res;
+      if (isEditMode) {
+        res = await axios.put(
+          `${apiBaseUrl}/edit_employee_leave_request/${leave.id}/`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            withCredentials: true,
+          }
+        );
+        toast.success("Leave updated successfully");
       } else {
-        await axios.post(`${apiBaseUrl}/api/apply-leave/`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        toast.success("Leave applied successfully!");
+        res = await axios.post(
+          `${apiBaseUrl}/api/apply-leave/`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            withCredentials: true,
+          }
+        );
+        toast.success("Leave applied successfully");
       }
-      fetchLeaveData();
-      await fetchLeaveBalance();
+
+      onNewLeave({
+        id: isEditMode ? leave.id : res.data.leave_id,
+        start_date: startDate,
+        end_date: endDate,
+        leave_type: leaveType,
+        reason: leaveReason,
+        status: "Pending",
+      });
+
       setIsOpenRequest(false);
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.error || "Failed to save leave.");
+      console.error("Error applying/updating leave:", error.response?.data);
+      const errorMessage =
+        error.response?.data?.error || 
+        (isEditMode ? "Leave update failed. Please try again." : "Leave application failed. Please try again.");
+      toast.error(errorMessage);
     }
   };
 
@@ -493,119 +612,86 @@ const RequestLeave = ({ setIsOpenRequest, fetchLeaveData, selectedLeave }) => {
     <div className="absolute bg-blue-100 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
       <div className="flex flex-col p-4 border border-blue-200 rounded-lg gap-4">
         <div className="flex justify-between items-center">
-          <h2 className="font-semibold">{selectedLeave ? "Edit Leave" : "Request Leave"}</h2>
+          <h2 className="font-semibold">{isEditMode ? "Edit Leave" : "Request Leave"}</h2>
           <div className="cursor-pointer" onClick={() => setIsOpenRequest(false)}>
             <X />
           </div>
         </div>
         <div className="content bg-blue-50 p-4 rounded-md grid gap-2">
-          {leaveBalance ? (
-            <div className="leave-balance mb-4">
-              <p>
-                Leave Balance (Remaining | Applied):
-                <span className="ml-2 font-semibold">
-                  Vacation: {leaveBalance.vacation_leave || 0} days ({leaveBalance.vacation_leave_applied || 0}) | 
-                  Medical: {leaveBalance.medical_leave || 0} days ({leaveBalance.medical_leave_applied || 0}) | 
-                  Personal: {leaveBalance.personal_leave || 0} days ({leaveBalance.personal_leave_applied || 0})
-                </span>
-              </p>
-              {startDate && endDate && (
-                <p>
-                  Requested Leave Days: <span className="font-semibold">{leaveDaysRequested}</span>
-                </p>
-              )}
-              {isBalanceInsufficient && (
-                <p className="text-red-500">
-                  Insufficient balance for {leaveType} leave!
-                </p>
-              )}
+          <form onSubmit={handleSubmit} className="grid gap-2">
+            <div className="form-group grid grid-cols-2 items-center">
+              <label htmlFor="leave-start-date">Start Date</label>
+              <input
+                type="date"
+                name="leave-start-date"
+                id="leave-start-date"
+                className="p-2"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                min={minDate}
+                required
+              />
             </div>
-          ) : (
-            <p>Loading leave balance...</p>
-          )}
-          <div className="form-group grid grid-cols-2 items-center">
-            <label htmlFor="leave-start-date">Start Date</label>
-            <input
-              type="date"
-              name="leave-start-date"
-              id="leave-start-date"
-              className="p-2"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              min={todayDate}
-              required
-            />
-          </div>
-          <div className="form-group grid grid-cols-2 items-center">
-            <label htmlFor="leave-end-date">End Date</label>
-            <input
-              type="date"
-              name="leave-end-date"
-              id="leave-end-date"
-              className="p-2"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              min={startDate || todayDate}
-              required
-            />
-          </div>
-          <div className="form-group grid grid-cols-2 items-center">
-            <label htmlFor="leave-type">Select Leave Type</label>
-            <select
-              name="leave-type"
-              id="leave-type"
-              className="p-2"
-              value={leaveType}
-              onChange={(e) => setLeaveType(e.target.value)}
-              required
-            >
-              <option value="" disabled>
-                Select Leave Type
-              </option>
-              <option value="medical">Medical Leave</option>
-              <option value="vacation">Vacation Leave</option>
-              <option value="personal">Personal Leave</option>
-            </select>
-          </div>
-          <div className="form-group grid grid-cols-2 items-center">
-            <label htmlFor="leave-reason">Reason</label>
-            <textarea
-              name="leave-reason"
-              id="leave-reason"
-              className="p-2"
-              placeholder="Type Reason"
-              value={leaveReason}
-              onChange={handleReasonChange}
-              required
-            ></textarea>
-          </div>
-          <div className="form-group grid grid-cols-2 items-center">
-            <label htmlFor="leave-doc-upload">Upload Document (Optional)</label>
-            <input
-              type="file"
-              name="leave-doc-upload"
-              id="leave-doc-upload"
-              className="p-2"
-              onChange={(e) => setLeaveDocUpload(e.target.files[0])}
-            />
-          </div>
-          <div className="footer-request flex justify-end items-center mt-8">
-            <button
-              type="button"
-              className="btn-secondary mr-2 px-4 py-2 rounded"
-              onClick={() => setIsOpenRequest(false)}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn-primary px-4 py-2 rounded"
-              onClick={handleSubmit}
-              disabled={isBalanceInsufficient || !leaveBalance}
-            >
-              {selectedLeave ? "Update" : "Submit"}
-            </button>
-          </div>
+            <div className="form-group grid grid-cols-2 items-center">
+              <label htmlFor="leave-end-date">End Date</label>
+              <input
+                type="date"
+                name="leave-end-date"
+                id="leave-end-date"
+                className="p-2"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={startDate || minDate}
+                required
+              />
+            </div>
+            <div className="form-group grid grid-cols-2 items-center">
+              <label htmlFor="leave-type">Select Leave Type</label>
+              <select
+                name="leave-type"
+                id="leave-type"
+                className="p-2"
+                value={leaveType}
+                onChange={(e) => setLeaveType(e.target.value)}
+                required
+              >
+                <option value="" disabled>
+                  Select Leave Type
+                </option>
+                <option value="Medical">Medical Leave</option>
+                <option value="Vacation">Vacation Leave</option>
+                <option value="Personal">Personal Leave</option>
+              </select>
+            </div>
+            <div className="form-group grid grid-cols-2 items-center">
+              <label htmlFor="leave-reason">Reason</label>
+              <textarea
+                name="leave-reason"
+                id="leave-reason"
+                className="p-2"
+                placeholder="Type Reason"
+                value={leaveReason}
+                onChange={handleReasonChange}
+                required
+              ></textarea>
+            </div>
+            <div className="footer-request flex justify-end items-center mt-8">
+              <button
+                type="button"
+                className="btn-secondary mr-2 px-4 py-2 rounded"
+                onClick={() => setIsOpenRequest(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn-primary px-4 py-2 rounded"
+                onClick={handleSubmit}
+              >
+                {isEditMode ? "Update" : "Submit"}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

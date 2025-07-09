@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -10,17 +11,24 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
-import { Plus, Calendar } from "lucide-react";
+import { Plus, Calendar, Edit, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import RequestLeave from "../LeaveManagement/RequestLeave";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
+axios.defaults.withCredentials = true;
 
 const SkeletonLoading = () => {
   return (
@@ -42,65 +50,96 @@ const SkeletonLoading = () => {
   );
 };
 
-const fetchLeaveData = async ({ queryKey }) => {
-  const [, { managerId, startDate, endDate, statusFilter }] = queryKey;
-  const response = await axios.get(
-    `${apiBaseUrl}/manager-leave-history-id/${managerId}/`,
-    {
-      params: {
-        start_date: startDate ? startDate.toISOString().split("T")[0] : undefined,
-        end_date: endDate ? endDate.toISOString().split("T")[0] : undefined,
-        status: statusFilter || undefined,
-      },
-    }
-  );
-  return response.data || [];
-};
-
 const ManagerLeaveManagement = () => {
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const userdata = JSON.parse(localStorage.getItem("userdata") || "{}");
   const managerId = userdata.manager_id;
+  const [leaveData, setLeaveData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [statusFilter, setStatusFilter] = useState("");
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [showFilters, setShowFilters] = useState(false);
   const [isOpenRequest, setIsOpenRequest] = useState(false);
+  const [selectedLeave, setSelectedLeave] = useState(null);
+  const [isOpenReasonModal, setIsOpenReasonModal] = useState(false);
+  const [detailsLeave, setDetailsLeave] = useState(null);
+  const [reasonInput, setReasonInput] = useState("");
 
-  const { data: leaveData = [], isError, isFetching } = useQuery({
-    queryKey: [
-      "managerLeave",
-      { managerId, startDate, endDate, statusFilter },
-    ],
-    queryFn: fetchLeaveData,
-    placeholderData: [],
-    staleTime: 1000,
-  });
+  const fetchLeaveData = useCallback(async () => {
+    if (!managerId) {
+      setError("User information is missing. Please log in again.");
+      setLoading(false);
+      navigate("/login");
+      return;
+    }
 
-  const [filteredData, setFilteredData] = useState([]);
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(
+        `${apiBaseUrl}/manager-leave-history-id/${managerId}/`,
+        {
+          params: {
+            start_date: startDate ? startDate.toISOString().split("T")[0] : undefined,
+            end_date: endDate ? endDate.toISOString().split("T")[0] : undefined,
+            status: statusFilter || undefined,
+          },
+          withCredentials: true,
+        }
+      );
+      const normalizedData = response.data.map((leave) => ({
+        ...leave,
+        status: leave.status.charAt(0).toUpperCase() + leave.status.slice(1),
+      }));
+      setLeaveData(normalizedData || []);
+      setError(null);
+    } catch (error) {
+      console.error("Error fetching leave data:", error);
+      const errorMessage =
+        error.response?.data?.error || "Failed to fetch leave data.";
+
+      if (errorMessage === "No ManagerLeaveRequest matches the given query.") {
+        setLeaveData([]);
+        setError(null);
+      } else {
+        setError(errorMessage);
+        toast.error(errorMessage);
+
+        if (error.response?.status === 401) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.removeItem("userdata");
+          navigate("/login");
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [managerId, navigate, startDate, endDate, statusFilter]);
 
   useEffect(() => {
-    let filtered = [...leaveData];
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (leave) =>
-          leave.reason?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          leave.id?.toString().includes(searchTerm)
-      );
-    }
-    if (sortConfig.key) {
-      filtered.sort((a, b) => {
-        const valueA = a[sortConfig.key] || "";
-        const valueB = b[sortConfig.key] || "";
-        return sortConfig.direction === "asc"
-          ? valueA.localeCompare(valueB)
-          : valueB.localeCompare(valueA);
-      });
-    }
-    setFilteredData(filtered);
-  }, [searchTerm, sortConfig, leaveData]);
+    fetchLeaveData();
+  }, [fetchLeaveData]);
+
+  const handleNewLeave = (updatedLeave) => {
+    setLeaveData((prevLeaveData) => {
+      const normalizedNewLeave = {
+        ...updatedLeave,
+        status: updatedLeave.status.charAt(0).toUpperCase() + updatedLeave.status.slice(1),
+      };
+      if (selectedLeave) {
+        return prevLeaveData.map((leave) =>
+          leave.id === updatedLeave.id ? normalizedNewLeave : leave
+        );
+      }
+      return [...prevLeaveData, normalizedNewLeave];
+    });
+    setSelectedLeave(null);
+    fetchLeaveData();
+  };
+
   const calculateSummaryStats = () => {
     const totalRequests = leaveData.length;
     const approved = leaveData.filter((req) => req.status.toLowerCase() === "approved").length;
@@ -108,20 +147,8 @@ const ManagerLeaveManagement = () => {
     const pending = leaveData.filter((req) => req.status.toLowerCase() === "pending").length;
     return { totalRequests, approved, rejected, pending };
   };
-  
-  const stats = calculateSummaryStats();
-  const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
 
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return "↕";
-    return sortConfig.direction === "asc" ? "↑" : "↓";
-  };
+  const stats = calculateSummaryStats();
 
   const handleResetFilter = () => {
     setSearchTerm("");
@@ -132,16 +159,31 @@ const ManagerLeaveManagement = () => {
   };
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries(["managerLeave"]);
+    fetchLeaveData();
   };
+
+  const filteredData = leaveData.filter((leave) => {
+    const isSearchMatch =
+      !searchTerm ||
+      leave.reason?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      leave.id?.toString().includes(searchTerm);
+    const isStartDateMatch =
+      !startDate || leave.start_date >= startDate.toISOString().split("T")[0];
+    const isEndDateMatch =
+      !endDate || leave.end_date <= endDate.toISOString().split("T")[0];
+    const isStatusMatch =
+      !statusFilter ||
+      leave.status.toLowerCase() === statusFilter.toLowerCase();
+    return isSearchMatch && isStartDateMatch && isEndDateMatch && isStatusMatch;
+  });
 
   return (
     <div className="p-2 sm:p-4 min-h-screen">
-      {isFetching ? (
+      {loading ? (
         <SkeletonLoading />
-      ) : isError ? (
+      ) : error ? (
         <Alert variant="destructive" className="text-center my-4">
-          Failed to load leave requests. Please try again.
+          {error}
         </Alert>
       ) : (
         <>
@@ -210,11 +252,14 @@ const ManagerLeaveManagement = () => {
                 >
                   {showFilters ? "Hide Filters" : "Show Filters"}
                 </Button>
-                <Dialog>
+                <Dialog open={isOpenRequest} onOpenChange={setIsOpenRequest}>
                   <DialogTrigger asChild>
                     <Button
                       className="bg-gradient-to-br from-purple-600 to-blue-500 text-white px-4 py-1 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center"
-                      onClick={() => setIsOpenRequest(true)}
+                      onClick={() => {
+                        setSelectedLeave(null);
+                        setIsOpenRequest(true);
+                      }}
                     >
                       <Plus className="w-4 h-4 mr-2" /> Add Leave
                     </Button>
@@ -222,8 +267,8 @@ const ManagerLeaveManagement = () => {
                   <DialogContent>
                     <RequestLeave
                       setIsOpenRequest={setIsOpenRequest}
-                      leaveData={leaveData}
-                      fetchLeaveData={() => queryClient.invalidateQueries(["managerLeave"])}
+                      onNewLeave={handleNewLeave}
+                      leave={selectedLeave}
                     />
                   </DialogContent>
                 </Dialog>
@@ -322,21 +367,12 @@ const ManagerLeaveManagement = () => {
                 <Table className="table-auto">
                   <TableHeader>
                     <TableRow>
-                      <TableCell onClick={() => handleSort("id")} className="cursor-pointer">
-                        ID {getSortIcon("id")}
-                      </TableCell>
-                      <TableCell onClick={() => handleSort("start_date")} className="cursor-pointer">
-                        Start Date {getSortIcon("start_date")}
-                      </TableCell>
-                      <TableCell onClick={() => handleSort("end_date")} className="cursor-pointer">
-                        End Date {getSortIcon("end_date")}
-                      </TableCell>
-                      <TableCell onClick={() => handleSort("reason")} className="cursor-pointer">
-                        Reason {getSortIcon("reason")}
-                      </TableCell>
-                      <TableCell onClick={() => handleSort("status")} className="cursor-pointer">
-                        Status {getSortIcon("status")}
-                      </TableCell>
+                      <TableCell>ID</TableCell>
+                      <TableCell>Start Date</TableCell>
+                      <TableCell>End Date</TableCell>
+                      <TableCell>Reason</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="h-full">
@@ -367,10 +403,129 @@ const ManagerLeaveManagement = () => {
                             {leave.status}
                           </div>
                         </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger>
+                              <span className="p-2 rounded-full hover:bg-gray-200 text-gray-600 font-bold">
+                                ...
+                              </span>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={() => {
+                                if (leave.status !== "Pending") {
+                                  toast.error("Only pending leave requests can be edited.");
+                                  return;
+                                }
+                                setSelectedLeave(leave);
+                                setIsOpenRequest(true);
+                              }}>
+                                <Edit className="mr-2 w-4 h-4" /> Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => {
+                                if (leave.status !== "Pending") {
+                                  toast.error("Only pending leave requests can be deleted.");
+                                  return;
+                                }
+                                if (!window.confirm(`Are you sure you want to delete Leave ID ${leave.id}?`)) {
+                                  return;
+                                }
+                                axios.delete(`${apiBaseUrl}/delete_manager_leave/${leave.id}/`, {
+                                  withCredentials: true,
+                                })
+                                  .then(() => {
+                                    toast.success(`Leave ID ${leave.id} deleted successfully.`);
+                                    setLeaveData((prev) => prev.filter((l) => l.id !== leave.id));
+                                  })
+                                  .catch((error) => {
+                                    console.error("Error deleting leave:", error);
+                                    toast.error(
+                                      error.response?.data?.detail || "Failed to delete leave record."
+                                    );
+                                  });
+                              }}>
+                                <Trash2 className="mr-2 w-4 h-4" /> Delete
+                              </DropdownMenuItem>
+                              {(leave.reason === "Auto Leave: Late or No Login" || leave.is_auto_leave) && (
+                                <DropdownMenuItem onClick={() => {
+                                  setDetailsLeave(leave);
+                                  setIsOpenReasonModal(true);
+                                }}>
+                                  <Plus className="mr-2 w-4 h-4" /> Submit Reason
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+            )}
+            {isOpenReasonModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded-lg max-w-md w-full">
+                  <h3 className="text-lg font-medium mb-4">Submit Reason for Late Login</h3>
+                  <div className="mb-4">
+                    <p>
+                      <strong>Leave Date:</strong> {detailsLeave.start_date}
+                    </p>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Reason
+                    </label>
+                    <textarea
+                      value={reasonInput}
+                      onChange={(e) => setReasonInput(e.target.value)}
+                      className="input input-bordered w-full p-2 bg-slate-200 rounded-lg"
+                      rows="4"
+                      placeholder="Enter your reason for the late login..."
+                    />
+                  </div>
+                  <div className="flex gap-4">
+                    <button
+                      className="btn btn-primary w-full"
+                      onClick={() => {
+                        if (!reasonInput.trim()) {
+                          toast.error("Please provide a valid reason.");
+                          return;
+                        }
+                        axios.post(
+                          `${apiBaseUrl}/submit_manager_late_login_reason/`,
+                          {
+                            leave_id: detailsLeave.id,
+                            reason: reasonInput.trim(),
+                          },
+                          { withCredentials: true }
+                        )
+                          .then(() => {
+                            toast.success("Reason submitted successfully.");
+                            setReasonInput("");
+                            setIsOpenReasonModal(false);
+                            fetchLeaveData();
+                          })
+                          .catch((error) => {
+                            console.error("Error submitting reason:", error);
+                            toast.error(
+                              error.response?.data?.error || "Failed to submit reason."
+                            );
+                          });
+                      }}
+                    >
+                      Submit
+                    </button>
+                    <button
+                      className="btn w-full"
+                      onClick={() => {
+                        setReasonInput("");
+                        setIsOpenReasonModal(false);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

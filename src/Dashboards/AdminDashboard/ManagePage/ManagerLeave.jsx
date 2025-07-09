@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { Trash2, Ellipsis } from "lucide-react";
 import {
@@ -37,33 +36,52 @@ const SkeletonLoading = () => {
   );
 };
 
-const fetchManagerLeaveList = async () => {
-  const { data } = await axios.get(`${apiBaseUrl}/manager-leave-status/`);
-  return data || [];
-};
-
 const ManagerLeave = () => {
-  const queryClient = useQueryClient();
+  const [managerLeaveList, setManagerLeaveList] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(null); // Track processing leave ID
 
-  const { data: managerLeaveList = [], isFetching, isError } = useQuery({
-    queryKey: ["managerLeaves"],
-    queryFn: fetchManagerLeaveList,
-    placeholderData: [],
-    staleTime: 5000,
-  });
+  const fetchManagerLeaveList = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${apiBaseUrl}/manager-leave-status/`, {
+        withCredentials: true,
+      });
+      const normalizedData = data.map((leave) => ({
+        ...leave,
+        status: leave.status.charAt(0).toUpperCase() + leave.status.slice(1),
+      }));
+      setManagerLeaveList(normalizedData || []);
+    } catch (error) {
+      console.error("Error fetching leave list:", error);
+      toast.error(error.response?.data?.detail || "Failed to fetch leave list.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchManagerLeaveList();
+  }, []);
 
   const handleStatusChange = async (status, leaveId) => {
     setIsProcessing(leaveId);
     try {
-      const response = await axios.post(`${apiBaseUrl}/manager-leave-status/`, {
-        leave_id: leaveId,
-        status: status.toLowerCase(),
-      });
+      const response = await axios.post(
+        `${apiBaseUrl}/manager-leave-status/`,
+        {
+          leave_id: leaveId,
+          status: status.toLowerCase(),
+        },
+        { withCredentials: true }
+      );
       toast.success(response.data.message);
-      queryClient.invalidateQueries(["managerLeaves"]);
+      fetchManagerLeaveList();
     } catch (error) {
-      toast.error("Failed to update leave status.");
+      console.error("Error updating status:", error.response?.data);
+      toast.error(
+        error.response?.data?.error || "Failed to update leave status."
+      );
     } finally {
       setIsProcessing(null);
     }
@@ -73,11 +91,16 @@ const ManagerLeave = () => {
     if (window.confirm(`Are you sure you want to delete Leave ID ${leaveId}?`)) {
       setIsProcessing(leaveId);
       try {
-        await axios.delete(`${apiBaseUrl}/delete_manager_leave/${leaveId}/`);
+        await axios.delete(`${apiBaseUrl}/delete_manager_leave/${leaveId}/`, {
+          withCredentials: true,
+        });
         toast.success(`Leave ID ${leaveId} deleted successfully.`);
-        queryClient.invalidateQueries(["managerLeaves"]);
+        fetchManagerLeaveList();
       } catch (error) {
-        toast.error("Failed to delete leave record.");
+        console.error("Error deleting leave record:", error);
+        toast.error(
+          error.response?.data?.detail || "Failed to delete leave record."
+        );
       } finally {
         setIsProcessing(null);
       }
@@ -86,11 +109,11 @@ const ManagerLeave = () => {
 
   return (
     <div className="p-2 sm:p-4 min-h-screen">
-      {isFetching ? (
+      {loading ? (
         <SkeletonLoading />
-      ) : isError ? (
+      ) : managerLeaveList.length === 0 && !loading ? (
         <Alert variant="destructive" className="text-center my-4">
-          Failed to load leave records. Please try again.
+          No leave records available or failed to load. Please try again.
         </Alert>
       ) : (
         <div className="bg-white rounded-lg shadow-sm p-4">
@@ -100,7 +123,7 @@ const ManagerLeave = () => {
               <p className="text-gray-500 text-sm">Manage leave requests for managers</p>
             </div>
             <Button
-              onClick={() => queryClient.invalidateQueries(["managerLeaves"])}
+              onClick={fetchManagerLeaveList}
               className="bg-gradient-to-br from-purple-600 to-blue-500 text-white px-4 py-1 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center mt-2 md:mt-0"
             >
               <i className="fas fa-sync-alt mr-2"></i> Refresh
@@ -133,9 +156,9 @@ const ManagerLeave = () => {
                       <TableCell className="text-base">
                         <span
                           className={`px-2 py-1 rounded-full text-sm capitalize ${
-                            leave.status === "pending"
+                            leave.status === "Pending"
                               ? "bg-yellow-100 text-yellow-800"
-                              : leave.status === "approved"
+                              : leave.status === "Approved"
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
                           }`}
@@ -148,12 +171,12 @@ const ManagerLeave = () => {
                           <Button
                             onClick={() => handleStatusChange("Approved", leave.id)}
                             disabled={
-                              leave.status === "approved" ||
-                              leave.status === "rejected" ||
+                              leave.status === "Approved" ||
+                              leave.status === "Rejected" ||
                               isProcessing === leave.id
                             }
                             className={`${
-                              leave.status === "approved" || leave.status === "rejected"
+                              leave.status === "Approved" || leave.status === "Rejected"
                                 ? "bg-gray-300 cursor-not-allowed"
                                 : "bg-gradient-to-br from-green-600 to-green-500 hover:shadow-lg hover:-translate-y-0.5"
                             } text-white px-4 py-1 rounded-full shadow-md transition-all duration-300`}
@@ -163,12 +186,12 @@ const ManagerLeave = () => {
                           <Button
                             onClick={() => handleStatusChange("Rejected", leave.id)}
                             disabled={
-                              leave.status === "approved" ||
-                              leave.status === "rejected" ||
+                              leave.status === "Approved" ||
+                              leave.status === "Rejected" ||
                               isProcessing === leave.id
                             }
                             className={`${
-                              leave.status === "approved" || leave.status === "rejected"
+                              leave.status === "Approved" || leave.status === "Rejected"
                                 ? "bg-gray-300 cursor-not-allowed"
                                 : "bg-gradient-to-br from-red-600 to-red-500 hover:shadow-lg hover:-translate-y-0.5"
                             } text-white px-4 py-1 rounded-full shadow-md transition-all duration-300`}

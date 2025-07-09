@@ -132,7 +132,7 @@ const ManagerLeavePolicies = () => {
     if (window.confirm("Are you sure you want to delete this leave policy?")) {
       try {
         await axios.delete(`${apiBaseUrl}/delete_manager_leave_balance/${id}/`);
-        toast.success("Leave policy deleted successfully.");
+        toast.success("Policies deleted successfully.");
         queryClient.invalidateQueries(["leavePolicies"]);
       } catch (error) {
         toast.error("Failed to delete leave policy.");
@@ -164,7 +164,7 @@ const ManagerLeavePolicies = () => {
               </Button>
               <Button
                 onClick={() => openModal()}
-                className="bg-gradient-to-br from-purple-600 to-blue-500 text-white px-4 py-1 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+                className="bg-gradient-to-br from-purple-600 to-blue-500 text-white px-4 py-1 rounded-full shadow-md hover:bg-gradient-to-bl hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
               >
                 Add Leave Policy
               </Button>
@@ -224,7 +224,7 @@ const ManagerLeavePolicies = () => {
                 <h3 className="text-xl font-semibold mb-4">
                   {isEditMode ? "Edit Leave Policy" : "Add Leave Policy"}
                 </h3>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-4">
                   {!isEditMode && (
                     <div>
                       <label className="text-sm text-gray-600">Select Manager</label>
@@ -283,6 +283,7 @@ const ManagerLeavePolicies = () => {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
+                      onClick={handleSubmit}
                       className={`bg-gradient-to-br from-purple-600 to-blue-500 text-white px-4 py-2 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ${
                         isSubmitting ? "opacity-50 cursor-not-allowed" : ""
                       }`}
@@ -297,7 +298,7 @@ const ManagerLeavePolicies = () => {
                       Cancel
                     </Button>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
           )}

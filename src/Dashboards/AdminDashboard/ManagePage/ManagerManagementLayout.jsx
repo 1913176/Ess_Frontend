@@ -13,6 +13,7 @@ const TopNav = () => {
     { to: "manager-leave", label: "Manager Leave", icon: <Briefcase className="w-5 h-5" /> },
     { to: "manager-salary", label: "Manager Salary", icon: <IndianRupee className="w-5 h-5" /> },
     { to: "manager-payroll", label: "Manager Payroll", icon: <IndianRupee className="w-5 h-5" /> },
+    { to: "late-login-reason", label: "Manager Late Login", icon: <Briefcase className="w-5 h-5" /> },
   ];
 
   return (

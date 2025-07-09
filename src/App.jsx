@@ -24,6 +24,7 @@ import ManagerPerformanceLayout from "./Dashboards/AdminDashboard/ManagerPerform
 import ManagerPerformanceRivewList from "./Dashboards/AdminDashboard/ManagerPerformancePage/ManagerPerformanceReviewList";
 import ManagerGoal from "./Dashboards/AdminDashboard/ManagerPerformancePage/ManagerGoal";
 import ManagerFeedback from "./Dashboards/AdminDashboard/ManagerPerformancePage/ManagerFeedback";
+import ManagerLateLoginReason from "./Dashboards/AdminDashboard/ManagePage/ManagerLateLoginReason";
 
 import EmployeePerformanceLayout from "./Dashboards/AdminDashboard/EmployeePerformancePage/EmployeePerformanceLayout";
 import EmployeePerformanceRivewList from "./Dashboards/AdminDashboard/EmployeePerformancePage/EmployeePerformanceReviewList";
@@ -88,6 +89,7 @@ import ManagerHRLeave from "./Dashboards/AdminDashboard/HRManagement/ManagerHRLe
 import ManagerHRLeavePolicies from "./Dashboards/AdminDashboard/HRManagement/ManagerHRLeavePolicies";
 import ManagerHRSalary from "./Dashboards/AdminDashboard/HRManagement/ManagerHRSalary";
 import ManagerHRPayroll from "./Dashboards/AdminDashboard/HRManagement/ManagerHRPayroll";
+import ManagerHRLateLoginReason from "./Dashboards/AdminDashboard/HRManagement/ManagerHRLateLoginReason.jsx";
 
 
 //AR Dashboards imports
@@ -196,6 +198,7 @@ import EmployeeTask from "./Dashboards/EmployeeDashboard/EmployeeTask/EmployeeTa
 import EmployeeLeave from "./Dashboards/EmployeeDashboard/EmployeeLeave/EmployeeLeave.jsx";
 import Employee_Attendance from "./Dashboards/EmployeeDashboard/EmployeeAttendance/Employee_Attendance.jsx";
 import EmployeeSalary from "./Dashboards/EmployeeDashboard/EmployeeSalary/EmployeeSalary.jsx";
+import EmployeeLateLoginReason from "./Dashboards/AdminDashboard/EmployeePage/EmployeeLateLoginReason";
 
 
 import KPILayout from "./Dashboards/EmployeeDashboard/KPI_Page/KPILayout.jsx";
@@ -338,6 +341,7 @@ export default function App() {
                   <Route index element={<ManagerList />} />
                   <Route path="managerList" element={<ManagerList />} />
                   <Route path="attendance" element={<ManagerAttendance />} />
+                  <Route path="late-login-reason" element={<ManagerLateLoginReason />} />
                   <Route
                     path="attendanceReset"
                     element={<ManagerAttendanceReset />}
@@ -435,6 +439,7 @@ export default function App() {
                 <Route path="employee" element={<EmployeeManagementLayout />}>
                   <Route index element={<EmployeeList />} />
                   <Route path="attendance" element={<EmployeeAttendance />} />
+                  <Route path="late-login-reason" element={<EmployeeLateLoginReason />} />
                   <Route
                     path="attendanceReset"
                     element={<EmployeeAttendanceReset />}
@@ -680,6 +685,7 @@ export default function App() {
                     path="manager-leave-policies"
                     element={<ManagerHrLeavePolicies />}
                   />
+                  <Route path="late-login-reason" element={<ManagerHRLateLoginReason />} />
                   <Route path="manager-leave" element={<ManagerHrLeave />} />
                   <Route path="manager-salary" element={<ManagerHrSalary />} />
                   <Route
