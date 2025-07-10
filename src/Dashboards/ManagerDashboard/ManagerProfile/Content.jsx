@@ -1,159 +1,5 @@
-// import React, { useState, useEffect } from "react";
-// import axios from "axios";
-// import UpdateProfile from "./UpdateProfile";
-// const apiBaseUrl = process.env.VITE_BASE_API;
-// const ManagerProfile = () => {
-//   const userInfo = JSON.parse(localStorage.getItem("userdata")) || {}; // Prevent null errors
-//   const [profile, setProfile] = useState(null);
-//   const [isUpdate, setUpdate] = useState(false);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-
-//   useEffect(() => {
-//     const fetchProfile = async () => {
-//       if (!userInfo.manager_id) {
-//         setError("User data not found. Please log in again.");
-//         setLoading(false);
-//         return;
-//       }
-
-//       // Debugging: Check if the ID is correct
-//       console.log("Fetching profile for Manager ID:", userInfo.manager_id);
-
-//       try {
-//         const response = await axios.get(
-//           `${apiBaseUrl}/api/managers/${userInfo.manager_id}/`,
-//           {
-//             headers: {
-//               "Content-Type": "application/json",
-//               Authorization: `Bearer ${localStorage.getItem("token")}`, // Optional if authentication is used
-//             },
-//           }
-//         );
-//         setProfile(response.data);
-//       } catch (err) {
-//         console.error("API Error:", err.response ? err.response.data : err);
-//         setError(err.response?.data?.detail || "Failed to fetch profile data.");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchProfile();
-//   }, [userInfo.manager_id]); // Only fetch when `userInfo.id` changes
-
-//   if (loading) return <p>Loading profile...</p>;
-//   if (error) return <p className="text-red-500">{error}</p>;
-
-//   return (
-//     <div>
-//       <div className="bg-white shadow-md rounded-lg p-2">
-//         <p className="p-1 font-bold">Profile Details</p>
-//         <div className="flex gap-2 p-1">
-//           <p>ID:</p>
-//           <p>{profile.manager_id}</p> {/* Adjusted key name if needed */}
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Name:</p>
-//           <p>{profile.manager_name}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Username:</p>
-//           <p>{profile.username}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Email:</p>
-//           <p>{profile.email || "None"}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Image:</p>
-//           <img
-//             src={profile.image || "https://via.placeholder.com/150"}
-//             alt="Profile"
-//             className="w-16 h-16 rounded-full"
-//           />
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Gender:</p>
-//           <p>{profile.gender}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Date of Birth:</p>
-//           <p>{profile.dob}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Hired Date:</p>
-//           <p>{profile.hiredDate || "None"}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Department:</p>
-//           <p>{profile.department || "None"}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Shift:</p>
-//           <p>{profile.shift}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Address:</p>
-//           <p>{profile.address || "None"}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>City:</p>
-//           <p>{profile.city || "None"}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Country:</p>
-//           <p>{profile.country || "None"}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>State:</p>
-//           <p>{profile.state || "None"}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Phone:</p>
-//           <p>{profile.phone || "None"}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>Pincode:</p>
-//           <p>{profile.pincode || "None"}</p>
-//         </div>
-//         <div className="flex gap-2 p-1">
-//           <p>LinkedIn Profile:</p>
-//           <a
-//             href={profile.linkedin || "#"}
-//             target="_blank"
-//             rel="noopener noreferrer"
-//             className="text-blue-500 underline"
-//           >
-//             {profile.linkedin ? "View Profile" : "None"}
-//           </a>
-//         </div>
-
-//         <p
-//           onClick={() => setUpdate((prev) => !prev)}
-//           className="bg-blue-400 text-white w-[120px] mt-2 rounded-md text-center p-1 cursor-pointer hover:bg-blue-500 transition"
-//         >
-//           Update Profile
-//         </p>
-//       </div>
-
-//       {/* for popup */}
-//       {isUpdate && (
-//         <div className="absolute left-0 top-12 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center">
-//           <UpdateProfile
-//             managerId = {userInfo.manager_id}
-//             setUpdate={setUpdate}
-//             profile={profile}
-//             setProfile={setProfile}
-//           />
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default ManagerProfile;
-
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -166,51 +12,104 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, Edit, File, IdCard, Mail } from "lucide-react";
-import React from "react";
-import { useState } from "react";
+import UpdateProfile from "./UpdateProfile";
+
 const apiBaseUrl = process.env.VITE_BASE_API;
+
 const ManagerProfile = () => {
   const userInfo = JSON.parse(localStorage.getItem("userdata")) || {};
-  const [profile, setProfile] = useState(userInfo);
+  const [profile, setProfile] = useState(null);
+  const [isUpdate, setUpdate] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchProfile = async () => {
+    if (!userInfo.manager_id) {
+      setError("User data not found. Please log in again.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${apiBaseUrl}/api/managers/get/${userInfo.manager_id}/`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("Fetch Profile API Response:", response.data);
+
+      setProfile(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("API Error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      setError(err.response?.data?.detail || "Failed to fetch profile data.");
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, [userInfo.manager_id, isUpdate]);
+
+  if (loading) return <p>Loading profile...</p>;
+  if (error || !profile) return <p className="text-red-500">{error || "Profile data not available."}</p>;
+
   return (
     <div className="p-4 flex flex-col gap-4">
       <div className="profile-header flex justify-between">
-        <div className="">
+        <div>
           <h2 className="font-semibold">Manager Profile</h2>
-          <p className="font-base">View and Manager informantion</p>
+          <p className="font-base">View and manage manager information</p>
         </div>
-        <Button>
+        <Button onClick={() => setUpdate((prev) => !prev)}>
           <Edit /> Edit Profile
         </Button>
       </div>
       <div className="flex h-full gap-4 flex-col sm:flex-row">
-        <div className="">
+        <div>
           <Card>
             <CardHeader className="flex flex-col justify-center items-center">
               <img
-                src={`${apiBaseUrl}${profile.manager_image}`}
+                src={
+                  profile.manager_image
+                    ? `${apiBaseUrl}${profile.manager_image}?t=${new Date().getTime()}`
+                    : "https://via.placeholder.com/150"
+                }
                 alt={profile.manager_name}
-                className="size-60        
-             rounded-full object-cover object-center border-4 p-1 border-primary"
+                className="size-60 rounded-full object-cover object-center border-4 p-1 border-primary"
               />
               <h3 className="font-bold text-xl">
-                {profile.manager_name || "manager Name"}
+                {profile.manager_name || "Manager Name"}
               </h3>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col">
                 <p className="flex space-x-2 items-center">
-                  <IdCard height={24} />{" "}
-                  <span>{profile.manager_id || "MGR000"}</span>
+                  <IdCard height={24} />
+                  <span>{profile.manager_id || "MAN000"}</span>
                 </p>
-                <p className=" flex space-x-2 items-center">
-                  <Mail height={24} />{" "}
+                <p className="flex space-x-2 items-center">
+                  <Mail height={24} />
                   <span>{profile.email || "manager@email.com"}</span>
                 </p>
                 <p className="flex space-x-2 items-center">
-                  <Mail height={24} />{" "}
+                  <Mail height={24} />
                   <span>
-                    {profile.department + " Department" || "example Department"}
+                    {profile.department_name
+                      ? `${profile.department_name} Department`
+                      : "Example Department"}
                   </span>
                 </p>
               </div>
@@ -228,12 +127,14 @@ const ManagerProfile = () => {
             </TabsList>
             <TabsContent value="overview">
               <div className="space-y-4">
-                <Overview />
+                <Overview profile={profile} />
                 <Skillset />
                 <AttendanceRecord />
               </div>
             </TabsContent>
-            <TabsContent value="employment">Employment</TabsContent>
+            <TabsContent value="employment">
+              <Employment profile={profile} />
+            </TabsContent>
             <TabsContent value="documents">
               <Documentset />
             </TabsContent>
@@ -243,13 +144,22 @@ const ManagerProfile = () => {
           </Tabs>
         </div>
       </div>
+
+      {isUpdate && (
+        <div className="absolute left-0 top-12 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center">
+          <UpdateProfile
+            managerId={userInfo.manager_id}
+            setUpdate={setUpdate}
+            profile={profile}
+            setProfile={setProfile}
+          />
+        </div>
+      )}
     </div>
   );
 };
 
-export default ManagerProfile;
-
-const Overview = () => {
+const Overview = ({ profile }) => {
   return (
     <div>
       <Card>
@@ -257,10 +167,31 @@ const Overview = () => {
           <CardTitle>Bio</CardTitle>
         </CardHeader>
         <CardContent>
-          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quasi
-          repudiandae a corrupti, adipisci aut consectetur commodi ex debitis
-          tempora nobis placeat delectus ad. Aperiam, sed iure. Aperiam eveniet
-          sequi harum.
+          <div className="space-y-2">
+            <p><strong>Gender:</strong> {profile.gender || "None"}</p>
+            <p><strong>Date of Birth:</strong> {profile.dob || "None"}</p>
+            <p><strong>Address:</strong> {profile.address || "None"}</p>
+            <p><strong>City:</strong> {profile.city || "None"}</p>
+            <p><strong>State:</strong> {profile.state || "None"}</p>
+            <p><strong>Country:</strong> {profile.country || "None"}</p>
+            <p><strong>Phone:</strong> {profile.phone_number || "None"}</p>
+            <p><strong>Pincode:</strong> {profile.pincode || "None"}</p>
+            <p>
+              <strong>LinkedIn:</strong>{" "}
+              {profile.linkedin_profile_link ? (
+                <a
+                  href={profile.linkedin_profile_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  View Profile
+                </a>
+              ) : (
+                "None"
+              )}
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -268,7 +199,7 @@ const Overview = () => {
 };
 
 const Skillset = () => {
-  const [skills, setSkills] = useState([
+  const [skills] = useState([
     "Reactjs",
     "JavaScript",
     "Java",
@@ -310,7 +241,7 @@ const Documentset = () => {
                   <p className="text-muted-foreground">Doc Type</p>
                 </div>
               </div>
-              <div className="">
+              <div>
                 <Button>Download</Button>
               </div>
             </div>
@@ -321,10 +252,28 @@ const Documentset = () => {
   );
 };
 
+const Employment = ({ profile }) => {
+  return (
+    <div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Employment Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <p><strong>Hired Date:</strong> {profile.hired_date || "None"}</p>
+            <p><strong>Department:</strong> {profile.department_name || "None"}</p>
+            <p><strong>Shift:</strong> {profile.shift || "None"}</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 const AttendanceRecord = () => {
   return (
-    <div className="">
-      {/* attendance header */}
+    <div>
       <Card>
         <CardHeader>
           <CardTitle>Attendance Summary</CardTitle>
@@ -334,35 +283,29 @@ const AttendanceRecord = () => {
           <div className="flex justify-between">
             <div className="flex flex-col items-center justify-center space-y-2 w-full">
               <Clock />
-              <h2>{"0 Days"}</h2>
+              <h2>0 Days</h2>
               <p className="text-muted-foreground">Present</p>
             </div>
             <div className="flex flex-col items-center justify-center space-y-2 w-full">
               <Clock />
-              <h2>{"0 Days"}</h2>
+              <h2>0 Days</h2>
               <p className="text-muted-foreground">Absent</p>
             </div>
             <div className="flex flex-col items-center justify-center space-y-2 w-full">
               <Clock />
-              <h2>{"0 Days"}</h2>
+              <h2>0 Days</h2>
               <p className="text-muted-foreground">Leave</p>
             </div>
             <div className="flex flex-col items-center justify-center space-y-2 w-full">
               <Clock />
-              <h2>{"0 Days"}</h2>
-              <p className="text-muted-foreground">Workig Days</p>
+              <h2>0 Days</h2>
+              <p className="text-muted-foreground">Working Days</p>
             </div>
           </div>
         </CardContent>
       </Card>
-      {/* attendance activity */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle></CardTitle>
-          <CardDescription></CardDescription>
-        </CardHeader>
-        <CardContent></CardContent>
-      </Card> */}
     </div>
   );
 };
+
+export default ManagerProfile;
