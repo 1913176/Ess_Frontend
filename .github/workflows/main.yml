@@ -21,20 +21,18 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-        working-directory: ess-frontent-main-may12
 
       - name: Build Project
         run: npm run build
-        working-directory: ess-frontent-main-may12
 
       - name: Debug – List Dist Folder
-        run: ls -la ess-frontent-main-may12/dist
+        run: ls -la dist
 
       - name: Ensure target directory exists on EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ubuntu   # Make sure this matches your instance type
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
@@ -45,9 +43,9 @@ jobs:
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ubuntu   # Same as above
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-          source: "ess-frontent-main-may12/dist/"
+          source: "dist/"
           target: "/var/www/html/frontend"
           debug: true
