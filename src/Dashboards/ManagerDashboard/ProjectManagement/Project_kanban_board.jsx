@@ -213,15 +213,15 @@ const ProjectCard = ({ project, mobile }) => {
       >
         <CardHeader>
           <div className="flex items-center justify-between w-full">
-            <CardTitle className="capitalize text-xl">{project.project_name}</CardTitle>
+            <CardTitle className="text-xl">{project.name || "N/A"}</CardTitle>
             {getStatusBadge()}
           </div>
           <CardDescription>{project.project_id}</CardDescription>
-          <CardDescription>Manager: {project.manager_name || "N/A"}</CardDescription>
+          <CardDescription>Manager: {project.manager_name || project.project_manager || "N/A"}</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600">
-            Description: {project.project_description}
+            Description: {project.description || "N/A"}
           </p>
         </CardContent>
         <CardFooter>
@@ -229,58 +229,57 @@ const ProjectCard = ({ project, mobile }) => {
             <CardDescription>
               Start
               <p className="flex items-center gap-2">
-                <Calendar /> <span>{project.start_date}</span>
+                <Calendar /> <span>{project.start_date || "N/A"}</span>
               </p>
             </CardDescription>
             <CardDescription>
               End
               <p className="flex items-center gap-2">
-                <Calendar /> <span>{project.deadline}</span>
+                <Calendar /> <span>{project.deadline || "N/A"}</span>
               </p>
             </CardDescription>
           </div>
         </CardFooter>
       </Card>
     );
+  } else {
+    return (
+      <Card
+        ref={drag}
+        className={`cursor-grab border ${isDragging ? "opacity-50" : ""}`}
+      >
+        <CardHeader>
+          <div className="flex items-center justify-between w-full">
+            <CardTitle className="text-xl">{project.name || "N/A"}</CardTitle>
+            {getStatusBadge()}
+          </div>
+          <CardDescription>{project.project_id}</CardDescription>
+          <CardDescription>Manager: {project.manager_name || project.project_manager || "N/A"}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-600">
+            Description: {project.description || "N/A"}
+          </p>
+        </CardContent>
+        <CardFooter>
+          <div className="flex items-center justify-between w-full">
+            <CardDescription>
+              Start
+              <p className="flex items-center gap-2">
+                <Calendar /> <span>{project.start_date || "N/A"}</span>
+              </p>
+            </CardDescription>
+            <CardDescription>
+              End
+              <p className="flex items-center gap-2">
+                <Calendar /> <span>{project.deadline || "N/A"}</span>
+              </p>
+              </CardDescription>
+              <EllipsisVertical className="h-4 w-4 text-gray-500" />
+            </div>
+          </CardFooter>
+        </Card>
+      );
   }
-
-  return (
-    <Card
-      ref={drag}
-      className={`cursor-grab border ${isDragging ? "opacity-50" : ""}`}
-    >
-      <CardHeader>
-        <div className="flex items-center justify-between w-full">
-          <CardTitle className="capitalize text-xl">{project.project_name}</CardTitle>
-          {getStatusBadge()}
-        </div>
-        <CardDescription>{project.project_id}</CardDescription>
-        <CardDescription>Manager: {project.manager_name || "N/A"}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-gray-600">
-          Description: {project.project_description}
-        </p>
-      </CardContent>
-      <CardFooter>
-        <div className="flex items-center justify-between w-full">
-          <CardDescription>
-            Start
-            <p className="flex items-center gap-2">
-              <Calendar /> <span>{project.start_date}</span>
-            </p>
-          </CardDescription>
-          <CardDescription>
-            End
-            <p className="flex items-center gap-2">
-              <Calendar /> <span>{project.deadline}</span>
-            </p>
-          </CardDescription>
-          <EllipsisVertical className="h-4 w-4 text-gray-500" />
-        </div>
-      </CardFooter>
-    </Card>
-  );
 };
-
 export default Project_kanban_board;
