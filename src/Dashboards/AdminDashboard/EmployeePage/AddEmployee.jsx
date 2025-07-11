@@ -147,8 +147,9 @@ const AddEmployee = ({
       shift: "",
       hired_date: "",
       streams: {},
-      location: "", // Added location field
+      location: "", 
     });
+    
     setErrors({
       employee_name: "",
       username: "",
