@@ -61,8 +61,32 @@ const AdminPurchaseHome = () => {
         "Account Management": { icon: <Users size={24} />, color: "bg-emerald-500" },
     };
 
+    const featureRoutes = {
+        "Manager Dashboard": "/admin/manager",
+        "HR-Management": "/admin/hr-management",
+        "Employment Management": "/admin/employee",
+        "Supervisor Management": "/admin/supervisor",
+        "Help Desk": "/admin/helpdesk",
+        "Project Management": "/admin/projectManagement",
+        "KPI Employee": "/admin/ManagerPerformance",
+        "Training & Development": "/admin/training-programs",
+        "KPI Manager": "/admin/ManagerPerformance",
+        "FeedBack": "/admin/feedback",
+        "Others": "/admin/other",
+        "Inventory": "/admin/inventory",
+        "Account Management": "/admin/account-management",
+    };
+
     const handleFeatureClick = (featureName) => {
         console.log(`Navigating to ${featureName} feature...`);
+        const route = featureRoutes[featureName];
+        if (route) {
+            navigate(route);
+        } else {
+            console.warn(`No route defined for feature: ${featureName}`);
+            // Fallback to a generic route or show an error message
+            navigate(`/admin/feature/${featureName.toLowerCase().replace(/\s+/g, '-')}`);
+        }
     };
 
     return (
