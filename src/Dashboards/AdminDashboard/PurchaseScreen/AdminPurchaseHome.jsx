@@ -84,7 +84,6 @@ const AdminPurchaseHome = () => {
             navigate(route);
         } else {
             console.warn(`No route defined for feature: ${featureName}`);
-            // Fallback to a generic route or show an error message
             navigate(`/admin/feature/${featureName.toLowerCase().replace(/\s+/g, '-')}`);
         }
     };
