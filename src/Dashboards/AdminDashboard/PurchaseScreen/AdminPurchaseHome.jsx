@@ -1,41 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { User, ShoppingCart, Package, Users, ChevronDown, File, HelpingHand, MessageCircle, Users2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import EmptyCart from "../../../assets/Images/EmptyCart.png"
+import axios from 'axios';
+import EmptyCart from "../../../assets/Images/EmptyCart.png";
+
+const baseApi = process.env.VITE_BASE_API;
 
 const AdminPurchaseHome = () => {
     const [selectedFeatures, setSelectedFeatures] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [userInfo, setUserInfo] = useState(JSON.parse(localStorage.getItem("userdata")));
     const navigate = useNavigate();
 
-    //Selected features load form ls
+    // Update userInfo when localStorage changes
     useEffect(() => {
-        const storedFeatures = localStorage.getItem("purchasedFeatures");
-        if (storedFeatures) {
-            try {
-                const parsedFeatures = JSON.parse(storedFeatures);
-                setSelectedFeatures(parsedFeatures);
-            } catch (error) {
-                setSelectedFeatures([]);
-            }
-        }
-    }, []);
-
-    //Ls changes - user navigate to store
-    useEffect(() => {
-        const handleStorageChange = (e) => {
-            if (e.key === "purchasedFeatures") {
-                try {
-                    const parsedFeatures = JSON.parse(e.newValue || "[]");
-                    setSelectedFeatures(parsedFeatures);
-                } catch (error) {
-                    console.error("Error parsing updated features:", error);
-                }
-            }
+        const handleStorageChange = () => {
+            setUserInfo(JSON.parse(localStorage.getItem("userdata")));
         };
 
         window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
+        // Update userInfo immediately in case localStorage was updated
+        setUserInfo(JSON.parse(localStorage.getItem("userdata")));
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
     }, []);
+
+    // Fetch purchased features when userInfo changes
+    useEffect(() => {
+        const fetchFeatures = async () => {
+            setLoading(true);
+            setSelectedFeatures([]); // Reset features to avoid stale data
+            try {
+                if (userInfo?.user_id) {
+                    const response = await axios.get(`${baseApi}/api/admin/${userInfo.user_id}/features/`);
+                    setSelectedFeatures(response.data.features || []);
+                }
+            } catch (error) {
+                console.error("Error fetching features:", error);
+                setSelectedFeatures([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchFeatures();
+    }, [userInfo]);
 
     const handleNavigateToStore = () => {
         navigate("/admin/purchase-icon");
@@ -78,15 +89,23 @@ const AdminPurchaseHome = () => {
     };
 
     const handleFeatureClick = (featureName) => {
-        console.log(`Navigating to ${featureName} feature...`);
-        const route = featureRoutes[featureName];
-        if (route) {
-            navigate(route);
-        } else {
-            console.warn(`No route defined for feature: ${featureName}`);
-            navigate(`/admin/feature/${featureName.toLowerCase().replace(/\s+/g, '-')}`);
-        }
-    };
+    console.log(`Navigating to ${featureName} feature...`);
+    const route = featureRoutes[featureName];
+    if (route) {
+        navigate(route);
+    } else {
+        console.warn(`No route defined for feature: ${featureName}`);
+        navigate(`/admin/feature/${featureName.toLowerCase().replace(/\s+/g, '-')}`);
+    }
+};
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex justify-center items-center">
+                <p className="text-gray-600 text-lg">Loading...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -114,8 +133,8 @@ const AdminPurchaseHome = () => {
 
                                     return (
                                         <div
-                                            key={index}
-                                            className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform"
+                                            key={`${feature}-${index}`}
+                                            className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform hover:-translate-y-1"
                                             onClick={() => handleFeatureClick(feature)}
                                         >
                                             <div className="flex flex-col items-center text-center">
@@ -135,10 +154,9 @@ const AdminPurchaseHome = () => {
                             </div>
                         </div>
 
-                        {/* ACTION BUTTONS */}
                         <div className="flex justify-center space-x-4">
                             <button
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform"
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                 onClick={handleNavigateToStore}
                             >
                                 <span className="text-base">Store</span>
@@ -146,7 +164,7 @@ const AdminPurchaseHome = () => {
                             </button>
 
                             <button
-                                className="bg-green-600 hover:bg-green-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform"
+                                className="bg-green-600 hover:bg-green-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                 onClick={handleNavigateToDashboard}
                             >
                                 <span className="text-base">Go to Dashboard</span>
@@ -156,7 +174,6 @@ const AdminPurchaseHome = () => {
                     </>
                 ) : (
                     <>
-                        {/* EMPTY ITEM */}
                         <div className="mb-12 flex justify-center">
                             <div className="w-64 h-64 flex items-center justify-center">
                                 <img
@@ -167,13 +184,12 @@ const AdminPurchaseHome = () => {
                             </div>
                         </div>
 
-                        {/* CALL TO ACTION */}
                         <div className="text-center">
                             <p className="text-gray-700 text-lg mb-8 max-w-md mx-auto leading-relaxed">
                                 Click on the Store button below to explore and purchase features for your dashboard.
                             </p>
                             <button
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform"
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                 onClick={handleNavigateToStore}
                             >
                                 <span className="text-base">Visit Store</span>
