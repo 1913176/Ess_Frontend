@@ -300,6 +300,8 @@ import ManagerDeliveryChallan from "./Dashboards/ManagerDashboard/ManagerBilling
 import AdminInventory from "./Dashboards/AdminDashboard/AdminInventory/Inventory.jsx";
 import AdminItemsPage from "./Dashboards/AdminDashboard/AdminInventory/Items/ItemsPage.jsx";
 import AdminItemDetails from "./Dashboards/AdminDashboard/AdminInventory/Items/ItemDetails.jsx";
+import AdminPurchaseHome from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseHome.jsx";
+import AdminPurchaseIcon from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseIcon.jsx";
 
 
 export default function App() {
@@ -322,19 +324,16 @@ export default function App() {
 
               {/* Admin Dashboard */}
               <Route path="admin" element={<AdminDashboard />}>
+                <Route index element={<AdminPurchaseHome />} />
+                <Route path="purchase-icon" element={<AdminPurchaseIcon />} />
+                <Route path="home" element={<AdminHome />} />
 
               {/* billing pages */}
               <Route path="inventory" element={<AdminInventory />}>
                   <Route index element={<AdminItemsPage />} />
-                  
                   <Route path="itemspage" element={<AdminItemsPage />} />
                   <Route path="itemdetails/:id" element={<AdminItemDetails />} />
-                  
                 </Route>
-
-               
-
-               
               <Route path="helpdesk" element={<AdminHelpDesk />} />
                 <Route index element={<AdminHome />} />
                 <Route path="manager" element={<ManagerManagementLayout />}>

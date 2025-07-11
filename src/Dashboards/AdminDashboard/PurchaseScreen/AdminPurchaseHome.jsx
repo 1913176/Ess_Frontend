@@ -1,0 +1,167 @@
+import React, { useState, useEffect } from 'react';
+import { User, ShoppingCart, Package, Users, ChevronDown, File, HelpingHand, MessageCircle, Users2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import EmptyCart from "../../../assets/Images/EmptyCart.png"
+
+const AdminPurchaseHome = () => {
+    const [selectedFeatures, setSelectedFeatures] = useState([]);
+    const navigate = useNavigate();
+
+    //Selected features load form ls
+    useEffect(() => {
+        const storedFeatures = localStorage.getItem("purchasedFeatures");
+        if (storedFeatures) {
+            try {
+                const parsedFeatures = JSON.parse(storedFeatures);
+                setSelectedFeatures(parsedFeatures);
+            } catch (error) {
+                setSelectedFeatures([]);
+            }
+        }
+    }, []);
+
+    //Ls changes - user navigate to store
+    useEffect(() => {
+        const handleStorageChange = (e) => {
+            if (e.key === "purchasedFeatures") {
+                try {
+                    const parsedFeatures = JSON.parse(e.newValue || "[]");
+                    setSelectedFeatures(parsedFeatures);
+                } catch (error) {
+                    console.error("Error parsing updated features:", error);
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
+    const handleNavigateToStore = () => {
+        navigate("/admin/purchase-icon");
+    };
+
+    const handleNavigateToDashboard = () => {
+        navigate("/admin");
+    };
+
+    const featureMap = {
+        "Manager Dashboard": { icon: <Users size={24} />, color: "bg-blue-500" },
+        "HR-Management": { icon: <Users size={24} />, color: "bg-green-500" },
+        "Employment Management": { icon: <Users size={24} />, color: "bg-purple-500" },
+        "Supervisor Management": { icon: <Users size={24} />, color: "bg-orange-500" },
+        "Help Desk": { icon: <HelpingHand size={24} />, color: "bg-yellow-500" },
+        "Project Management": { icon: <File size={24} />, color: "bg-red-500" },
+        "KPI Employee": { icon: <Users2 size={24} />, color: "bg-indigo-500" },
+        "Training & Development": { icon: <Users2 size={24} />, color: "bg-pink-500" },
+        "KPI Manager": { icon: <Users2 size={24} />, color: "bg-teal-500" },
+        "FeedBack": { icon: <MessageCircle size={24} />, color: "bg-cyan-500" },
+        "Others": { icon: <Users size={24} />, color: "bg-gray-500" },
+        "Inventory": { icon: <Package size={24} />, color: "bg-amber-500" },
+        "Account Management": { icon: <Users size={24} />, color: "bg-emerald-500" },
+    };
+
+    const handleFeatureClick = (featureName) => {
+        console.log(`Navigating to ${featureName} feature...`);
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <main className="max-w-6xl mx-auto px-6 py-16">
+                <div className="text-center mb-12">
+                    <h2 className="text-4xl font-bold text-blue-600 mb-3">Welcome, Admin!</h2>
+                    <p className="text-gray-600 text-lg">
+                        {selectedFeatures.length > 0
+                            ? `You have ${selectedFeatures.length} purchased features in your dashboard.`
+                            : "Your dashboard looks a bit empty right now."
+                        }
+                    </p>
+                </div>
+
+                {selectedFeatures.length > 0 ? (
+                    <>
+                        <div className="mb-12">
+                            <h3 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Your Purchased Features</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                {selectedFeatures.map((feature, index) => {
+                                    const featureData = featureMap[feature] || {
+                                        icon: <Package size={24} />,
+                                        color: "bg-gray-500"
+                                    };
+
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform hover:-translate-y-1"
+                                            onClick={() => handleFeatureClick(feature)}
+                                        >
+                                            <div className="flex flex-col items-center text-center">
+                                                <div className="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center mb-3">
+                                                    {featureData.icon}
+                                                </div>
+                                                <h4 className="text-sm font-medium text-gray-900 text-center leading-tight mb-3">
+                                                    {feature}
+                                                </h4>
+                                                <span className="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                                    Active
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* ACTION BUTTONS */}
+                        <div className="flex justify-center space-x-4">
+                            <button
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                onClick={handleNavigateToStore}
+                            >
+                                <span className="text-base">Store</span>
+                                <ShoppingCart className="w-5 h-5" />
+                            </button>
+
+                            <button
+                                className="bg-green-600 hover:bg-green-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                onClick={handleNavigateToDashboard}
+                            >
+                                <span className="text-base">Go to Dashboard</span>
+                                <ChevronDown className="w-5 h-5 rotate-[-90deg]" />
+                            </button>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        {/* EMPTY ITEM */}
+                        <div className="mb-12 flex justify-center">
+                            <div className="w-64 h-64 flex items-center justify-center">
+                                <img
+                                    src={EmptyCart}
+                                    alt="Empty Cart"
+                                    className="max-w-full max-h-full object-contain"
+                                />
+                            </div>
+                        </div>
+
+                        {/* CALL TO ACTION */}
+                        <div className="text-center">
+                            <p className="text-gray-700 text-lg mb-8 max-w-md mx-auto leading-relaxed">
+                                Click on the Store button below to explore and purchase features for your dashboard.
+                            </p>
+                            <button
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                onClick={handleNavigateToStore}
+                            >
+                                <span className="text-base">Visit Store</span>
+                                <ShoppingCart className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </>
+                )}
+            </main>
+        </div>
+    );
+};
+
+export default AdminPurchaseHome;

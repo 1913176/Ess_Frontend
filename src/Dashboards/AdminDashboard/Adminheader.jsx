@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ess_logo from "../../assets/Images/ess_logo.png";
 import {
   Calendar,
@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import axios from "axios";
+import { Shop2 } from "@mui/icons-material";
 const baseApi = process.env.VITE_BASE_API;
 const UserInfo = JSON.parse(localStorage.getItem("userdata"));
 const side_bar = [
@@ -46,10 +47,10 @@ const side_bar = [
     icon: <Users />,
   },
   //{
-   // link: "/admin/ar-management",
+  // link: "/admin/ar-management",
   //  name: "AR-Management",
-   // icon: <Users />,
- // },
+  // icon: <Users />,
+  // },
   {
     link: "/admin/employee",
     name: "Employee Management",
@@ -98,17 +99,30 @@ const side_bar = [
   {
     link: "inventory",
     name: "Inventory",
-    icon: <Package/>,
+    icon: <Package />,
   },
   {
     link: "account-management",
     name: "Account Management",
     icon: <Users />,
   },
+  {
+    link: "/admin",
+    name: "Store",
+    icon: <Shop2 />,
+  },
 ];
+
+
 const Adminheader = () => {
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const goPurchaseStore = () => {
+    navigate("/admin");
+  }
+
   const HandleLogOut = async () => {
     const res = await axios.post(`${baseApi}/admin/logout/`);
     localStorage.clear();
@@ -116,12 +130,16 @@ const Adminheader = () => {
     navigate("/login");
   };
 
+  const Picons = localStorage.getItem("purchasedFeatures")?.split(",") || [];
+
+  const PurchasedIcons = side_bar.filter((i) => Picons.includes(i.name));
+
   return (
     <div className="header h-[50px] bg-white z-50 sticky top-0 left-0">
       <nav className="navbar flex justify-between items-center bg-white py-2 px-2 gap-6 border-b">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
-            <Link onClick={() => setIsOpenSidebar(!isOpenSidebar)}>
+            <Link to="/admin" className="flex items-center gap-3">
               <img src={ess_logo} alt="Ess Logo" width={25} height={25} />
             </Link>
             <div className="flex justify-between items-center sm:w-[100px] md:w-[200px] lg:w-[150px]">
@@ -171,9 +189,8 @@ const Adminheader = () => {
         </div>
       </nav>
       <div
-        className={`side_bar z-10 left-0 flex bg-white justify-center items-center transition-all overflow-hidden ease-in-out duration-300 h-screen ${
-          isOpenSidebar ? "w-full opacity-100" : "w-0 opacity-0"
-        }`}
+        className={`side_bar z-10 left-0 flex bg-white justify-center items-center transition-all overflow-hidden ease-in-out duration-300 h-screen ${isOpenSidebar ? "w-full opacity-100" : "w-0 opacity-0"
+          }`}
       >
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 place-items-center">
           {side_bar.map((link) => (
@@ -182,8 +199,7 @@ const Adminheader = () => {
               key={link.name}
               className={({ isActive }) =>
                 `flex flex-col justify-center items-center drop-shadow-lg
-                h-24 w-24 rounded-lg gap-5 shadow-lg font-semibold bg-blue-600 text-white ${
-                  isActive ? "bg-blue-500 text-white" : ""
+                h-24 w-24 rounded-lg gap-5 shadow-lg font-semibold bg-blue-600 text-white ${isActive ? "bg-blue-500 text-white" : ""
                 }`
               }
               onClick={() => setIsOpenSidebar(false)}
