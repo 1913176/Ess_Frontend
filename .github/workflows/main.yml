@@ -21,14 +21,14 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
-        working-directory: ess-frontent-main-may12
+        working-directory: ess-frontend-main-may12
 
       - name: Build Project
         run: npm run build
-        working-directory: ess-frontent-main-may12
+        working-directory: ess-frontend-main-may12
 
       - name: Debug – List Dist Folder
-        run: ls -la ess-frontent-main-may12/dist
+        run: ls -la ess-frontend-main-may12/dist
 
       - name: Ensure target directory exists on EC2
         uses: appleboy/ssh-action@v1.0.0
