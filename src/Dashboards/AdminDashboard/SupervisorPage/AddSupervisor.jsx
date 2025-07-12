@@ -45,7 +45,9 @@ const AddSupervisor = ({
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/admin/overall-location/`);
+        const response = await axios.get(
+          `${apiBaseUrl}/admin/overall-location/`,
+        );
         setLocationList(response.data);
       } catch (error) {
         console.error("Error fetching locations:", error);
@@ -109,20 +111,20 @@ const AddSupervisor = ({
     const formData = new FormData();
     Object.entries(SupervisorData).forEach(([key, value]) => {
       if (value !== null && value !== "") {
-        formData.append(key, value);
+        if (key === "streams") {
+          formData.append(key, JSON.stringify(value)); // <-- Fix here
+        } else {
+          formData.append(key, value);
+        }
       }
     });
 
     try {
-      await axios.post(
-        `${apiBaseUrl}/admin/supervisor/add/`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      await axios.post(`${apiBaseUrl}/admin/supervisor/add/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       fetchSupervisorList();
       setOpen(false);
       toast.success("Supervisor Added Successfully");
@@ -134,23 +136,29 @@ const AddSupervisor = ({
 
         if (errorData.email) {
           toast.error(
-            Array.isArray(errorData.email) ? errorData.email[0] : errorData.email
+            Array.isArray(errorData.email)
+              ? errorData.email[0]
+              : errorData.email,
           );
         } else if (errorData.password) {
           toast.error(
             Array.isArray(errorData.password)
               ? errorData.password[0]
-              : errorData.password
+              : errorData.password,
           );
         } else if (errorData.errors) {
           toast.error(
-            Array.isArray(errorData.errors) ? errorData.errors[0] : errorData.errors
+            Array.isArray(errorData.errors)
+              ? errorData.errors[0]
+              : errorData.errors,
           );
         } else {
           const firstKey = Object.keys(errorData)[0];
           const message = errorData[firstKey];
           toast.error(
-            Array.isArray(message) ? message[0] : message || "Something went wrong. Please try again."
+            Array.isArray(message)
+              ? message[0]
+              : message || "Something went wrong. Please try again.",
           );
         }
       } else {
@@ -163,7 +171,9 @@ const AddSupervisor = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[600px] bg-white rounded-lg shadow-lg">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-gray-900">Add Supervisor</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-gray-900">
+            Add Supervisor
+          </DialogTitle>
         </DialogHeader>
         <form className="space-y-4 w-full p-4" onSubmit={HandleAddSupervisor}>
           <div className="grid gap-4">
@@ -178,7 +188,10 @@ const AddSupervisor = ({
                   onChange={(e) => {
                     const value = e.target.value;
                     if (/^[A-Za-z\s]*$/.test(value)) {
-                      setSupervisorData({ ...SupervisorData, supervisor_name: value });
+                      setSupervisorData({
+                        ...SupervisorData,
+                        supervisor_name: value,
+                      });
                       setErrors({ ...errors, supervisor_name: "" });
                     } else {
                       setErrors({
@@ -190,7 +203,9 @@ const AddSupervisor = ({
                   required
                 />
                 {errors.supervisor_name && (
-                  <p className="text-red-500 text-xs mt-1">{errors.supervisor_name}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.supervisor_name}
+                  </p>
                 )}
               </div>
             </div>
@@ -203,13 +218,18 @@ const AddSupervisor = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.email}
                 onChange={(e) =>
-                  setSupervisorData({ ...SupervisorData, email: e.target.value })
+                  setSupervisorData({
+                    ...SupervisorData,
+                    email: e.target.value,
+                  })
                 }
               />
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Gender</label>
+              <label className="text-sm font-medium text-gray-700">
+                Gender
+              </label>
               <select
                 required
                 onInvalid={(e) =>
@@ -219,7 +239,10 @@ const AddSupervisor = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.gender}
                 onChange={(e) =>
-                  setSupervisorData({ ...SupervisorData, gender: e.target.value })
+                  setSupervisorData({
+                    ...SupervisorData,
+                    gender: e.target.value,
+                  })
                 }
               >
                 <option value="">Select Gender</option>
@@ -244,7 +267,10 @@ const AddSupervisor = ({
                         dob: "Future date should not be accepted",
                       });
                     } else {
-                      setSupervisorData({ ...SupervisorData, dob: e.target.value });
+                      setSupervisorData({
+                        ...SupervisorData,
+                        dob: e.target.value,
+                      });
                       setErrors({ ...errors, dob: "" });
                     }
                   }}
@@ -257,7 +283,9 @@ const AddSupervisor = ({
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Profile image</label>
+              <label className="text-sm font-medium text-gray-700">
+                Profile image
+              </label>
               <input
                 type="file"
                 accept="image/*"
@@ -265,7 +293,10 @@ const AddSupervisor = ({
                 onChange={(e) => {
                   const file = e.target.files[0];
                   if (file) {
-                    setSupervisorData({ ...SupervisorData, supervisor_image: file });
+                    setSupervisorData({
+                      ...SupervisorData,
+                      supervisor_image: file,
+                    });
                   }
                 }}
                 required
@@ -273,7 +304,9 @@ const AddSupervisor = ({
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Username</label>
+              <label className="text-sm font-medium text-gray-700">
+                Username
+              </label>
               <div className="col-span-2">
                 <input
                   type="text"
@@ -301,7 +334,9 @@ const AddSupervisor = ({
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">User password</label>
+              <label className="text-sm font-medium text-gray-700">
+                User password
+              </label>
               <div className="col-span-2 relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -309,7 +344,10 @@ const AddSupervisor = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
                   value={SupervisorData.password}
                   onChange={(e) =>
-                    setSupervisorData({ ...SupervisorData, password: e.target.value })
+                    setSupervisorData({
+                      ...SupervisorData,
+                      password: e.target.value,
+                    })
                   }
                   required
                 />
@@ -318,13 +356,19 @@ const AddSupervisor = ({
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                  {showPassword ? (
+                    <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Location</label>
+              <label className="text-sm font-medium text-gray-700">
+                Location
+              </label>
               <select
                 required
                 onInvalid={(e) =>
@@ -334,7 +378,10 @@ const AddSupervisor = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.location}
                 onChange={(e) =>
-                  setSupervisorData({ ...SupervisorData, location: e.target.value })
+                  setSupervisorData({
+                    ...SupervisorData,
+                    location: e.target.value,
+                  })
                 }
               >
                 <option value="" disabled>
@@ -349,7 +396,9 @@ const AddSupervisor = ({
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Department</label>
+              <label className="text-sm font-medium text-gray-700">
+                Department
+              </label>
               <select
                 required
                 onInvalid={(e) =>
@@ -359,7 +408,10 @@ const AddSupervisor = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.department}
                 onChange={(e) =>
-                  setSupervisorData({ ...SupervisorData, department: e.target.value })
+                  setSupervisorData({
+                    ...SupervisorData,
+                    department: e.target.value,
+                  })
                 }
               >
                 <option value="" disabled>
@@ -384,7 +436,10 @@ const AddSupervisor = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.shift}
                 onChange={(e) =>
-                  setSupervisorData({ ...SupervisorData, shift: e.target.value })
+                  setSupervisorData({
+                    ...SupervisorData,
+                    shift: e.target.value,
+                  })
                 }
               >
                 <option value="" disabled>
@@ -399,7 +454,9 @@ const AddSupervisor = ({
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Hired Date</label>
+              <label className="text-sm font-medium text-gray-700">
+                Hired Date
+              </label>
               <div className="col-span-2">
                 <input
                   type="date"
@@ -413,14 +470,19 @@ const AddSupervisor = ({
                         hired_date: "Future date should not be accepted",
                       });
                     } else {
-                      setSupervisorData({ ...SupervisorData, hired_date: e.target.value });
+                      setSupervisorData({
+                        ...SupervisorData,
+                        hired_date: e.target.value,
+                      });
                       setErrors({ ...errors, hired_date: "" });
                     }
                   }}
                   required
                 />
                 {errors.hired_date && (
-                  <p className="text-red-500 text-xs mt-1">{errors.hired_date}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.hired_date}
+                  </p>
                 )}
               </div>
             </div>

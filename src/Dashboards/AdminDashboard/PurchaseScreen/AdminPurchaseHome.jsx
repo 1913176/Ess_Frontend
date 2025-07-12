@@ -53,7 +53,7 @@ const AdminPurchaseHome = () => {
     };
 
     const handleNavigateToDashboard = () => {
-        navigate("/admin");
+        navigate("/admin/home");
     };
 
     const featureMap = {
@@ -134,7 +134,7 @@ const AdminPurchaseHome = () => {
                                     return (
                                         <div
                                             key={`${feature}-${index}`}
-                                            className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform hover:-translate-y-1"
+                                            className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform "
                                             onClick={() => handleFeatureClick(feature)}
                                         >
                                             <div className="flex flex-col items-center text-center">
@@ -156,7 +156,7 @@ const AdminPurchaseHome = () => {
 
                         <div className="flex justify-center space-x-4">
                             <button
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform "
                                 onClick={handleNavigateToStore}
                             >
                                 <span className="text-base">Store</span>
@@ -164,7 +164,7 @@ const AdminPurchaseHome = () => {
                             </button>
 
                             <button
-                                className="bg-green-600 hover:bg-green-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                className="bg-green-600 hover:bg-green-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform "
                                 onClick={handleNavigateToDashboard}
                             >
                                 <span className="text-base">Go to Dashboard</span>
@@ -189,7 +189,7 @@ const AdminPurchaseHome = () => {
                                 Click on the Store button below to explore and purchase features for your dashboard.
                             </p>
                             <button
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg inline-flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform "
                                 onClick={handleNavigateToStore}
                             >
                                 <span className="text-base">Visit Store</span>
