@@ -14,39 +14,40 @@ const AdminPurchaseHome = () => {
 
     // Update userInfo when localStorage changes
     useEffect(() => {
-        const handleStorageChange = () => {
-            setUserInfo(JSON.parse(localStorage.getItem("userdata")));
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        // Update userInfo immediately in case localStorage was updated
+    const handleStorageChange = () => {
         setUserInfo(JSON.parse(localStorage.getItem("userdata")));
+    };
 
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
-    }, []);
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
+}, []);
 
     // Fetch purchased features when userInfo changes
     useEffect(() => {
-        const fetchFeatures = async () => {
-            setLoading(true);
-            setSelectedFeatures([]); // Reset features to avoid stale data
-            try {
-                if (userInfo?.user_id) {
-                    const response = await axios.get(`${baseApi}/api/admin/${userInfo.user_id}/features/`);
-                    setSelectedFeatures(response.data.features || []);
-                }
-            } catch (error) {
-                console.error("Error fetching features:", error);
-                setSelectedFeatures([]);
-            } finally {
-                setLoading(false);
+    const fetchFeatures = async () => {
+        setLoading(true);
+        setSelectedFeatures([]); // Reset features to avoid stale data
+        try {
+            if (userInfo?.user_id) {
+                const response = await axios.get(`${baseApi}/api/admin/${userInfo.user_id}/features/`);
+                setSelectedFeatures(response.data.features || []);
             }
-        };
+        } catch (error) {
+            console.error("Error fetching features:", error);
+            setSelectedFeatures([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    if (userInfo?.user_id) {
         fetchFeatures();
-    }, [userInfo]);
+    } else {
+        setLoading(false);
+    }
+}, [userInfo?.user_id]);
 
     const handleNavigateToStore = () => {
         navigate("/admin/purchase-icon");
