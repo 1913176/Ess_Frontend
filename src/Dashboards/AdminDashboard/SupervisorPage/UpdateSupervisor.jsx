@@ -32,12 +32,24 @@ const UpdateSupervisor = ({
     department: "",
     shift: "",
     hired_date: "",
+    streams: {},
     location: "",
   });
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const streamOptions = [
+    "Attendance",
+    "Leave Management",
+    "Help Desk",
+    "Todo",
+    "Profile",
+    "View Requests",
+    "News",
+  ];
+  const subComponents = ["Admin", "Manager", "User", "Management"];
 
   useEffect(() => {
     const fetchSupervisorData = async () => {
@@ -47,6 +59,27 @@ const UpdateSupervisor = ({
         const { data } = await axios.get(
           `${apiBaseUrl}/api/supervisor/get/${supervisorId}/`
         );
+
+        // Normalize streams to expected format: { [stream]: [subComponents] }
+        let normalizedStreams = {};
+        if (data.streams && typeof data.streams === "object" && !Array.isArray(data.streams)) {
+          normalizedStreams = { ...data.streams };
+        } else if (Array.isArray(data.streams)) {
+          // If backend sends as array, convert to object with empty arrays
+          data.streams.forEach((stream) => {
+            normalizedStreams[stream] = [];
+          });
+        } else if (typeof data.streams === "string") {
+          try {
+            const parsed = JSON.parse(data.streams);
+            if (typeof parsed === "object" && !Array.isArray(parsed)) {
+              normalizedStreams = parsed;
+            }
+          } catch {
+            // fallback: ignore
+          }
+        }
+
         setSupervisorData({
           supervisor_name: data.supervisor_name,
           email: data.email,
@@ -59,6 +92,7 @@ const UpdateSupervisor = ({
           department: data.department,
           shift: data.shift,
           hired_date: data.hired_date,
+          streams: normalizedStreams,
           location: data.location || "",
         });
       } catch (err) {
@@ -69,6 +103,32 @@ const UpdateSupervisor = ({
 
     fetchSupervisorData();
   }, [supervisorId]);
+
+   const handleStreamChange = (stream) => {
+    setSupervisorData((prev) => {
+      const newStreams = { ...prev.streams };
+      if (newStreams[stream]) {
+        delete newStreams[stream];
+      } else {
+        newStreams[stream] = [];
+      }
+      return { ...prev, streams: newStreams };
+    });
+  };
+
+  const handleSubComponentChange = (stream, subComponent) => {
+    setSupervisorData((prev) => {
+      const newStreams = { ...prev.streams };
+      const currentSubComponents = newStreams[stream] || [];
+      if (currentSubComponents.includes(subComponent)) {
+        newStreams[stream] = currentSubComponents.filter((sc) => sc !== subComponent);
+      } else {
+        newStreams[stream] = [...currentSubComponents, subComponent];
+      }
+      return { ...prev, streams: newStreams };
+    });
+  };
+
 
   const validateForm = () => {
     const newErrors = {};
@@ -103,6 +163,9 @@ const UpdateSupervisor = ({
       isValid = false;
     }
 
+    if (Object.keys(SupervisorData.streams).length === 0)
+      newErrors.streams = "Please select at least one stream";
+
     if (!SupervisorData.location) {
       newErrors.location = "Please select a location";
       isValid = false;
@@ -112,8 +175,10 @@ const UpdateSupervisor = ({
     return isValid;
   };
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
+     if (errors.streams) toast.error(errors.streams);
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -122,7 +187,11 @@ const UpdateSupervisor = ({
     Object.entries(SupervisorData).forEach(([key, value]) => {
       if (key === "supervisor_image" && !value) return;
       if (key === "supervisor_id") return;
-      formData.append(key, value);
+       if (key === "streams") {
+        formData.append("streams", JSON.stringify(value));
+      } else {
+        formData.append(key, value);
+      }
     });
 
     try {
@@ -142,6 +211,8 @@ const UpdateSupervisor = ({
         setErrors({ email: err.email });
       } else if (err?.plain_password) {
         setErrors({ plain_password: err.plain_password });
+        } else if (err?.streams) {
+        setErrors({ streams: Array.isArray(err.streams) ? err.streams[0] : err.streams });
       } else {
         toast.error("Failed to update supervisor.");
       }
@@ -152,7 +223,7 @@ const UpdateSupervisor = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[600px] bg-white rounded-lg shadow-lg">
+      <DialogContent className="sm:max-w-[600px] bg-white rounded-lg shadow-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-900">Update Supervisor</DialogTitle>
         </DialogHeader>
@@ -203,6 +274,47 @@ const UpdateSupervisor = ({
                 <option>Other</option>
               </select>
             </div>
+
+             {/* Stream */}
+                <div className="grid grid-cols-3 items-start gap-3">
+                  <label className="text-sm font-medium text-gray-700">Stream</label>
+                  <div className="col-span-2 space-y-2">
+                    {streamOptions.map((stream) => (
+                      <div key={stream}>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={!!SupervisorData.streams[stream]}
+                            onChange={() => handleStreamChange(stream)}
+                            className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                          />
+                          <span className="text-sm text-gray-700">{stream}</span>
+                        </label>
+                        {SupervisorData.streams[stream] && (
+                          <div className="ml-6 mt-2 space-y-1">
+                            {subComponents.map((subComponent) => (
+                              <label key={subComponent} className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={
+                                    Array.isArray(SupervisorData.streams[stream]) &&
+                                    SupervisorData.streams[stream].includes(subComponent)
+                                  }
+                                  onChange={() => handleSubComponentChange(stream, subComponent)}
+                                  className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                />
+                                <span className="text-sm text-gray-600">{subComponent}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {errors.streams && (
+                      <p className="text-red-500 text-xs mt-1">{errors.streams}</p>
+                    )}
+                  </div>
+                </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
               <label className="text-sm font-medium text-gray-700">Date of Birth</label>

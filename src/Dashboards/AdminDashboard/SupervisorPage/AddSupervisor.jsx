@@ -30,6 +30,7 @@ const AddSupervisor = ({
     department: "",
     shift: "",
     hired_date: "",
+    streams: {},
     location: "",
   });
 
@@ -39,6 +40,16 @@ const AddSupervisor = ({
     dob: "",
     hired_date: "",
   });
+  const streamOptions = [
+    "Attendance",
+    "Leave Management",
+    "Help Desk",
+    "Todo",
+    "profile",
+    "View Requests",
+    "News",
+  ];
+  const subComponents = ["Admin", "Manager", "User", "Management"];
 
   const [LocationList, setLocationList] = useState([]);
 
@@ -92,6 +103,11 @@ const AddSupervisor = ({
       isValid = false;
     }
 
+    if (Object.keys(SupervisorData.streams).length === 0) {
+          toast.error("Please select at least one stream");
+          isValid = false;
+        }
+
     if (!SupervisorData.location) {
       toast.error("Please select a location");
       isValid = false;
@@ -101,6 +117,39 @@ const AddSupervisor = ({
     return isValid;
   };
 
+   const handleStreamChange = (stream) => {
+    setSupervisorData((prevData) => {
+      const newStreams = { ...prevData.streams };
+      if (newStreams[stream]) {
+        // Uncheck stream
+        delete newStreams[stream];
+      } else {
+        // Check stream with empty subcomponents
+        newStreams[stream] = [];
+      }
+      return { ...prevData, streams: newStreams };
+    });
+  };
+
+  const handleSubComponentChange = (stream, subComponent) => {
+    setSupervisorData((prevData) => {
+      const existing = prevData.streams[stream] || [];
+      const isSelected = existing.includes(subComponent);
+      const updatedSub = isSelected
+        ? existing.filter((item) => item !== subComponent)
+        : [...existing, subComponent];
+
+      return {
+        ...prevData,
+        streams: {
+          ...prevData.streams,
+          [stream]: updatedSub,
+        },
+      };
+    });
+  };
+
+
   const HandleAddSupervisor = async (e) => {
     e.preventDefault();
 
@@ -109,15 +158,13 @@ const AddSupervisor = ({
     }
 
     const formData = new FormData();
-    Object.entries(SupervisorData).forEach(([key, value]) => {
-      if (value !== null && value !== "") {
-        if (key === "streams") {
-          formData.append(key, JSON.stringify(value)); // <-- Fix here
-        } else {
-          formData.append(key, value);
-        }
-      }
-    });
+     Object.entries(SupervisorData).forEach(([key, value]) => {
+    if (key === "streams") {
+      formData.append("streams", JSON.stringify(value)); 
+    } else if (value !== null && value !== "") {
+      formData.append(key, value);
+    }
+  });
 
     try {
       await axios.post(`${apiBaseUrl}/admin/supervisor/add/`, formData, {
@@ -169,7 +216,7 @@ const AddSupervisor = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[600px] bg-white rounded-lg shadow-lg">
+      <DialogContent className="sm:max-w-[600px] bg-white rounded-lg shadow-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-900">
             Add Supervisor
@@ -250,6 +297,45 @@ const AddSupervisor = ({
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
               </select>
+            </div>
+
+            {/* Stream */}
+            <div className="grid grid-cols-3 items-start gap-3">
+              <label className="text-sm font-medium text-gray-700 mt-1">
+                Stream
+              </label>
+              <div className="col-span-2 space-y-2">
+                {streamOptions.map((stream) => (
+                  <div key={stream}>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={!!SupervisorData.streams[stream]}
+                        onChange={() => handleStreamChange(stream)}
+                        className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-gray-700">{stream}</span>
+                    </label>
+
+                    {/* Subcomponents */}
+                    {SupervisorData.streams[stream] && (
+                      <div className="ml-6 mt-2 space-y-1">
+                        {subComponents.map((subComponent) => (
+                          <label key={subComponent} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              checked={SupervisorData.streams[stream].includes(subComponent)}
+                              onChange={() => handleSubComponentChange(stream, subComponent)}
+                              className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                            />
+                            <span className="text-sm text-gray-600">{subComponent}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
