@@ -45,7 +45,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           source: "ess-frontent-main-may12/dist/*"
