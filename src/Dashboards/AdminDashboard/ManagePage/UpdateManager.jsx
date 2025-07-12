@@ -851,11 +851,11 @@ const UpdateManager = ({
           manager_id: data.manager_id,
           username: data.username,
           password: "",
-          department: data.department?.id || "",
+          department: data.department?.toString() || "",
           streams: streams,
-          shift: data.shift?.id || "",
+          shift: data.shift?.toString() || "",
           hired_date: data.hired_date,
-          location: data.location?.id || "",
+          location: data.location?.toString() || "",
         });
 
         if (data.manager_image) {
@@ -1205,7 +1205,7 @@ const UpdateManager = ({
                     Select Location
                   </option>
                   {LocationList.map((location) => (
-                    <option key={location.id} value={location.id}>
+                    <option key={location.id} value={location.id.toString()}>
                       {location.location_name}
                     </option>
                   ))}
@@ -1269,14 +1269,14 @@ const UpdateManager = ({
                 </label>
                 <select
                   className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
-                  value={ManagerData.shift}
+                  value={ManagerData.shift?.toString()}
                   onChange={(e) =>
                     setManagerData({ ...ManagerData, shift: e.target.value })
                   }
                 >
                   <option value="">Select Shift</option>
                   {ShiftList.map((s) => (
-                    <option key={s.id} value={s.id}>
+                    <option key={s.id} value={s.id?.toString()}>
                       {s.shift_number}
                     </option>
                   ))}
@@ -1289,43 +1289,50 @@ const UpdateManager = ({
                   Stream
                 </label>
                 <div className="col-span-2 space-y-2 max-h-40 overflow-y-auto p-2 border border-gray-200 rounded-lg">
-                  {streamOptions.map((stream) => (
-                    <div key={stream} className="mb-2">
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={!!ManagerData.streams[stream]}
-                          onChange={() => handleStreamChange(stream)}
-                          className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                        />
-                        <span className="text-sm text-gray-700">{stream}</span>
-                      </label>
-                      {ManagerData.streams[stream] && (
-                        <div className="ml-6 mt-1 space-y-1">
-                          {subComponents.map((subComponent) => (
-                            <label
-                              key={subComponent}
-                              className="flex items-center space-x-2"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={ManagerData.streams[stream]?.includes(
-                                  subComponent,
-                                )}
-                                onChange={() =>
-                                  handleSubComponentChange(stream, subComponent)
-                                }
-                                className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                              />
-                              <span className="text-sm text-gray-600">
-                                {subComponent}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  {streamOptions.length > 0 &&
+                    ManagerData.streams &&
+                    streamOptions.map((stream) => (
+                      <div key={stream} className="mb-2">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={!!ManagerData.streams[stream]}
+                            onChange={() => handleStreamChange(stream)}
+                            className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                          />
+                          <span className="text-sm text-gray-700">
+                            {stream}
+                          </span>
+                        </label>
+                        {ManagerData.streams[stream] && (
+                          <div className="ml-6 mt-1 space-y-1">
+                            {subComponents.map((subComponent) => (
+                              <label
+                                key={subComponent}
+                                className="flex items-center space-x-2"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={ManagerData.streams[
+                                    stream
+                                  ]?.includes(subComponent)}
+                                  onChange={() =>
+                                    handleSubComponentChange(
+                                      stream,
+                                      subComponent,
+                                    )
+                                  }
+                                  className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                />
+                                <span className="text-sm text-gray-600">
+                                  {subComponent}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>

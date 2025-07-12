@@ -91,7 +91,6 @@ import ManagerHRSalary from "./Dashboards/AdminDashboard/HRManagement/ManagerHRS
 import ManagerHRPayroll from "./Dashboards/AdminDashboard/HRManagement/ManagerHRPayroll";
 import ManagerHRLateLoginReason from "./Dashboards/AdminDashboard/HRManagement/ManagerHRLateLoginReason.jsx";
 
-
 //AR Dashboards imports
 import ARManagementLayout from "./Dashboards/AdminDashboard/ARManagement/ARManagementLayout";
 import ManagerARAttendance from "./Dashboards/AdminDashboard/ARManagement/ManagerARAttendance";
@@ -103,10 +102,7 @@ import ManagerARLeavePolicies from "./Dashboards/AdminDashboard/ARManagement/Man
 import ManagerARSalary from "./Dashboards/AdminDashboard/ARManagement/ManagerARSalary";
 import ManagerARPayroll from "./Dashboards/AdminDashboard/ARManagement/ManagerARPayroll";
 
-
-
 //Account Dashboards imports
-
 
 import AccountManagementLayout from "./Dashboards/AdminDashboard/AccountManagement/AccountManagementLayout";
 import AccountManagementClientDash from "./Dashboards/AdminDashboard/AccountManagement/AccountClientDashboard.jsx";
@@ -123,8 +119,6 @@ import EmployeeAccountManagementClientDash from "./Dashboards/EmployeeDashboard/
 // import AccountInvoices from "./Dashboards/AdminDashboard/AccountManagement/AccountInvoices.jsx";
 import EmployeeAccountReports from "./Dashboards/EmployeeDashboard/AccountManagement/AccountReports.jsx";
 // import AccountBillings from "./Dashboards/AdminDashboard/AccountManagement/AccountBillings.jsx";
-
-
 
 // Manager Dashboards imports
 import ManagerDashboard from "./Dashboards/ManagerDashboard/ManagerDashboard.jsx";
@@ -200,7 +194,6 @@ import Employee_Attendance from "./Dashboards/EmployeeDashboard/EmployeeAttendan
 import EmployeeSalary from "./Dashboards/EmployeeDashboard/EmployeeSalary/EmployeeSalary.jsx";
 import EmployeeLateLoginReason from "./Dashboards/AdminDashboard/EmployeePage/EmployeeLateLoginReason";
 
-
 import KPILayout from "./Dashboards/EmployeeDashboard/KPI_Page/KPILayout.jsx";
 import TrainingCertification from "./Dashboards/EmployeeDashboard/TrainingCertification/TrainingCertification.jsx";
 import PreformanceReviews from "./Dashboards/EmployeeDashboard/KPI_Page/PreformanceReviews.jsx";
@@ -251,10 +244,6 @@ import { AuthProvider } from "./context/authContext.jsx";
 import AdminOtherLayout from "./Dashboards/AdminDashboard/Others/AdminOtherLayout.jsx";
 import ProjectManagementLayout from "./Dashboards/AdminDashboard/ProjectManagement/ProjectManagementLayout.jsx";
 
-
-
-
-
 //Employee Billing Page imports
 import Billing from "./Dashboards/EmployeeDashboard/EmployeeBilling/Billing.jsx";
 import Parties from "./Dashboards/EmployeeDashboard/EmployeeBilling/Partiespage/Parties.jsx";
@@ -274,7 +263,6 @@ import CreditInvoice from "./Dashboards/EmployeeDashboard/EmployeeBilling/Credit
 import PaymentList from "./Dashboards/EmployeeDashboard/EmployeeBilling/PaymentIn/PaymentList";
 import CreateDeliverychallan from "./Dashboards/EmployeeDashboard/EmployeeBilling/DeliveryChallan/CreateDeliverychallan";
 import DeliveryChallan from "./Dashboards/EmployeeDashboard/EmployeeBilling/DeliveryChallan/DeliveryChallan";
-
 
 //Manager Billing Page imports
 import ManagerBilling from "./Dashboards/ManagerDashboard/ManagerBilling/Billing.jsx";
@@ -303,7 +291,6 @@ import AdminItemDetails from "./Dashboards/AdminDashboard/AdminInventory/Items/I
 import AdminPurchaseHome from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseHome.jsx";
 import AdminPurchaseIcon from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseIcon.jsx";
 
-
 export default function App() {
   return (
     // <>
@@ -328,25 +315,30 @@ export default function App() {
                 <Route path="purchase-icon" element={<AdminPurchaseIcon />} />
                 <Route path="home" element={<AdminHome />} />
 
-              {/* billing pages */}
-              <Route path="inventory" element={<AdminInventory />}>
+                {/* billing pages */}
+                <Route path="inventory" element={<AdminInventory />}>
                   <Route index element={<AdminItemsPage />} />
                   <Route path="itemspage" element={<AdminItemsPage />} />
-                  <Route path="itemdetails/:id" element={<AdminItemDetails />} />
+                  <Route
+                    path="itemdetails/:id"
+                    element={<AdminItemDetails />}
+                  />
                 </Route>
-              <Route path="helpdesk" element={<AdminHelpDesk />} />
+                <Route path="helpdesk" element={<AdminHelpDesk />} />
                 <Route index element={<AdminHome />} />
                 <Route path="manager" element={<ManagerManagementLayout />}>
                   <Route index element={<ManagerList />} />
                   <Route path="managerList" element={<ManagerList />} />
                   <Route path="attendance" element={<ManagerAttendance />} />
-                  <Route path="late-login-reason" element={<ManagerLateLoginReason />} />
+                  <Route
+                    path="late-login-reason"
+                    element={<ManagerLateLoginReason />}
+                  />
                   <Route
                     path="attendanceReset"
                     element={<ManagerAttendanceReset />}
                   />
                   <Route path="chart" element={<ManagerChart />} />
-                  
 
                   <Route
                     path="manager-leave-policies"
@@ -390,19 +382,19 @@ export default function App() {
                   <Route path="ar-payroll" element={<ManagerARPayroll />} />
                 </Route>
 
-                <Route path="account-management" element={<AccountManagementLayout />}>
+                <Route
+                  path="account-management"
+                  element={<AccountManagementLayout />}
+                >
                   <Route index element={<AccountManagementClientDash />} />
-                  <Route path="employeeDash" element={<AccountManagementEmployeeDash />} />
+                  <Route
+                    path="employeeDash"
+                    element={<AccountManagementEmployeeDash />}
+                  />
                   {/* <Route path="invoices" element={<AccountInvoices />} /> */}
                   <Route path="reports" element={<AccountReports />} />
                   {/* <Route path="billings" element={<AccountBillings />} /> */}
-                  
                 </Route>
-
-              
-
-                  
-
 
                 <Route
                   path="kpi-manager"
@@ -438,7 +430,10 @@ export default function App() {
                 <Route path="employee" element={<EmployeeManagementLayout />}>
                   <Route index element={<EmployeeList />} />
                   <Route path="attendance" element={<EmployeeAttendance />} />
-                  <Route path="late-login-reason" element={<EmployeeLateLoginReason />} />
+                  <Route
+                    path="late-login-reason"
+                    element={<EmployeeLateLoginReason />}
+                  />
                   <Route
                     path="attendanceReset"
                     element={<EmployeeAttendanceReset />}
@@ -458,7 +453,10 @@ export default function App() {
                 >
                   <Route index element={<SupervisorList />} />
                   <Route path="attendance" element={<SupervisorAttendance />} />
-                  <Route path="late-login-reason" element={<SupervisorLateLoginReason />} />
+                  <Route
+                    path="late-login-reason"
+                    element={<SupervisorLateLoginReason />}
+                  />
                   <Route
                     path="attendanceReset"
                     element={<SupervisorAttendanceReset />}
@@ -517,25 +515,52 @@ export default function App() {
 
               {/* Manager Dashboard */}
               <Route path="manager" element={<ManagerDashboard />}>
-              {/* billing pages */}
-             <Route path="billing" element={<ManagerBilling />}>
+                {/* billing pages */}
+                <Route path="billing" element={<ManagerBilling />}>
                   <Route index element={<ManagerParties />} />
                   <Route path="createparty" element={<ManagerCreateParty />} />
-                  <Route path="partydetails/:id" element={<ManagerPartyDetails />} />
-                  <Route path="createsalesinvoice" element={<ManagerCreateSalesInvoice />} />
+                  <Route
+                    path="partydetails/:id"
+                    element={<ManagerPartyDetails />}
+                  />
+                  <Route
+                    path="createsalesinvoice"
+                    element={<ManagerCreateSalesInvoice />}
+                  />
                   <Route path="itemspage" element={<ManagerItemsPage />} />
-                  <Route path="itemdetails/:id" element={<ManagerItemDetails />} />
-                  <Route path="salesinvoice" element={<ManagerSalesInvoice />} />
+                  <Route
+                    path="itemdetails/:id"
+                    element={<ManagerItemDetails />}
+                  />
+                  <Route
+                    path="salesinvoice"
+                    element={<ManagerSalesInvoice />}
+                  />
                   <Route path="paymentin" element={<ManagerPaymentIn />} />
                   <Route path="quotation" element={<ManagerQuotation />} />
-                  <Route path="quotationestimate" element={<ManagerQuotationEstimate />} />
-                  <Route path="proformainvoice" element={<ManagerProformaInvoice />} />
+                  <Route
+                    path="quotationestimate"
+                    element={<ManagerQuotationEstimate />}
+                  />
+                  <Route
+                    path="proformainvoice"
+                    element={<ManagerProformaInvoice />}
+                  />
                   <Route path="invoice" element={<ManagerInvoice />} />
                   <Route path="creditnote" element={<ManagerCreditNote />} />
-                  <Route path="creditinvoice" element={<ManagerCreditInvoice />} />
+                  <Route
+                    path="creditinvoice"
+                    element={<ManagerCreditInvoice />}
+                  />
                   <Route path="paymentlist" element={<ManagerPaymentList />} />
-                  <Route path="deliverychallen" element={<ManagerDeliveryChallan />} />
-                  <Route path="createdeliverychallan" element={<ManagerCreateDeliverychallan />} />
+                  <Route
+                    path="deliverychallen"
+                    element={<ManagerDeliveryChallan />}
+                  />
+                  <Route
+                    path="createdeliverychallan"
+                    element={<ManagerCreateDeliverychallan />}
+                  />
                 </Route>
                 <Route index element={<ManagerHome />} />
                 <Route
@@ -545,8 +570,6 @@ export default function App() {
                 <Route path="ManagerTask" element={<ManagerTaskManagement />} />
 
                 <Route path="helpDesk" element={<ManagerHelpDesk />} />
-
-                
 
                 <Route
                   path="EmployeeTask"
@@ -684,7 +707,10 @@ export default function App() {
                     path="manager-leave-policies"
                     element={<ManagerHrLeavePolicies />}
                   />
-                  <Route path="late-login-reason" element={<ManagerHRLateLoginReason />} />
+                  <Route
+                    path="late-login-reason"
+                    element={<ManagerHRLateLoginReason />}
+                  />
                   <Route path="manager-leave" element={<ManagerHrLeave />} />
                   <Route path="manager-salary" element={<ManagerHrSalary />} />
                   <Route
@@ -814,8 +840,6 @@ export default function App() {
                 <Route path="*" element={<ErrorPage path={"/supervisor"} />} />
               </Route>
 
-             
-
               {/* Employee Dashboard */}
               <Route path="employee" element={<EmployeeDashboardLayout />}>
                 {/* billing pages */}
@@ -823,22 +847,30 @@ export default function App() {
                   <Route index element={<Parties />} />
                   <Route path="createparty" element={<CreateParty />} />
                   <Route path="partydetails/:id" element={<PartyDetails />} />
-                  <Route path="createsalesinvoice" element={<CreateSalesInvoice />} />
+                  <Route
+                    path="createsalesinvoice"
+                    element={<CreateSalesInvoice />}
+                  />
                   <Route path="itemspage" element={<ItemsPage />} />
                   <Route path="itemdetails/:id" element={<ItemDetails />} />
                   <Route path="salesinvoice" element={<SalesInvoice />} />
                   <Route path="paymentin" element={<PaymentIn />} />
                   <Route path="quotation" element={<Quotation />} />
-                  <Route path="quotationestimate" element={<QuotationEstimate />} />
+                  <Route
+                    path="quotationestimate"
+                    element={<QuotationEstimate />}
+                  />
                   <Route path="proformainvoice" element={<ProformaInvoice />} />
                   <Route path="invoice" element={<Invoice />} />
                   <Route path="creditnote" element={<CreditNote />} />
                   <Route path="creditinvoice" element={<CreditInvoice />} />
                   <Route path="paymentlist" element={<PaymentList />} />
                   <Route path="deliverychallen" element={<DeliveryChallan />} />
-                  <Route path="createdeliverychallan" element={<CreateDeliverychallan />} />
+                  <Route
+                    path="createdeliverychallan"
+                    element={<CreateDeliverychallan />}
+                  />
                 </Route>
-
 
                 <Route index element={<EmployeeDashboard />} />
                 <Route path="task" element={<EmployeeTask />} />
@@ -848,15 +880,20 @@ export default function App() {
                 <Route path="salary" element={<EmployeeSalary />} />
                 <Route path="helpDesk" element={<EmployeeHelpDesk />} />
 
-                  <Route path="account-management" element={<EmployeeAccountManagementLayout />}>
-                  <Route index element={<EmployeeAccountManagementClientDash />} />
+                <Route
+                  path="account-management"
+                  element={<EmployeeAccountManagementLayout />}
+                >
+                  <Route
+                    index
+                    element={<EmployeeAccountManagementClientDash />}
+                  />
                   {/* <Route path="employeeDash" element={<EmployeeAccountManagementEmployeeDash />} /> */}
                   {/* <Route path="invoices" element={<AccountInvoices />} /> */}
                   <Route path="reports" element={<EmployeeAccountReports />} />
                   {/* <Route path="billings" element={<AccountBillings />} /> */}
-                  
                 </Route>
-                
+
                 <Route path="kpi" element={<KPILayout />}>
                   <Route index element={<PreformanceReviews />} />
                   <Route path="performance" element={<PreformanceReviews />} />

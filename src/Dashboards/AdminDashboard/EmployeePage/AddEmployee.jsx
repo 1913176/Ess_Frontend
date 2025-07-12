@@ -58,14 +58,16 @@ const AddEmployee = ({
   }, []);
 
   const streamOptions = [
-    "Accounts",
-    "HR",
+    "Task",
+    "Todo",
     "Attendance",
     "Leave",
-    "Project Management",
+    "Salary",
     "KPI",
-    "Training",
+    "Training Certification",
     "Help Desk",
+    "Billing",
+    "Account Management"
   ];
   const subComponents = ["Admin", "Manager", "User", "Management"];
 

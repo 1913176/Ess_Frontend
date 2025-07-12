@@ -18,7 +18,7 @@ const AddHRManager = ({
   ShiftList,
   DepartmentList,
 }) => {
-  const [ManagerData, setManagerData] = useState({
+  const [HRManagerData, setHRManagerData] = useState({
     hr_name: "",
     email: "",
     gender: "",
@@ -80,60 +80,60 @@ const AddHRManager = ({
     const newErrors = { ...errors };
     const today = new Date().toISOString().split("T")[0];
 
-    if (!/^[A-Za-z\s]+$/.test(ManagerData.hr_name)) {
+    if (!/^[A-Za-z\s]+$/.test(HRManagerData.hr_name)) {
       newErrors.hr_name = "Name should only contain alphabets and spaces";
       isValid = false;
     } else {
       newErrors.hr_name = "";
     }
 
-    if (!/^[A-Za-z\s]+$/.test(ManagerData.username)) {
+    if (!/^[A-Za-z\s]+$/.test(HRManagerData.username)) {
       newErrors.username = "Username should only contain alphabets and spaces";
       isValid = false;
     } else {
       newErrors.username = "";
     }
 
-    if (ManagerData.dob > today) {
+    if (HRManagerData.dob > today) {
       newErrors.dob = "Future date is not allowed";
       isValid = false;
     } else {
       newErrors.dob = "";
     }
 
-    if (ManagerData.hired_date > today) {
+    if (HRManagerData.hired_date > today) {
       newErrors.hired_date = "Future date is not allowed";
       isValid = false;
     } else {
       newErrors.hired_date = "";
     }
 
-    if (!ManagerData.gender) {
+    if (!HRManagerData.gender) {
       toast.error("Please select a gender");
       isValid = false;
     }
 
-    if (!ManagerData.department) {
+    if (!HRManagerData.department) {
       toast.error("Please select a department");
       isValid = false;
     }
 
-    if (!ManagerData.shift) {
+    if (!HRManagerData.shift) {
       toast.error("Please select a shift");
       isValid = false;
     }
 
-    if (!ManagerData.location) {
+    if (!HRManagerData.location) {
       toast.error("Please select a location");
       isValid = false;
     }
 
-    if (!ManagerData.password || ManagerData.password.length < 6) {
+    if (!HRManagerData.password || HRManagerData.password.length < 6) {
       toast.error("Password must be at least 6 characters long");
       isValid = false;
     }
 
-    if (Object.keys(EmployeeData.streams).length === 0) {
+    if (Object.keys(HRManagerData.streams).length === 0) {
       toast.error("Please select at least one stream");
       isValid = false;
     }
@@ -143,12 +143,12 @@ const AddHRManager = ({
   };
 
   const resetForm = () => {
-    setEmployeeData({
-      employee_name: "",
+    setHRManagerData({
+      hr_name: "",
       email: "",
       gender: "",
       dob: "",
-      employee_image: null,
+      hr_image: null,
       username: "",
       password: "",
       department: "",
@@ -159,7 +159,7 @@ const AddHRManager = ({
     });
 
     setErrors({
-      employee_name: "",
+      hr_name: "",
       username: "",
       dob: "",
       hired_date: "",
@@ -169,7 +169,7 @@ const AddHRManager = ({
   };
 
   const handleStreamChange = (stream) => {
-    setEmployeeData((prev) => {
+    setHRManagerData((prev) => {
       const newStreams = { ...prev.streams };
       if (newStreams[stream]) {
         delete newStreams[stream];
@@ -181,7 +181,7 @@ const AddHRManager = ({
   };
 
   const handleSubComponentChange = (stream, subComponent) => {
-    setEmployeeData((prev) => {
+    setHRManagerData((prev) => {
       const newStreams = { ...prev.streams };
       const currentSubComponents = newStreams[stream] || [];
       if (currentSubComponents.includes(subComponent)) {
@@ -205,7 +205,7 @@ const AddHRManager = ({
 
     const formData = new FormData();
 
-    Object.entries(ManagerData).forEach(([key, value]) => {
+    Object.entries(HRManagerData).forEach(([key, value]) => {
       if (key === "streams") {
         formData.append("streams", JSON.stringify(value));
       } else if (value !== null && value !== "") {
@@ -250,7 +250,7 @@ const AddHRManager = ({
       <DialogContent className="sm:max-w-[5000px] bg-white rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-900">
-            Add HR
+            Add HR Manager
           </DialogTitle>
         </DialogHeader>
         <form className="space-y-4 w-full p-4" onSubmit={HandleAddHr}>
@@ -268,13 +268,13 @@ const AddHRManager = ({
                       type="text"
                       placeholder="Enter name"
                       className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      value={ManagerData.hr_name}
+                      value={HRManagerData.hr_name}
                       required
                       onChange={(e) => {
                         const value = e.target.value;
                         if (/^[A-Za-z\s]*$/.test(value)) {
-                          setManagerData({
-                            ...ManagerData,
+                          setHRManagerData({
+                            ...HRManagerData,
                             hr_name: value,
                           });
                           setErrors({ ...errors, hr_name: "" });
@@ -306,10 +306,10 @@ const AddHRManager = ({
                     required
                     placeholder="Enter email address"
                     className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
-                    value={ManagerData.email}
+                    value={HRManagerData.email}
                     onChange={(e) =>
-                      setManagerData({
-                        ...ManagerData,
+                      setHRManagerData({
+                        ...HRManagerData,
                         email: e.target.value,
                       })
                     }
@@ -323,11 +323,11 @@ const AddHRManager = ({
                   </label>
                   <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
-                    value={ManagerData.gender}
+                    value={HRManagerData.gender}
                     required
                     onChange={(e) =>
-                      setManagerData({
-                        ...ManagerData,
+                      setHRManagerData({
+                        ...HRManagerData,
                         gender: e.target.value,
                       })
                     }
@@ -350,7 +350,7 @@ const AddHRManager = ({
                         <label className="flex items-center space-x-2">
                           <input
                             type="checkbox"
-                            checked={!!EmployeeData.streams[stream]}
+                            checked={!!HRManagerData.streams[stream]}
                             onChange={() => handleStreamChange(stream)}
                             className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                           />
@@ -358,7 +358,7 @@ const AddHRManager = ({
                             {stream}
                           </span>
                         </label>
-                        {EmployeeData.streams[stream] && (
+                        {HRManagerData.streams[stream] && (
                           <div className="ml-6 mt-2 space-y-1">
                             {subComponents.map((subComponent) => (
                               <label
@@ -367,7 +367,7 @@ const AddHRManager = ({
                               >
                                 <input
                                   type="checkbox"
-                                  checked={EmployeeData.streams[
+                                  checked={HRManagerData.streams[
                                     stream
                                   ]?.includes(subComponent)}
                                   onChange={() =>
@@ -401,7 +401,7 @@ const AddHRManager = ({
                       required
                       max={new Date().toISOString().split("T")[0]}
                       className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      value={ManagerData.dob}
+                      value={HRManagerData.dob}
                       onChange={(e) => {
                         const today = new Date().toISOString().split("T")[0];
                         if (e.target.value > today) {
@@ -410,8 +410,8 @@ const AddHRManager = ({
                             dob: "Future date is not allowed",
                           });
                         } else {
-                          setManagerData({
-                            ...ManagerData,
+                          setHRManagerData({
+                            ...HRManagerData,
                             dob: e.target.value,
                           });
                           setErrors({ ...errors, dob: "" });
@@ -439,8 +439,8 @@ const AddHRManager = ({
                     onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
-                        setManagerData({
-                          ...ManagerData,
+                        setHRManagerData({
+                          ...HRManagerData,
                           hr_image: file,
                         });
                       }
@@ -460,12 +460,12 @@ const AddHRManager = ({
                       placeholder="Enter username"
                       required
                       className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      value={ManagerData.username}
+                      value={HRManagerData.username}
                       onChange={(e) => {
                         const value = e.target.value;
                         if (/^[A-Za-z\s]*$/.test(value)) {
-                          setManagerData({
-                            ...ManagerData,
+                          setHRManagerData({
+                            ...HRManagerData,
                             username: value,
                           });
                           setErrors({ ...errors, username: "" });
@@ -497,10 +497,10 @@ const AddHRManager = ({
                       required
                       placeholder="Enter password"
                       className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
-                      value={ManagerData.password}
+                      value={HRManagerData.password}
                       onChange={(e) =>
-                        setManagerData({
-                          ...ManagerData,
+                        setHRManagerData({
+                          ...HRManagerData,
                           password: e.target.value,
                         })
                       }
@@ -527,10 +527,10 @@ const AddHRManager = ({
                   <select
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
-                    value={ManagerData.location}
+                    value={HRManagerData.location}
                     onChange={(e) =>
-                      setManagerData({
-                        ...ManagerData,
+                      setHRManagerData({
+                        ...HRManagerData,
                         location: e.target.value,
                       })
                     }
@@ -554,10 +554,10 @@ const AddHRManager = ({
                   <select
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
-                    value={ManagerData.department}
+                    value={HRManagerData.department}
                     onChange={(e) =>
-                      setManagerData({
-                        ...ManagerData,
+                      setHRManagerData({
+                        ...HRManagerData,
                         department: e.target.value,
                       })
                     }
@@ -581,10 +581,10 @@ const AddHRManager = ({
                   <select
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
-                    value={ManagerData.shift}
+                    value={HRManagerData.shift}
                     onChange={(e) =>
-                      setManagerData({
-                        ...ManagerData,
+                      setHRManagerData({
+                        ...HRManagerData,
                         shift: e.target.value,
                       })
                     }
@@ -611,7 +611,7 @@ const AddHRManager = ({
                       required
                       max={new Date().toISOString().split("T")[0]}
                       className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      value={ManagerData.hired_date}
+                      value={HRManagerData.hired_date}
                       onChange={(e) => {
                         const today = new Date().toISOString().split("T")[0];
                         if (e.target.value > today) {
@@ -620,8 +620,8 @@ const AddHRManager = ({
                             hired_date: "Future date is not allowed",
                           });
                         } else {
-                          setManagerData({
-                            ...ManagerData,
+                          setHRManagerData({
+                            ...HRManagerData,
                             hired_date: e.target.value,
                           });
                           setErrors({ ...errors, hired_date: "" });
