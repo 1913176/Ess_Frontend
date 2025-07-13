@@ -10,6 +10,7 @@ import {
   Search,
   User,
   Users2,
+  LogOut,
 } from "lucide-react";
 import ChatContext from "../../context/chatContext";
 
@@ -28,6 +29,7 @@ const side_bar = [
   { link: "/hr/tickets", name: "Tickets", icon: <User /> },
   { link: "/hr/ManagerPerformance", name: "Manager Performance", icon: <User /> },
   { link: "/hr/EmployeePerformance", name: "Employee Performance", icon: <User /> },
+  { name: "Logout", icon: <LogOut />, action: "logout" },
 ];
 
 const baseApi = process.env.VITE_BASE_API;
@@ -40,15 +42,19 @@ const HRHeader = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Load userData and stream-based access
     const storedUser = JSON.parse(localStorage.getItem("userdata") || "{}");
     setUserData(storedUser);
 
     const accessibleFeatures = Object.keys(storedUser?.streams || {});
-    const filteredIcons = side_bar.filter((item) =>
-      accessibleFeatures.includes(item.name)
+    const filtered = side_bar.filter(
+      (item) =>
+        item.name === "Dashboard" ||
+        item.name === "Logout" ||
+        accessibleFeatures.includes(item.name)
     );
-    setPurchasedIcons(filteredIcons);
+
+    const unique = Array.from(new Map(filtered.map(i => [i.name, i])).values());
+    setPurchasedIcons(unique);
   }, []);
 
   const HandleLogOut = async () => {
@@ -70,7 +76,7 @@ const HRHeader = () => {
               </Link>
               <div className="flex justify-between items-center sm:w-[100px] md:w-[200px] lg:w-[150px]">
                 <strong className="leading-tight text-sm hidden md:block w-full">
-                  Employee <br /> Self Services
+                  HR <br /> Self Services
                 </strong>
               </div>
             </div>
@@ -104,7 +110,7 @@ const HRHeader = () => {
                     <p className="text-sm font-bold capitalize">
                       {userData.hr_name || "User"}
                     </p>
-                    <p className="text-[10px] font-normal">Hr Manager</p>
+                    <p className="text-[10px] font-normal">HR Manager</p>
                   </div>
                   <ChevronDown />
                 </div>
@@ -119,39 +125,47 @@ const HRHeader = () => {
             isOpenSidebar ? "w-full opacity-100" : "w-0 opacity-0"
           }`}
         >
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 place-items-center">
-            {purchasedIcons.map((link) => (
-              <NavLink
-                to={link.link}
-                key={link.name}
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center text-center
-                   h-28 w-28 rounded-2xl gap-3 p-4 shadow-md transition-all duration-300
-                   font-medium ${
-                     isActive
-                       ? "bg-blue-500 text-white"
-                       : "bg-white text-blue-600 hover:bg-blue-100"
-                   }`
-                }
-                onClick={() => setIsOpenSidebar(false)}
-              >
-                <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow">
-                  {link.icon}
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 place-items-center p-4">
+            {purchasedIcons.map((link, index) =>
+              link.action === "logout" ? (
+                <div
+                  key={`logout-${index}`}
+                  onClick={HandleLogOut}
+                  className="h-44 w-44 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="bg-red-500 text-white rounded-full w-12 h-12 flex items-center justify-center mb-3">
+                      {link.icon}
+                    </div>
+                    <h4 className="text-sm font-medium text-gray-900 text-center leading-tight mb-3">
+                      {link.name}
+                    </h4>
+                    <span className="inline-block bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      Exit
+                    </span>
+                  </div>
                 </div>
-                <p className="text-sm font-semibold leading-tight">
-                  {link.name}
-                </p>
-              </NavLink>
-            ))}
-
-            {/* Logout Button */}
-            <a
-              className="flex flex-col justify-center items-center drop-shadow-lg
-              h-24 w-24 rounded-lg gap-5 shadow-lg font-semibold bg-blue-600 text-white"
-              onClick={HandleLogOut}
-            >
-              Logout
-            </a>
+              ) : (
+                <NavLink
+                  to={link.link}
+                  key={`${link.name}-${index}`}
+                  className="h-44 w-44 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform"
+                  onClick={() => setIsOpenSidebar(false)}
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center mb-3">
+                      {link.icon}
+                    </div>
+                    <h4 className="text-sm font-medium text-gray-900 text-center leading-tight mb-3">
+                      {link.name}
+                    </h4>
+                    <span className="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      Active
+                    </span>
+                  </div>
+                </NavLink>
+              )
+            )}
           </div>
         </div>
       </div>

@@ -29,10 +29,15 @@ const side_bar = [
   { link: "Leave", name: "Leave", icon: <UserMinus /> },
   { link: "salary", name: "Salary", icon: <DollarSign /> },
   { link: "kpi", name: "KPI", icon: <File /> },
-  { link: "trainingCertification", name: "Training Certification", icon: <File /> },
+  {
+    link: "trainingCertification",
+    name: "Training Certification",
+    icon: <File />,
+  },
   { link: "helpdesk", name: "Help Desk", icon: <HelpingHand /> },
   { link: "billing", name: "Billing", icon: <CreditCard /> },
   { link: "account-management", name: "Account Management", icon: <Users /> },
+  { name: "Logout", icon: <UserMinus />, action: "logout" },
 ];
 
 const EmployeeHeader = () => {
@@ -44,8 +49,16 @@ const EmployeeHeader = () => {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("userdata") || "{}");
     setUserData(storedUser);
+
     const Picons = Object.keys(storedUser.streams || {});
-    const filteredIcons = side_bar.filter((i) => Picons.includes(i.name));
+
+    const filteredIcons = side_bar.filter(
+      (item) =>
+        item.name === "Dashboard" ||
+        item.name === "Logout" ||
+        Picons.includes(item.name),
+    );
+
     setPurchasedIcons(filteredIcons);
   }, []);
 
@@ -92,7 +105,9 @@ const EmployeeHeader = () => {
               <User height={30} width={30} />
               <div className="flex justify-between gap-4 items-center">
                 <div className="flex-col leading-snug hidden md:flex">
-                  <p className="text-sm font-bold">{userData.employee_name || "Employee"}</p>
+                  <p className="text-sm font-bold">
+                    {userData.employee_name || "Employee"}
+                  </p>
                   <p className="text-[10px] font-normal">Developer</p>
                 </div>
                 <ChevronDown />
@@ -108,33 +123,46 @@ const EmployeeHeader = () => {
           }`}
         >
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 place-items-center">
-            {purchasedIcons.map((link) => (
-              <NavLink
-                to={link.link}
-                key={link.name}
-                className={({ isActive }) =>
-                  `flex flex-col justify-center items-center drop-shadow-lg
-                  h-24 w-24 rounded-lg gap-5 shadow-lg font-semibold ${
-                    isActive
-                      ? "bg-blue-500 text-white"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`
-                }
-                onClick={() => setIsOpenSidebar(false)}
-              >
-                <div>{link.icon}</div>
-                <p className="text-sm text-center">{link.name}</p>
-              </NavLink>
-            ))}
-
-            {/* Logout */}
-            <a
-              className="flex flex-col justify-center items-center drop-shadow-lg
-                h-24 w-24 rounded-lg gap-5 shadow-lg font-semibold bg-blue-600 text-white cursor-pointer"
-              onClick={HandleLogOut}
-            >
-              Logout
-            </a>
+            {purchasedIcons.map((link, index) =>
+              link.action === "logout" ? (
+                <div
+                  key={`logout-${index}`}
+                  onClick={HandleLogOut}
+                  className="h-44 w-44 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="bg-red-500 text-white rounded-full w-12 h-12 flex items-center justify-center mb-3">
+                      {link.icon}
+                    </div>
+                    <h4 className="text-sm font-medium text-gray-900 text-center leading-tight mb-3">
+                      {link.name}
+                    </h4>
+                    <span className="inline-block bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                     Exit 
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <NavLink
+                  to={link.link}
+                  key={`${link.name}-${index}`}
+                  className="h-44 w-44 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform"
+                  onClick={() => setIsOpenSidebar(false)}
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center mb-3">
+                      {link.icon}
+                    </div>
+                    <h4 className="text-sm font-medium text-gray-900 text-center leading-tight mb-3">
+                      {link.name}
+                    </h4>
+                    <span className="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      Active
+                    </span>
+                  </div>
+                </NavLink>
+              ),
+            )}
           </div>
         </div>
       </div>

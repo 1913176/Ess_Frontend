@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import ess_logo from "../../assets/Images/ess_logo.png";
-import { toast } from "react-toastify";
 import {
   ChevronDown,
   File,
@@ -12,8 +11,10 @@ import {
   Search,
   User,
   Users,
+  LogOut,
 } from "lucide-react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const baseApi = process.env.VITE_BASE_API;
 
@@ -45,7 +46,7 @@ const side_bar = [
   },
   {
     link: "/supervisor/Profile",
-    name: "profile",
+    name: "Profile",
     icon: <User />,
   },
   {
@@ -58,6 +59,11 @@ const side_bar = [
     name: "News",
     icon: <Newspaper />,
   },
+  {
+    name: "Logout",
+    icon: <LogOut />,
+    action: "logout",
+  },
 ];
 
 const SupervisorHeader = () => {
@@ -69,9 +75,20 @@ const SupervisorHeader = () => {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("userdata") || "{}");
     setUserData(storedUser);
+
     const Picons = Object.keys(storedUser.streams || {});
-    const filtered = side_bar.filter((i) => Picons.includes(i.name));
-    setPurchasedIcons(filtered);
+    const filtered = side_bar.filter(
+      (item) =>
+        item.name === "Dashboard" ||
+        item.name === "Logout" ||
+        Picons.includes(item.name)
+    );
+
+    const uniqueIcons = Array.from(
+      new Map(filtered.map((item) => [item.name, item])).values()
+    );
+
+    setPurchasedIcons(uniqueIcons);
   }, []);
 
   const HandleLogOut = async () => {
@@ -133,33 +150,47 @@ const SupervisorHeader = () => {
             isOpenSidebar ? "w-full opacity-100" : "w-0 opacity-0"
           }`}
         >
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 place-items-center">
-            {purchasedIcons.map((link) => (
-              <NavLink
-                to={link.link}
-                key={link.name}
-                className={({ isActive }) =>
-                  `flex flex-col justify-center items-center drop-shadow-lg
-              h-24 w-24 rounded-lg gap-5 shadow-lg font-semibold ${
-                isActive
-                  ? "bg-blue-500 text-white"
-                  : "bg-blue-600 text-white hover:bg-blue-700"
-              }`
-                }
-                onClick={() => setIsOpenSidebar(false)}
-              >
-                <div>{link.icon}</div>
-                <p className="text-sm text-center">{link.name}</p>
-              </NavLink>
-            ))}
-
-            <a
-              className="flex flex-col justify-center items-center drop-shadow-lg
-                h-24 w-24 rounded-lg gap-5 shadow-lg font-semibold bg-blue-600 text-white cursor-pointer"
-              onClick={HandleLogOut}
-            >
-              Logout
-            </a>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 place-items-center p-4">
+            {purchasedIcons.map((link, index) =>
+              link.action === "logout" ? (
+                <div
+                  key={`logout-${index}`}
+                  onClick={HandleLogOut}
+                  className="h-44 w-44 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="bg-red-500 text-white rounded-full w-12 h-12 flex items-center justify-center mb-3">
+                      {link.icon}
+                    </div>
+                    <h4 className="text-sm font-medium text-gray-900 text-center leading-tight mb-3">
+                      {link.name}
+                    </h4>
+                    <span className="inline-block bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      Exit
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <NavLink
+                  to={link.link}
+                  key={`${link.name}-${index}`}
+                  className="h-44 w-44 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 cursor-pointer transform"
+                  onClick={() => setIsOpenSidebar(false)}
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center mb-3">
+                      {link.icon}
+                    </div>
+                    <h4 className="text-sm font-medium text-gray-900 text-center leading-tight mb-3">
+                      {link.name}
+                    </h4>
+                    <span className="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      Active
+                    </span>
+                  </div>
+                </NavLink>
+              )
+            )}
           </div>
         </div>
       </div>
