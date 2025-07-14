@@ -17,7 +17,6 @@ const UpdateSupervisor = ({
   supervisorId,
   ShiftList,
   DepartmentList,
-  LocationList,
   fetchSupervisorList,
 }) => {
   const [SupervisorData, setSupervisorData] = useState({
@@ -39,6 +38,7 @@ const UpdateSupervisor = ({
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [LocationList, setLocationList] = useState([]);
 
   const streamOptions = [
     "Attendance",
@@ -52,17 +52,37 @@ const UpdateSupervisor = ({
   const subComponents = ["Admin", "Manager", "User", "Management"];
 
   useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await axios.get(
+          `${apiBaseUrl}/admin/overall-location/`,
+        );
+        setLocationList(response.data);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        toast.error("Failed to load locations");
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+  useEffect(() => {
     const fetchSupervisorData = async () => {
       if (!supervisorId) return;
 
       try {
         const { data } = await axios.get(
-          `${apiBaseUrl}/api/supervisor/get/${supervisorId}/`
+          `${apiBaseUrl}/api/supervisor/get/${supervisorId}/`,
         );
 
         // Normalize streams to expected format: { [stream]: [subComponents] }
         let normalizedStreams = {};
-        if (data.streams && typeof data.streams === "object" && !Array.isArray(data.streams)) {
+        if (
+          data.streams &&
+          typeof data.streams === "object" &&
+          !Array.isArray(data.streams)
+        ) {
           normalizedStreams = { ...data.streams };
         } else if (Array.isArray(data.streams)) {
           // If backend sends as array, convert to object with empty arrays
@@ -104,7 +124,7 @@ const UpdateSupervisor = ({
     fetchSupervisorData();
   }, [supervisorId]);
 
-   const handleStreamChange = (stream) => {
+  const handleStreamChange = (stream) => {
     setSupervisorData((prev) => {
       const newStreams = { ...prev.streams };
       if (newStreams[stream]) {
@@ -121,14 +141,15 @@ const UpdateSupervisor = ({
       const newStreams = { ...prev.streams };
       const currentSubComponents = newStreams[stream] || [];
       if (currentSubComponents.includes(subComponent)) {
-        newStreams[stream] = currentSubComponents.filter((sc) => sc !== subComponent);
+        newStreams[stream] = currentSubComponents.filter(
+          (sc) => sc !== subComponent,
+        );
       } else {
         newStreams[stream] = [...currentSubComponents, subComponent];
       }
       return { ...prev, streams: newStreams };
     });
   };
-
 
   const validateForm = () => {
     const newErrors = {};
@@ -155,14 +176,6 @@ const UpdateSupervisor = ({
       isValid = false;
     }
 
-    if (!SupervisorData.plain_password) {
-      newErrors.plain_password = "Password is required";
-      isValid = false;
-    } else if (SupervisorData.plain_password.length < 8) {
-      newErrors.plain_password = "Password must be at least 8 characters";
-      isValid = false;
-    }
-
     if (Object.keys(SupervisorData.streams).length === 0)
       newErrors.streams = "Please select at least one stream";
 
@@ -175,10 +188,9 @@ const UpdateSupervisor = ({
     return isValid;
   };
 
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
-     if (errors.streams) toast.error(errors.streams);
+    if (errors.streams) toast.error(errors.streams);
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -187,7 +199,8 @@ const UpdateSupervisor = ({
     Object.entries(SupervisorData).forEach(([key, value]) => {
       if (key === "supervisor_image" && !value) return;
       if (key === "supervisor_id") return;
-       if (key === "streams") {
+      if (key === "plain_password" && !value) return;
+      if (key === "streams") {
         formData.append("streams", JSON.stringify(value));
       } else {
         formData.append(key, value);
@@ -198,7 +211,7 @@ const UpdateSupervisor = ({
       const res = await axios.put(
         `${apiBaseUrl}/admin/supervisor/${supervisorId}/`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
       toast.success("Supervisor updated successfully");
       fetchSupervisorList();
@@ -211,8 +224,10 @@ const UpdateSupervisor = ({
         setErrors({ email: err.email });
       } else if (err?.plain_password) {
         setErrors({ plain_password: err.plain_password });
-        } else if (err?.streams) {
-        setErrors({ streams: Array.isArray(err.streams) ? err.streams[0] : err.streams });
+      } else if (err?.streams) {
+        setErrors({
+          streams: Array.isArray(err.streams) ? err.streams[0] : err.streams,
+        });
       } else {
         toast.error("Failed to update supervisor.");
       }
@@ -225,7 +240,9 @@ const UpdateSupervisor = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[600px] bg-white rounded-lg shadow-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-gray-900">Update Supervisor</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-gray-900">
+            Update Supervisor
+          </DialogTitle>
         </DialogHeader>
         <form className="space-y-4 w-full p-4" onSubmit={handleSubmit}>
           <div className="grid gap-4">
@@ -237,10 +254,17 @@ const UpdateSupervisor = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={SupervisorData.supervisor_name}
                   onChange={(e) =>
-                    setSupervisorData({ ...SupervisorData, supervisor_name: e.target.value })
+                    setSupervisorData({
+                      ...SupervisorData,
+                      supervisor_name: e.target.value,
+                    })
                   }
                 />
-                {errors.supervisor_name && <p className="text-red-500 text-xs mt-1">{errors.supervisor_name}</p>}
+                {errors.supervisor_name && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.supervisor_name}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -252,20 +276,30 @@ const UpdateSupervisor = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={SupervisorData.email}
                   onChange={(e) =>
-                    setSupervisorData({ ...SupervisorData, email: e.target.value })
+                    setSupervisorData({
+                      ...SupervisorData,
+                      email: e.target.value,
+                    })
                   }
                 />
-                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Gender</label>
+              <label className="text-sm font-medium text-gray-700">
+                Gender
+              </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.gender}
                 onChange={(e) =>
-                  setSupervisorData({ ...SupervisorData, gender: e.target.value })
+                  setSupervisorData({
+                    ...SupervisorData,
+                    gender: e.target.value,
+                  })
                 }
               >
                 <option value="">Select Gender</option>
@@ -275,64 +309,84 @@ const UpdateSupervisor = ({
               </select>
             </div>
 
-             {/* Stream */}
-                <div className="grid grid-cols-3 items-start gap-3">
-                  <label className="text-sm font-medium text-gray-700">Stream</label>
-                  <div className="col-span-2 space-y-2">
-                    {streamOptions.map((stream) => (
-                      <div key={stream}>
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={!!SupervisorData.streams[stream]}
-                            onChange={() => handleStreamChange(stream)}
-                            className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                          />
-                          <span className="text-sm text-gray-700">{stream}</span>
-                        </label>
-                        {SupervisorData.streams[stream] && (
-                          <div className="ml-6 mt-2 space-y-1">
-                            {subComponents.map((subComponent) => (
-                              <label key={subComponent} className="flex items-center space-x-2">
-                                <input
-                                  type="checkbox"
-                                  checked={
-                                    Array.isArray(SupervisorData.streams[stream]) &&
-                                    SupervisorData.streams[stream].includes(subComponent)
-                                  }
-                                  onChange={() => handleSubComponentChange(stream, subComponent)}
-                                  className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                                />
-                                <span className="text-sm text-gray-600">{subComponent}</span>
-                              </label>
-                            ))}
-                          </div>
-                        )}
+            {/* Stream */}
+            <div className="grid grid-cols-3 items-start gap-3">
+              <label className="text-sm font-medium text-gray-700">
+                Stream
+              </label>
+              <div className="col-span-2 space-y-2">
+                {streamOptions.map((stream) => (
+                  <div key={stream}>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={!!SupervisorData.streams[stream]}
+                        onChange={() => handleStreamChange(stream)}
+                        className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-gray-700">{stream}</span>
+                    </label>
+                    {SupervisorData.streams[stream] && (
+                      <div className="ml-6 mt-2 space-y-1">
+                        {subComponents.map((subComponent) => (
+                          <label
+                            key={subComponent}
+                            className="flex items-center space-x-2"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={
+                                Array.isArray(SupervisorData.streams[stream]) &&
+                                SupervisorData.streams[stream].includes(
+                                  subComponent,
+                                )
+                              }
+                              onChange={() =>
+                                handleSubComponentChange(stream, subComponent)
+                              }
+                              className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                            />
+                            <span className="text-sm text-gray-600">
+                              {subComponent}
+                            </span>
+                          </label>
+                        ))}
                       </div>
-                    ))}
-                    {errors.streams && (
-                      <p className="text-red-500 text-xs mt-1">{errors.streams}</p>
                     )}
                   </div>
-                </div>
+                ))}
+                {errors.streams && (
+                  <p className="text-red-500 text-xs mt-1">{errors.streams}</p>
+                )}
+              </div>
+            </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Date of Birth</label>
+              <label className="text-sm font-medium text-gray-700">
+                Date of Birth
+              </label>
               <div className="col-span-2">
                 <input
                   type="date"
                   className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={SupervisorData.dob}
                   onChange={(e) =>
-                    setSupervisorData({ ...SupervisorData, dob: e.target.value })
+                    setSupervisorData({
+                      ...SupervisorData,
+                      dob: e.target.value,
+                    })
                   }
                 />
-                {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}
+                {errors.dob && (
+                  <p className="text-red-500 text-xs mt-1">{errors.dob}</p>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Profile Image</label>
+              <label className="text-sm font-medium text-gray-700">
+                Profile Image
+              </label>
               <input
                 type="file"
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
@@ -346,12 +400,17 @@ const UpdateSupervisor = ({
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Department</label>
+              <label className="text-sm font-medium text-gray-700">
+                Department
+              </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.department}
                 onChange={(e) =>
-                  setSupervisorData({ ...SupervisorData, department: e.target.value })
+                  setSupervisorData({
+                    ...SupervisorData,
+                    department: e.target.value,
+                  })
                 }
               >
                 <option value="">Select Department</option>
@@ -364,7 +423,9 @@ const UpdateSupervisor = ({
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">User ID</label>
+              <label className="text-sm font-medium text-gray-700">
+                User ID
+              </label>
               <input
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm bg-gray-100 col-span-2"
                 value={SupervisorData.supervisor_id}
@@ -373,36 +434,54 @@ const UpdateSupervisor = ({
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Password</label>
+              <label className="text-sm font-medium text-gray-700">
+                Password
+              </label>
               <div className="col-span-2 relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
                   value={SupervisorData.plain_password}
                   onChange={(e) =>
-                    setSupervisorData({ ...SupervisorData, plain_password: e.target.value })
+                    setSupervisorData({
+                      ...SupervisorData,
+                      plain_password: e.target.value,
+                    })
                   }
-                  placeholder="Enter password"
-                  required
+                  placeholder="Leave blank to keep existing password"
                 />
+
                 <button
                   type="button"
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                  {showPassword ? (
+                    <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
+                  )}
                 </button>
-                {errors.plain_password && <p className="text-red-500 text-xs mt-1">{errors.plain_password}</p>}
+                {errors.plain_password && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.plain_password}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Location</label>
+              <label className="text-sm font-medium text-gray-700">
+                Location
+              </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.location}
                 onChange={(e) =>
-                  setSupervisorData({ ...SupervisorData, location: e.target.value })
+                  setSupervisorData({
+                    ...SupervisorData,
+                    location: e.target.value,
+                  })
                 }
                 required
               >
@@ -415,36 +494,54 @@ const UpdateSupervisor = ({
                   </option>
                 ))}
               </select>
-              {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
+              {errors.location && (
+                <p className="text-red-500 text-xs mt-1">{errors.location}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Username</label>
+              <label className="text-sm font-medium text-gray-700">
+                Username
+              </label>
               <div className="col-span-2">
                 <input
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={SupervisorData.username}
                   onChange={(e) =>
-                    setSupervisorData({ ...SupervisorData, username: e.target.value })
+                    setSupervisorData({
+                      ...SupervisorData,
+                      username: e.target.value,
+                    })
                   }
                 />
-                {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
+                {errors.username && (
+                  <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-3 items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Hired Date</label>
+              <label className="text-sm font-medium text-gray-700">
+                Hired Date
+              </label>
               <div className="col-span-2">
                 <input
                   type="date"
                   className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={SupervisorData.hired_date}
                   onChange={(e) =>
-                    setSupervisorData({ ...SupervisorData, hired_date: e.target.value })
+                    setSupervisorData({
+                      ...SupervisorData,
+                      hired_date: e.target.value,
+                    })
                   }
                 />
-                {errors.hired_date && <p className="text-red-500 text-xs mt-1">{errors.hired_date}</p>}
+                {errors.hired_date && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.hired_date}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -454,7 +551,10 @@ const UpdateSupervisor = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                 value={SupervisorData.shift}
                 onChange={(e) =>
-                  setSupervisorData({ ...SupervisorData, shift: e.target.value })
+                  setSupervisorData({
+                    ...SupervisorData,
+                    shift: e.target.value,
+                  })
                 }
               >
                 <option value="">Select Shift</option>
