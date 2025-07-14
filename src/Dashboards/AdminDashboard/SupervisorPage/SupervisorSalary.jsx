@@ -184,7 +184,7 @@ const SupervisorSalary = () => {
             <UpdateSupervisorSalary
               open={updateSalaryPopup}
               setOpen={setUpdateSalaryPopup}
-              salaryId={selectedSalary}
+              salaryId={selectedSalary.id} // Ensure correct ID is passed
               SupervisorList={supervisorList}
               fetchSalaryList={() => queryClient.invalidateQueries(["supervisorSalaries"])}
             />

@@ -36,17 +36,17 @@ const UpdateSupervisorSalary = ({
       if (!salaryId) return;
 
       try {
-        const response = await axios.get(
-          `${apiBaseUrl}/get-supervisor-salary/${salaryId}/`,
-        );
-        if (response.data.length > 0) {
-          const salaryDetails = response.data[0];
+        const response = await axios.get(`${apiBaseUrl}/get-supervisor-salary/${salaryId}/`);
+        if (response.data && !response.data.detail) { // Check if data exists and no error
+          const salaryDetails = response.data;
           setSalaryData({
             user_id: salaryDetails.user_id || "",
             annual_salary: salaryDetails.annual_salary || "",
             bonus: salaryDetails.bonus || "",
-            effective_date: salaryDetails.effective_date || "",
+            effective_date: salaryDetails.effective_date ? salaryDetails.effective_date.slice(0, 7) : "", // Format to YYYY-MM
           });
+        } else {
+          toast.error("Failed to fetch salary details.");
         }
       } catch (error) {
         console.error("Error fetching salary details:", error);
@@ -130,87 +130,84 @@ const UpdateSupervisorSalary = ({
         <form className="space-y-6 w-full" onSubmit={HandleUpdateSalary}>
           <div className="grid gap-6 w-full">
             <div className="space-y-4">
-              {/* <h2 className="font-medium text-gray-700">Salary Details</h2> */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 items-center gap-2 w-full">
-                  <label className="text-sm font-medium">Supervisor Name</label>
-                  <select
-                    id="user_id"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
-                    value={SalaryData.user_id}
-                    onChange={(e) =>
-                      setSalaryData({ ...SalaryData, user_id: e.target.value })
-                    }
-                  >
-                    <option value="" disabled>
-                      Select Supervisor
+              <div className="grid grid-cols-3 items-center gap-2 w-full">
+                <label className="text-sm font-medium">Supervisor Name</label>
+                <select
+                  id="user_id"
+                  className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                  value={SalaryData.user_id}
+                  onChange={(e) =>
+                    setSalaryData({ ...SalaryData, user_id: e.target.value })
+                  }
+                >
+                  <option value="" disabled>
+                    Select Supervisor
+                  </option>
+                  {SupervisorList.map((supervisor) => (
+                    <option
+                      key={supervisor.supervisor_id}
+                      value={supervisor.supervisor_id}
+                    >
+                      {supervisor.supervisor_name}
                     </option>
-                    {SupervisorList.map((supervisor) => (
-                      <option
-                        key={supervisor.supervisor_id}
-                        value={supervisor.supervisor_id}
-                      >
-                        {supervisor.supervisor_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="grid grid-cols-3 items-center gap-2 w-full">
-                  <label className="text-sm font-medium">Annual Salary</label>
-                  <input
-                    type="text"
-                    placeholder="Enter Annual Salary"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
-                    value={SalaryData.annual_salary}
-                    onChange={(e) =>
-                      setSalaryData({
-                        ...SalaryData,
-                        annual_salary: e.target.value,
-                      })
-                    }
-                  />
-                  {errors.annual_salary && (
-                    <p className="text-red-500 text-xs col-span-3">
-                      {errors.annual_salary}
-                    </p>
-                  )}
-                </div>
-                <div className="grid grid-cols-3 items-center gap-2 w-full">
-                  <label className="text-sm font-medium">Bonus</label>
-                  <input
-                    type="text"
-                    placeholder="Enter Bonus"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
-                    value={SalaryData.bonus}
-                    onChange={(e) =>
-                      setSalaryData({ ...SalaryData, bonus: e.target.value })
-                    }
-                  />
-                  {errors.bonus && (
-                    <p className="text-red-500 text-xs col-span-3">
-                      {errors.bonus}
-                    </p>
-                  )}
-                </div>
-                <div className="grid grid-cols-3 items-center gap-2 w-full">
-                  <label className="text-sm font-medium">Effective Date</label>
-                  <input
-                    type="month"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
-                    value={SalaryData.effective_date.slice(0, 7)} // Use YYYY-MM for input
-                    onChange={(e) =>
-                      setSalaryData({
-                        ...SalaryData,
-                        effective_date: e.target.value,
-                      })
-                    }
-                  />
-                  {errors.effective_date && (
-                    <p className="text-red-500 text-xs col-span-3">
-                      {errors.effective_date}
-                    </p>
-                  )}
-                </div>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-3 items-center gap-2 w-full">
+                <label className="text-sm font-medium">Annual Salary</label>
+                <input
+                  type="text"
+                  placeholder="Enter Annual Salary"
+                  className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                  value={SalaryData.annual_salary}
+                  onChange={(e) =>
+                    setSalaryData({
+                      ...SalaryData,
+                      annual_salary: e.target.value,
+                    })
+                  }
+                />
+                {errors.annual_salary && (
+                  <p className="text-red-500 text-xs col-span-3">
+                    {errors.annual_salary}
+                  </p>
+                )}
+              </div>
+              <div className="grid grid-cols-3 items-center gap-2 w-full">
+                <label className="text-sm font-medium">Bonus</label>
+                <input
+                  type="text"
+                  placeholder="Enter Bonus"
+                  className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                  value={SalaryData.bonus}
+                  onChange={(e) =>
+                    setSalaryData({ ...SalaryData, bonus: e.target.value })
+                  }
+                />
+                {errors.bonus && (
+                  <p className="text-red-500 text-xs col-span-3">
+                    {errors.bonus}
+                  </p>
+                )}
+              </div>
+              <div className="grid grid-cols-3 items-center gap-2 w-full">
+                <label className="text-sm font-medium">Effective Date</label>
+                <input
+                  type="month"
+                  className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                  value={SalaryData.effective_date.slice(0, 7)} // Use YYYY-MM for input
+                  onChange={(e) =>
+                    setSalaryData({
+                      ...SalaryData,
+                      effective_date: e.target.value,
+                    })
+                  }
+                />
+                {errors.effective_date && (
+                  <p className="text-red-500 text-xs col-span-3">
+                    {errors.effective_date}
+                  </p>
+                )}
               </div>
             </div>
           </div>
