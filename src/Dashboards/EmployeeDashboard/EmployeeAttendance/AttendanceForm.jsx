@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { X } from "lucide-react";
 
-const userInfo = JSON.parse(localStorage.getItem("userdata"));
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 const apiBaseUrl = process.env.VITE_BASE_API;
 
 const Attendance = ({ setIsOpenForm }) => {

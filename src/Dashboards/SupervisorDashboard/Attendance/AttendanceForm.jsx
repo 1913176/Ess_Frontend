@@ -16,7 +16,7 @@ const AttendanceForm = () => {
   const apiBaseUrl = process.env.VITE_BASE_API;
 
   useEffect(() => {
-    const localUser = JSON.parse(localStorage.getItem("userdata"));
+    const localUser = JSON.parse(sessionStorage.getItem("userdata"));
     setUserInfo(localUser);
 
     const fetchAttendanceData = async () => {

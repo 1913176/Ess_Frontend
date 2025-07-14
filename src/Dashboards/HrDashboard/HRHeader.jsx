@@ -56,7 +56,7 @@ const HRHeader = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("userdata") || "{}");
+    const storedUser = JSON.parse(sessionStorage.getItem("userdata") || "{}");
     setUserData(storedUser);
 
     const accessibleFeatures = Object.keys(storedUser?.streams || {});
@@ -75,7 +75,7 @@ const HRHeader = () => {
 
   const HandleLogOut = async () => {
     await axios.post(`${baseApi}/admin/logout/`);
-    localStorage.clear();
+    sessionStorage.clear();
     toast("Logout so easy !!");
     navigate("/login");
   };

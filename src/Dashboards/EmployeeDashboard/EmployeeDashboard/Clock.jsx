@@ -8,7 +8,7 @@ const apiBaseUrl = process.env.VITE_BASE_API;
 const Clock = () => {
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
-  const userinfo = JSON.parse(localStorage.getItem("userdata"));
+  const userinfo = JSON.parse(sessionStorage.getItem("userdata"));
   const [attendance, setAttendance] = useState({
     firstInTime: "--:--",
     lastOutTime: "--:--",

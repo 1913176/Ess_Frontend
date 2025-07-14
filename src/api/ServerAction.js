@@ -23,7 +23,7 @@ export async function CheckedInUsers() {
 
 // -------------------------project start-------------------------
 export const GetProjects_status = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const managerId = userData?.manager_id;
   if (!managerId) {
     return [];
@@ -53,7 +53,7 @@ export const GetAllTeams = async () => {
 // --------------Ticket List -----------------
 
 export const GetManagerTicketList = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const managerId = userData?.manager_id;
   if (!managerId) {
     return [];
@@ -63,7 +63,7 @@ export const GetManagerTicketList = async () => {
 };
 
 export const GetSupervisorTicketList = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const supervisorId = userData?.supervisor_id;
   if (!supervisorId) {
     return [];
@@ -73,7 +73,7 @@ export const GetSupervisorTicketList = async () => {
 };
 
 export const GetHRTicketList = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const hrId = userData?.hr_id;
   if (!hrId) {
     return [];
@@ -83,7 +83,7 @@ export const GetHRTicketList = async () => {
 };
 
 export const GetEmployeeTicketList = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const employeeId = userData?.employee_id;
   if (!employeeId) {
     return [];
@@ -94,7 +94,7 @@ export const GetEmployeeTicketList = async () => {
 
 //----- not used 
 export const GetAdminTicketList = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const adminId = userData?.user_id;
   if (!adminId) {
     return [];
@@ -106,7 +106,7 @@ export const GetAdminTicketList = async () => {
 //---------------------Ticket Request List-----------------------------------
 
 export const GetAdminTicketRequestList = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const adminId = userData?.user_id; 
   if (!adminId) {
     return [];
@@ -120,7 +120,7 @@ export const GetAdminTicketRequestList = async () => {
 };
 
 export const GetHRTicketRequestList = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const hrId = userData?.hr_id; 
   if (!hrId) {
     return [];
@@ -139,7 +139,7 @@ export const GetHRTicketRequestList = async () => {
 };
 
 export const GetSupervisorTicketRequestList = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const supervisorId = userData?.supervisor_id; 
   if (!supervisorId) {
     return [];
@@ -158,7 +158,7 @@ export const GetSupervisorTicketRequestList = async () => {
 };
 
 export const GetEmployeeTicketRequestList = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const employeeId = userData?.employee_id;
   if (!employeeId) {
     return [];
@@ -176,7 +176,7 @@ export const GetEmployeeTicketRequestList = async () => {
   }
 };
 export const GetManagerTicketRequestList = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const managerId = userData?.manager_id; 
   if (!managerId) {
     console.warn("No manager ID found in localStorage");
@@ -198,7 +198,7 @@ export const GetManagerTicketRequestList = async () => {
 
 // -------------------------Manager Task start-------------------------
 export const GetEachManagerTask = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const managerId = userData?.manager_id;
   if (!managerId) {
     return [];
@@ -218,7 +218,7 @@ export async function GetManagerTask() {
 // -------------------------Employee Task start-------------------------
 
 export const GetEachEmployeeTask = async () => {
-  const userData = JSON.parse(localStorage.getItem("userdata"));
+  const userData = JSON.parse(sessionStorage.getItem("userdata"));
   const managerId = userData?.manager_id;
 
   if (!managerId) {

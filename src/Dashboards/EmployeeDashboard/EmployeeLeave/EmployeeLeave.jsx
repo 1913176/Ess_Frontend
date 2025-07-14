@@ -83,7 +83,7 @@ const EmployeeLeave = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const userInfo = JSON.parse(localStorage.getItem("userdata") || "{}");
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata") || "{}");
   const employeeId = userInfo.employee_id;
 
   const fetchLeaveData = useCallback(async () => {
@@ -121,7 +121,7 @@ const EmployeeLeave = () => {
 
         if (error.response?.status === 401) {
           toast.error("Session expired. Please log in again.");
-          localStorage.removeItem("userdata");
+          sessionStorage.removeItem("userdata");
           navigate("/login");
         }
       }
@@ -552,7 +552,7 @@ const RequestLeave = ({ setIsOpenRequest, onNewLeave, leave }) => {
       };
       const backendLeaveType = leaveTypeMap[leaveType] || leaveType;
 
-      const userInfo = JSON.parse(localStorage.getItem("userdata"));
+      const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
       const formData = new FormData();
       formData.append("start_date", startDate);
       formData.append("end_date", endDate);

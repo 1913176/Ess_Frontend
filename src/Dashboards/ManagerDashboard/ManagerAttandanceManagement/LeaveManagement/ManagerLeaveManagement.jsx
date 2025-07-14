@@ -52,7 +52,7 @@ const SkeletonLoading = () => {
 
 const ManagerLeaveManagement = () => {
   const navigate = useNavigate();
-  const userdata = JSON.parse(localStorage.getItem("userdata") || "{}");
+  const userdata = JSON.parse(sessionStorage.getItem("userdata") || "{}");
   const managerId = userdata.manager_id;
   const [leaveData, setLeaveData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -110,7 +110,7 @@ const ManagerLeaveManagement = () => {
 
         if (error.response?.status === 401) {
           toast.error("Session expired. Please log in again.");
-          localStorage.removeItem("userdata");
+          sessionStorage.removeItem("userdata");
           navigate("/login");
         }
       }

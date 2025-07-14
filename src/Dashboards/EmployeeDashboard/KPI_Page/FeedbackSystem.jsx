@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 const apiBaseUrl = process.env.VITE_BASE_API;
 
 const FeedbackSystem = () => {
-  const userInfo = JSON.parse(localStorage.getItem("userdata") || "{}");
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata") || "{}");
   const [feedbacks, setFeedbacks] = useState([]);
   const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);

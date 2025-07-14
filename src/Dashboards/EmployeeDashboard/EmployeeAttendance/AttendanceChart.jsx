@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
 import axios from "axios";
-const userInfo = JSON.parse(localStorage.getItem("userdata"));
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 axios.defaults.withCredentials = true;
 const apiBaseUrl = process.env.VITE_BASE_API
 function AttendanceChart() {

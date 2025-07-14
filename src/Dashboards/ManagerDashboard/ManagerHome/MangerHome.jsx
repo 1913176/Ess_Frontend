@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-const userInfo = JSON.parse(localStorage.getItem("userdata"));
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 axios.defaults.withCredentials = true;
 const apiBaseUrl = process.env.VITE_BASE_API;
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -362,7 +362,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// const userInfo = JSON.parse(localStorage.getItem("userdata"));
+// const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 // const apiBaseUrl = process.env.VITE_BASE_API;
 
 const AttendanceChart = () => {

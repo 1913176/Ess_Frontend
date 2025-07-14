@@ -33,7 +33,7 @@ const SpSupervisorLeave = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const userInfo = JSON.parse(localStorage.getItem("userdata")) || {};
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata")) || {};
   const supervisorId = userInfo?.supervisor_id;
 
   const fetchLeaveData = useCallback(async () => {
@@ -71,7 +71,7 @@ const SpSupervisorLeave = () => {
 
         if (error.response?.status === 401) {
           toast.error("Session expired. Please log in again.");
-          localStorage.removeItem("userdata");
+          sessionStorage.removeItem("userdata");
           navigate("/login");
         }
       }

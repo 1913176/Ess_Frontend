@@ -49,7 +49,7 @@ import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import CounterCards from "../../../components/CounterCards";
 import { Badge } from "@/components/ui/badge";
 import Attendance from "./Attendance";
-const userInfo = JSON.parse(localStorage.getItem("userdata"));
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 const apiBaseUrl = process.env.VITE_BASE_API;
 const HrDashboard = () => {
   const [departments, setDepartments] = useState([]);

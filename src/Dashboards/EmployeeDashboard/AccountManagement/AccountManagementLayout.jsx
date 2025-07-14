@@ -195,7 +195,7 @@ function SendReminderModal({ isOpen, onClose, parties }) {
 
   useEffect(() => {
     const fetchReminders = async () => {
-      const userInfo = JSON.parse(localStorage.getItem("userdata"));
+      const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
       const employeeId = userInfo?.employee_id;
       if (!employeeId) return;
       try {
@@ -229,7 +229,7 @@ function SendReminderModal({ isOpen, onClose, parties }) {
       return;
     }
 
-    const userInfo = JSON.parse(localStorage.getItem("userdata"));
+    const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
     const employeeId = userInfo?.employee_id;
 
     try {
@@ -605,7 +605,7 @@ const ARManagementLayout = () => {
 
   useEffect(() => {
     const fetchEmployeeParties = async () => {
-      const userInfo = JSON.parse(localStorage.getItem("userdata"));
+      const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
       const employeeId = userInfo?.employee_id;
       if (!employeeId) {
         console.error("No employee ID found in localStorage");
@@ -625,7 +625,7 @@ const ARManagementLayout = () => {
 
   const handleAddTarget = useCallback(
     async (newTarget) => {
-      const userInfo = JSON.parse(localStorage.getItem("userdata"));
+      const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
       const employeeId = userInfo?.employee_id;
 
       try {

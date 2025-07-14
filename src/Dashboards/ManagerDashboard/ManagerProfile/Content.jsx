@@ -17,7 +17,7 @@ import UpdateProfile from "./UpdateProfile";
 const apiBaseUrl = process.env.VITE_BASE_API;
 
 const ManagerProfile = () => {
-  const userInfo = JSON.parse(localStorage.getItem("userdata")) || {};
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata")) || {};
   const [profile, setProfile] = useState(null);
   const [isUpdate, setUpdate] = useState(false);
   const [loading, setLoading] = useState(true);

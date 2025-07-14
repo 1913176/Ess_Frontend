@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 
 
 const apiBaseUrl = process.env.VITE_BASE_API;
-const userInfo = JSON.parse(localStorage.getItem("userdata") || "{}");
+const userInfo = JSON.parse(sessionStorage.getItem("userdata") || "{}");
 
 const GoalSetting = () => {
   const [goals, setGoals] = useState([]);

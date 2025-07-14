@@ -119,7 +119,7 @@ const ManagerUpdateProfile = ({ setUpdate, managerId, setProfile, profile }) => 
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
         }
       );
@@ -128,13 +128,13 @@ const ManagerUpdateProfile = ({ setUpdate, managerId, setProfile, profile }) => 
 
       setSuccess("Profile updated successfully!");
 
-      // Update localStorage
-      const userInfo = JSON.parse(localStorage.getItem("userdata")) || {};
+      // Update sessionStorage
+      const userInfo = JSON.parse(sessionStorage.getItem("userdata")) || {};
       const updatedUserData = {
         ...userInfo,
         ...response.data.data,
       };
-      localStorage.setItem("userdata", JSON.stringify(updatedUserData));
+      sessionStorage.setItem("userdata", JSON.stringify(updatedUserData));
 
       // Normalize the API response to match the structure expected by ManagerProfile
       const updatedProfile = response.data.data || response.data;

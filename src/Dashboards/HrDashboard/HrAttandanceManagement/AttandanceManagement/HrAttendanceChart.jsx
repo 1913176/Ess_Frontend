@@ -4,7 +4,7 @@ import axios from "axios";
 
 axios.defaults.withCredentials = true;
 const apiBaseUrl = process.env.VITE_BASE_API;
-const userInfo = JSON.parse(localStorage.getItem("userdata"));
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 
 function HrAttendanceChart() {
   const currentYear = new Date().getFullYear();

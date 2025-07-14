@@ -37,7 +37,7 @@
 
 // axios.defaults.withCredentials = true;
 
-// const userInfo = JSON.parse(localStorage.getItem("userdata"));
+// const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 // const apiBaseUrl = process.env.VITE_BASE_API;
 
 // const MEmployeeFeedback = ({ setisemployeefeedback }) => {
@@ -495,7 +495,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Delete, Edit } from "lucide-react";
-const userInfo = JSON.parse(localStorage.getItem("userdata"));
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 const apiBaseUrl = process.env.VITE_BASE_API;
 
 const MEmployeeFeedback = ({ setisemployeefeedback }) => {

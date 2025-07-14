@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const apiBaseUrl = process.env.VITE_BASE_API;
 
 const ManagerTrainingCertification = () => {
-  const userInfo = JSON.parse(localStorage.getItem("userdata"));
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
   const [trainingPrograms, setTrainingPrograms] = useState([]);
   const [certifications, setCertifications] = useState([]);
 

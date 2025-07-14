@@ -9,13 +9,13 @@ const baseApi = process.env.VITE_BASE_API;
 const AdminPurchaseHome = () => {
     const [selectedFeatures, setSelectedFeatures] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [userInfo, setUserInfo] = useState(JSON.parse(localStorage.getItem("userdata")));
+    const [userInfo, setUserInfo] = useState(JSON.parse(sessionStorage.getItem("userdata")));
     const navigate = useNavigate();
 
     // Update userInfo when localStorage changes
     useEffect(() => {
     const handleStorageChange = () => {
-        setUserInfo(JSON.parse(localStorage.getItem("userdata")));
+        setUserInfo(JSON.parse(sessionStorage.getItem("userdata")));
     };
 
     window.addEventListener('storage', handleStorageChange);

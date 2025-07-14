@@ -4,11 +4,11 @@ import axios from "axios";
 const baseurl=process.env.REACT_APP_BASEAPI;
 const Parties = () => {
   const navigate = useNavigate();
-  const userInfo = JSON.parse(localStorage.getItem("userdata"));
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
   const [parties, setParties] = useState(() => {
     return JSON.parse(localStorage.getItem("parties")) || [];
   });
-  //localStorage.clear();
+  //sessionStorage.clear();
   
 
   const [categories, setCategories] = useState(() => {

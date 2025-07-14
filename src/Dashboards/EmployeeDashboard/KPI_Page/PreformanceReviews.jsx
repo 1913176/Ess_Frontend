@@ -4,7 +4,7 @@ import { CircularProgress } from "@mui/material";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
-const userInfo = JSON.parse(localStorage.getItem("userdata") || "{}");
+const userInfo = JSON.parse(sessionStorage.getItem("userdata") || "{}");
 
 const PreformanceReviews = () => {
   const [performanceList, setPerformanceList] = useState([]);

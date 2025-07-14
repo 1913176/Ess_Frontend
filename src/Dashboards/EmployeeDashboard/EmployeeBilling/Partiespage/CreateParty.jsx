@@ -22,7 +22,7 @@ const CreateParty = () => {
   const searchParams = new URLSearchParams(location.search);
   const editId = searchParams.get("editId");
   const manageShipping = searchParams.get("manageShipping");
-  const userInfo = JSON.parse(localStorage.getItem("userdata"));
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 
   // Controlled form fields
   const [partyId, setPartyId] = useState(null);

@@ -11,7 +11,7 @@ const HrAttendanceManagement = () => {
   const [attendanceData, setAttendanceData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const userInfo = JSON.parse(localStorage.getItem("userdata"));
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 
   useEffect(() => {
     const fetchAttendanceData = async () => {

@@ -8,7 +8,7 @@ axios.defaults.withCredentials = true;
 const Clock = () => {
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
-  const userInfo = JSON.parse(localStorage.getItem("userdata"));
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
   const [attendance, setAttendance] = useState({
     firstInTime: "--:--",
     lastOutTime: "--:--",

@@ -79,7 +79,7 @@ const SupervisorHeader = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("userdata") || "{}");
+    const storedUser = JSON.parse(sessionStorage.getItem("userdata") || "{}");
     setUserData(storedUser);
 
     const Picons = Object.keys(storedUser.streams || {});
@@ -100,7 +100,7 @@ const SupervisorHeader = () => {
   const HandleLogOut = async () => {
     await axios.post(`${baseApi}/admin/logout/`);
     toast("Logout so easy !!");
-    localStorage.clear();
+    sessionStorage.clear();
     navigate("/login");
   };
 

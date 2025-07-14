@@ -9,7 +9,7 @@ const Parties = () => {
   const [parties, setParties] = useState(() => {
     return JSON.parse(localStorage.getItem("parties")) || [];
   });
-  //localStorage.clear();
+  //sessionStorage.clear();
   
 
   const [categories, setCategories] = useState(() => {

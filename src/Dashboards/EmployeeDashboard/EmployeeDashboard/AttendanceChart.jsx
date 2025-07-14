@@ -7,7 +7,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import axios from "axios";
 axios.defaults.withCredentials = true;
 const apiBaseUrl = process.env.VITE_BASE_API;
-const userInfo = JSON.parse(localStorage.getItem("userdata"));
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 
 const AttendanceChart = () => {
   const [chartData, setChartData] = useState([]);

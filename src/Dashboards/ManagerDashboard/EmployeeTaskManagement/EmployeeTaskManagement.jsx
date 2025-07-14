@@ -30,7 +30,7 @@ import { GetEachEmployeeTask } from "@/api/ServerAction";
 // Fetch user info from localStorage and update on manager login
 const apiBaseUrl = process.env.VITE_BASE_API;
 axios.defaults.withCredentials = true;
-const getUserInfo = () => JSON.parse(localStorage.getItem("userdata"));
+const getUserInfo = () => JSON.parse(sessionStorage.getItem("userdata"));
 
 // Skeleton loading component for task loading state
 const SkeletonLoading = () => {

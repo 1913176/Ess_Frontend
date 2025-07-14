@@ -55,7 +55,7 @@ const fetchAttendanceData = async ({ queryKey }) => {
 
 const ManagerAttendanceManagement = () => {
   const queryClient = useQueryClient();
-  const userInfo = JSON.parse(localStorage.getItem("userdata"));
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
   const [searchTerm, setSearchTerm] = useState("");
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);

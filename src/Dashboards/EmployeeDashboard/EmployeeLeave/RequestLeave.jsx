@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
 axios.defaults.withCredentials = true;
-const userInfo = JSON.parse(localStorage.getItem("userdata"));
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 
 const RequestLeave = ({ setIsOpenRequest, onNewLeave, leave }) => {
   const isEditMode = !!leave;

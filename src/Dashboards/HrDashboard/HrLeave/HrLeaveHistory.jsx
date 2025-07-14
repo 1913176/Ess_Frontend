@@ -33,7 +33,7 @@ const HrLeaveHistory = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const userInfo = JSON.parse(localStorage.getItem("userdata")) || {};
+  const userInfo = JSON.parse(sessionStorage.getItem("userdata")) || {};
   const hrId = userInfo?.hr_id;
 
   const fetchLeaveData = useCallback(async () => {

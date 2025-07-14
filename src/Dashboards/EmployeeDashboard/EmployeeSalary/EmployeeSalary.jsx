@@ -22,7 +22,7 @@ const EmployeeSalary = () => {
     try {
       setLoading(true);
       const userId = JSON.parse(
-        localStorage.getItem("userdata") || "{}"
+        sessionStorage.getItem("userdata") || "{}"
       )?.employee_id;
       if (!userId) throw new Error("User ID not found");
 

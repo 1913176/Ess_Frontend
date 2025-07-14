@@ -419,7 +419,7 @@ export default function ClientDashboard() {
 useEffect(() => {
   const fetchClientTargets = async () => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userdata"));
+      const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
       const employeeId = userInfo?.employee_id;
       if (!employeeId) {
         setTargets([]);
@@ -450,7 +450,7 @@ useEffect(() => {
 }, []);
 
   useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem("userdata"));
+    const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 
     const fetchPartiesAndInvoices = async () => {
       try {

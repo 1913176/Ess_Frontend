@@ -29,7 +29,7 @@ import {
 import axios from "axios";
 import { Shop2 } from "@mui/icons-material";
 const baseApi = process.env.VITE_BASE_API;
-const UserInfo = JSON.parse(localStorage.getItem("userdata"));
+const UserInfo = JSON.parse(sessionStorage.getItem("userdata"));
 const side_bar = [
   {
     link: "/admin",

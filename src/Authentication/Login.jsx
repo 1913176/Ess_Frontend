@@ -91,7 +91,7 @@
 
 //         if (user) {
 //           // Store user data in local storage
-//           localStorage.setItem("userdata", JSON.stringify(user));
+//           sessionStorage.setItem("userdata", JSON.stringify(user));
 
 //           // Navigate based on role
 //           if (loginUser.role === "admin") {
@@ -328,7 +328,7 @@ export default function LoginForm() {
         const user = await fetchDetails(loginUser);
 
         if (user) {
-          localStorage.setItem("userdata", JSON.stringify(user));
+          sessionStorage.setItem("userdata", JSON.stringify(user));
 
           // Navigate based on role
           const routes = {

@@ -13,7 +13,7 @@ axios.defaults.withCredentials = true;
 
 const RequestLeave = ({ setIsOpenRequest, onNewLeave, leave }) => {
   const isEditMode = !!leave;
-  const userdata = JSON.parse(localStorage.getItem("userdata") || "{}");
+  const userdata = JSON.parse(sessionStorage.getItem("userdata") || "{}");
   const [startDate, setStartDate] = useState(leave ? leave.start_date : "");
   const [endDate, setEndDate] = useState(leave ? leave.end_date : "");
   const [leaveType, setLeaveType] = useState(leave ? leave.leave_type : "");

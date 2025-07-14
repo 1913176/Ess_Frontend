@@ -6,7 +6,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@mui/material";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
-const userInfo = JSON.parse(localStorage.getItem("userdata"));
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 
 const HrLeaveManagement = () => {
   const [isOpenRequest, setIsOpenRequest] = useState(false);
@@ -22,7 +22,7 @@ const HrLeaveManagement = () => {
   // Fetch Leave Data from Backend
   useEffect(() => {
     const fetchLeaveData = async () => {
-      const userdata = JSON.parse(localStorage.getItem("userdata"));
+      const userdata = JSON.parse(sessionStorage.getItem("userdata"));
       try {
         const response = await axios.get(
           `${apiBaseUrl}/hr-leave-history-id/${userdata.hr_id}/`,
