@@ -12,6 +12,12 @@ import {
   Users2,
   LogOut,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import ChatContext from "../../context/chatContext";
 
 const side_bar = [
@@ -27,8 +33,16 @@ const side_bar = [
   { link: "/hr/Offers", name: "Offers", icon: <User /> },
   { link: "/hr/helpDesk", name: "HelpDesk", icon: <User /> },
   { link: "/hr/tickets", name: "Tickets", icon: <User /> },
-  { link: "/hr/ManagerPerformance", name: "Manager Performance", icon: <User /> },
-  { link: "/hr/EmployeePerformance", name: "Employee Performance", icon: <User /> },
+  {
+    link: "/hr/ManagerPerformance",
+    name: "Manager Performance",
+    icon: <User />,
+  },
+  {
+    link: "/hr/EmployeePerformance",
+    name: "Employee Performance",
+    icon: <User />,
+  },
   { name: "Logout", icon: <LogOut />, action: "logout" },
 ];
 
@@ -50,10 +64,12 @@ const HRHeader = () => {
       (item) =>
         item.name === "Dashboard" ||
         item.name === "Logout" ||
-        accessibleFeatures.includes(item.name)
+        accessibleFeatures.includes(item.name),
     );
 
-    const unique = Array.from(new Map(filtered.map(i => [i.name, i])).values());
+    const unique = Array.from(
+      new Map(filtered.map((i) => [i.name, i])).values(),
+    );
     setPurchasedIcons(unique);
   }, []);
 
@@ -103,18 +119,30 @@ const HRHeader = () => {
               </div>
 
               {/* profile */}
-              <div className="profile flex items-center gap-2 p-1 rounded-full">
-                <User height={30} width={30} />
-                <div className="flex justify-between gap-4 items-center">
-                  <div className="flex-col leading-snug hidden md:flex">
-                    <p className="text-sm font-bold capitalize">
-                      {userData.hr_name || "User"}
-                    </p>
-                    <p className="text-[10px] font-normal">HR Manager</p>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <div className="profile flex items-center gap-2 p-1 rounded-full">
+                    <User height={30} width={30} />
+                    <div className="flex justify-between gap-4 items-center">
+                      <div className="flex-col leading-snug hidden md:flex">
+                        <p className="text-sm font-bold capitalize">
+                          {userData.hr_name || "User"}
+                        </p>
+                        <p className="text-[10px] font-normal">HR Manager</p>
+                      </div>
+                      <ChevronDown />
+                    </div>
                   </div>
-                  <ChevronDown />
-                </div>
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    className="hover:bg-red-600 hover:text-white"
+                    onClick={() => HandleLogOut()}
+                  >
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </nav>
@@ -164,7 +192,7 @@ const HRHeader = () => {
                     </span>
                   </div>
                 </NavLink>
-              )
+              ),
             )}
           </div>
         </div>

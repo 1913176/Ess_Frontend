@@ -15,6 +15,12 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const baseApi = process.env.VITE_BASE_API;
 
@@ -129,6 +135,8 @@ const SupervisorHeader = () => {
             </form>
 
             {/* Profile */}
+            <DropdownMenu>
+                          <DropdownMenuTrigger>
             <div className="profile flex items-center gap-2 p-1 rounded-full">
               <User height={30} width={30} />
               <div className="flex justify-between gap-4 items-center">
@@ -141,6 +149,16 @@ const SupervisorHeader = () => {
                 <ChevronDown />
               </div>
             </div>
+            </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  className="hover:bg-red-600 hover:text-white"
+                  onClick={() => HandleLogOut()}
+                >
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </nav>
 

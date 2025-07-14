@@ -39,14 +39,16 @@ const UpdateEmployee = ({
   const [LocationList, setLocationList] = useState([]); // State for location list
 
   const streamOptions = [
-    "Accounts",
-    "HR",
+    "Task",
+    "Todo",
     "Attendance",
     "Leave",
-    "Project Management",
+    "Salary",
     "KPI",
-    "Training",
+    "Training Certification",
     "Help Desk",
+    "Billing",
+    "Account Management",
   ];
   const subComponents = ["Admin", "Manager", "User", "Management"];
 
@@ -72,7 +74,7 @@ const UpdateEmployee = ({
 
       try {
         const { data } = await axios.get(
-          `${apiBaseUrl}/api/employees/get/${employeeId}/`
+          `${apiBaseUrl}/api/employees/get/${employeeId}/`,
         );
         setEmployeeData({
           employee_name: data.employee_name,
@@ -142,7 +144,9 @@ const UpdateEmployee = ({
       const newStreams = { ...prev.streams };
       const currentSubComponents = newStreams[stream] || [];
       if (currentSubComponents.includes(subComponent)) {
-        newStreams[stream] = currentSubComponents.filter((sc) => sc !== subComponent);
+        newStreams[stream] = currentSubComponents.filter(
+          (sc) => sc !== subComponent,
+        );
       } else {
         newStreams[stream] = [...currentSubComponents, subComponent];
       }
@@ -173,7 +177,7 @@ const UpdateEmployee = ({
       const res = await axios.put(
         `${apiBaseUrl}/admin/employees/${employeeId}/`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
       toast.success("Employee updated successfully");
       fetchEmployeeList();
@@ -181,15 +185,31 @@ const UpdateEmployee = ({
     } catch (error) {
       const err = error?.response?.data;
       if (err?.username) {
-        setErrors({ username: Array.isArray(err.username) ? err.username[0] : err.username });
+        setErrors({
+          username: Array.isArray(err.username)
+            ? err.username[0]
+            : err.username,
+        });
       } else if (err?.email) {
-        setErrors({ email: Array.isArray(err.email) ? err.email[0] : err.email });
+        setErrors({
+          email: Array.isArray(err.email) ? err.email[0] : err.email,
+        });
       } else if (err?.plain_password) {
-        setErrors({ plain_password: Array.isArray(err.plain_password) ? err.plain_password[0] : err.plain_password });
+        setErrors({
+          plain_password: Array.isArray(err.plain_password)
+            ? err.plain_password[0]
+            : err.plain_password,
+        });
       } else if (err?.streams) {
-        setErrors({ streams: Array.isArray(err.streams) ? err.streams[0] : err.streams });
+        setErrors({
+          streams: Array.isArray(err.streams) ? err.streams[0] : err.streams,
+        });
       } else if (err?.location) {
-        setErrors({ location: Array.isArray(err.location) ? err.location[0] : err.location });
+        setErrors({
+          location: Array.isArray(err.location)
+            ? err.location[0]
+            : err.location,
+        });
       } else {
         toast.error("Failed to update employee.");
       }
@@ -210,60 +230,80 @@ const UpdateEmployee = ({
               {/* Left Column */}
               <div className="space-y-6">
                 {/* Name */}
-               <div className="grid grid-cols-3 items-center gap-3">
-  <label className="text-sm font-medium text-gray-700">Name</label>
-  <div className="col-span-2">
-    <div style={{ marginTop: '4px' }}>
-      <input
-        type="text"
-        className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-        value={EmployeeData.employee_name}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (/^[A-Za-z\s]*$/.test(value)) {
-            setEmployeeData({ ...EmployeeData, employee_name: value });
-            setErrors({ ...errors, employee_name: "" });
-          } else {
-            setErrors({
-              ...errors,
-              employee_name: "Only letters and spaces allowed in name",
-            });
-          }
-        }}
-      />
-    </div>
-    {errors.employee_name && (
-      <p className="text-red-500 text-xs mt-1">{errors.employee_name}</p>
-    )}
-  </div>
-</div>
+                <div className="grid grid-cols-3 items-center gap-3">
+                  <label className="text-sm font-medium text-gray-700">
+                    Name
+                  </label>
+                  <div className="col-span-2">
+                    <div style={{ marginTop: "4px" }}>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value={EmployeeData.employee_name}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (/^[A-Za-z\s]*$/.test(value)) {
+                            setEmployeeData({
+                              ...EmployeeData,
+                              employee_name: value,
+                            });
+                            setErrors({ ...errors, employee_name: "" });
+                          } else {
+                            setErrors({
+                              ...errors,
+                              employee_name:
+                                "Only letters and spaces allowed in name",
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                    {errors.employee_name && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.employee_name}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
                 {/* Email */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Email</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Email
+                  </label>
                   <div className="col-span-2">
                     <input
                       type="email"
                       className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                       value={EmployeeData.email}
                       onChange={(e) =>
-                        setEmployeeData({ ...EmployeeData, email: e.target.value })
+                        setEmployeeData({
+                          ...EmployeeData,
+                          email: e.target.value,
+                        })
                       }
                     />
                     {errors.email && (
-                      <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.email}
+                      </p>
                     )}
                   </div>
                 </div>
 
                 {/* Gender */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Gender</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Gender
+                  </label>
                   <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                     value={EmployeeData.gender}
                     onChange={(e) =>
-                      setEmployeeData({ ...EmployeeData, gender: e.target.value })
+                      setEmployeeData({
+                        ...EmployeeData,
+                        gender: e.target.value,
+                      })
                     }
                   >
                     <option value="">Select Gender</option>
@@ -275,7 +315,9 @@ const UpdateEmployee = ({
 
                 {/* Stream */}
                 <div className="grid grid-cols-3 items-start gap-3">
-                  <label className="text-sm font-medium text-gray-700">Stream</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Stream
+                  </label>
                   <div className="col-span-2 space-y-2">
                     {streamOptions.map((stream) => (
                       <div key={stream}>
@@ -286,19 +328,33 @@ const UpdateEmployee = ({
                             onChange={() => handleStreamChange(stream)}
                             className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                           />
-                          <span className="text-sm text-gray-700">{stream}</span>
+                          <span className="text-sm text-gray-700">
+                            {stream}
+                          </span>
                         </label>
                         {EmployeeData.streams[stream] && (
                           <div className="ml-6 mt-2 space-y-1">
                             {subComponents.map((subComponent) => (
-                              <label key={subComponent} className="flex items-center space-x-2">
+                              <label
+                                key={subComponent}
+                                className="flex items-center space-x-2"
+                              >
                                 <input
                                   type="checkbox"
-                                  checked={EmployeeData.streams[stream]?.includes(subComponent)}
-                                  onChange={() => handleSubComponentChange(stream, subComponent)}
+                                  checked={EmployeeData.streams[
+                                    stream
+                                  ]?.includes(subComponent)}
+                                  onChange={() =>
+                                    handleSubComponentChange(
+                                      stream,
+                                      subComponent,
+                                    )
+                                  }
                                   className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                                 />
-                                <span className="text-sm text-gray-600">{subComponent}</span>
+                                <span className="text-sm text-gray-600">
+                                  {subComponent}
+                                </span>
                               </label>
                             ))}
                           </div>
@@ -306,14 +362,18 @@ const UpdateEmployee = ({
                       </div>
                     ))}
                     {errors.streams && (
-                      <p className="text-red-500 text-xs mt-1">{errors.streams}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.streams}
+                      </p>
                     )}
                   </div>
                 </div>
 
                 {/* DOB */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Date of Birth</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Date of Birth
+                  </label>
                   <div className="col-span-2">
                     <input
                       type="date"
@@ -328,7 +388,10 @@ const UpdateEmployee = ({
                             dob: "Date of Birth cannot be a future date",
                           });
                         } else {
-                          setEmployeeData({ ...EmployeeData, dob: e.target.value });
+                          setEmployeeData({
+                            ...EmployeeData,
+                            dob: e.target.value,
+                          });
                           setErrors({ ...errors, dob: "" });
                         }
                       }}
@@ -344,7 +407,9 @@ const UpdateEmployee = ({
               <div className="space-y-6">
                 {/* Profile Image */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Profile Image</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Profile Image
+                  </label>
                   <input
                     type="file"
                     accept="image/*"
@@ -360,7 +425,9 @@ const UpdateEmployee = ({
 
                 {/* Employee ID */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">User ID</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    User ID
+                  </label>
                   <input
                     className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm bg-gray-100 col-span-2"
                     value={EmployeeData.employee_id}
@@ -370,7 +437,9 @@ const UpdateEmployee = ({
 
                 {/* Username */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Username</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Username
+                  </label>
                   <div className="col-span-2">
                     <input
                       type="text"
@@ -384,27 +453,35 @@ const UpdateEmployee = ({
                         } else {
                           setErrors({
                             ...errors,
-                            username: "Only letters and spaces allowed in username",
+                            username:
+                              "Only letters and spaces allowed in username",
                           });
                         }
                       }}
                     />
                     {errors.username && (
-                      <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.username}
+                      </p>
                     )}
                   </div>
                 </div>
 
                 {/* Password */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Password</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Password
+                  </label>
                   <div className="col-span-2 relative">
                     <input
                       type={showPassword ? "text" : "password"}
                       className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
                       value={EmployeeData.plain_password}
                       onChange={(e) =>
-                        setEmployeeData({ ...EmployeeData, plain_password: e.target.value })
+                        setEmployeeData({
+                          ...EmployeeData,
+                          plain_password: e.target.value,
+                        })
                       }
                       placeholder="Enter new password (optional)"
                     />
@@ -413,22 +490,33 @@ const UpdateEmployee = ({
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                      {showPassword ? (
+                        <Eye className="w-5 h-5" />
+                      ) : (
+                        <EyeOff className="w-5 h-5" />
+                      )}
                     </button>
                     {errors.plain_password && (
-                      <p className="text-red-500 text-xs mt-1">{errors.plain_password}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.plain_password}
+                      </p>
                     )}
                   </div>
                 </div>
 
                 {/* Department */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Department</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Department
+                  </label>
                   <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                     value={EmployeeData.department}
                     onChange={(e) =>
-                      setEmployeeData({ ...EmployeeData, department: e.target.value })
+                      setEmployeeData({
+                        ...EmployeeData,
+                        department: e.target.value,
+                      })
                     }
                   >
                     <option value="">Select Department</option>
@@ -442,12 +530,17 @@ const UpdateEmployee = ({
 
                 {/* Location */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Location</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Location
+                  </label>
                   <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                     value={EmployeeData.location}
                     onChange={(e) =>
-                      setEmployeeData({ ...EmployeeData, location: e.target.value })
+                      setEmployeeData({
+                        ...EmployeeData,
+                        location: e.target.value,
+                      })
                     }
                     required
                   >
@@ -461,18 +554,25 @@ const UpdateEmployee = ({
                     ))}
                   </select>
                   {errors.location && (
-                    <p className="text-red-500 text-xs mt-1">{errors.location}</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.location}
+                    </p>
                   )}
                 </div>
 
                 {/* Shift */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Shift</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Shift
+                  </label>
                   <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 col-span-2"
                     value={EmployeeData.shift}
                     onChange={(e) =>
-                      setEmployeeData({ ...EmployeeData, shift: e.target.value })
+                      setEmployeeData({
+                        ...EmployeeData,
+                        shift: e.target.value,
+                      })
                     }
                   >
                     <option value="">Select Shift</option>
@@ -486,7 +586,9 @@ const UpdateEmployee = ({
 
                 {/* Hired Date */}
                 <div className="grid grid-cols-3 items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">Hired Date</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Hired Date
+                  </label>
                   <div className="col-span-2">
                     <input
                       type="date"
@@ -501,13 +603,18 @@ const UpdateEmployee = ({
                             hired_date: "Hired Date cannot be a future date",
                           });
                         } else {
-                          setEmployeeData({ ...EmployeeData, hired_date: e.target.value });
+                          setEmployeeData({
+                            ...EmployeeData,
+                            hired_date: e.target.value,
+                          });
                           setErrors({ ...errors, hired_date: "" });
                         }
                       }}
                     />
                     {errors.hired_date && (
-                      <p className="text-red-500 text-xs mt-1">{errors.hired_date}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.hired_date}
+                      </p>
                     )}
                   </div>
                 </div>

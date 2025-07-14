@@ -18,6 +18,12 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const baseApi = process.env.VITE_BASE_API;
 
@@ -101,18 +107,30 @@ const EmployeeHeader = () => {
             </form>
 
             {/* Profile */}
-            <div className="profile flex items-center gap-2 p-1 rounded-full">
-              <User height={30} width={30} />
-              <div className="flex justify-between gap-4 items-center">
-                <div className="flex-col leading-snug hidden md:flex">
-                  <p className="text-sm font-bold">
-                    {userData.employee_name || "Employee"}
-                  </p>
-                  <p className="text-[10px] font-normal">Developer</p>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <div className="profile flex items-center gap-2 p-1 rounded-full">
+                  <User height={30} width={30} />
+                  <div className="flex justify-between gap-4 items-center">
+                    <div className="flex-col leading-snug hidden md:flex">
+                      <p className="text-sm font-bold">
+                        {userData.employee_name || "Employee"}
+                      </p>
+                      <p className="text-[10px] font-normal">Developer</p>
+                    </div>
+                    <ChevronDown />
+                  </div>
                 </div>
-                <ChevronDown />
-              </div>
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  className="hover:bg-red-600 hover:text-white"
+                  onClick={() => HandleLogOut()}
+                >
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </nav>
 
@@ -138,7 +156,7 @@ const EmployeeHeader = () => {
                       {link.name}
                     </h4>
                     <span className="inline-block bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                     Exit 
+                      Exit
                     </span>
                   </div>
                 </div>

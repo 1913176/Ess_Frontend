@@ -45,7 +45,7 @@ const AddSupervisor = ({
     "Leave Management",
     "Help Desk",
     "Todo",
-    "profile",
+    "Profile",
     "View Requests",
     "News",
   ];
