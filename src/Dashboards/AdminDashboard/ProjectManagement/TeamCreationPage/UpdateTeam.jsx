@@ -147,8 +147,8 @@ const UpdateTeam = ({ open, setOpen, teamId, ManagerList, EmployeeList, ProjectL
                   </SelectTrigger>
                   <SelectContent>
                     {EmployeeList.map((employee) => (
-                      <SelectItem key={employee.employee_id} value={employee.employee_name}>
-                        {employee.employee_name}
+                      <SelectItem key={employee.employee_id} value={employee.username}>
+                        {employee.username}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -178,8 +178,8 @@ const UpdateTeam = ({ open, setOpen, teamId, ManagerList, EmployeeList, ProjectL
                         >
                           <input
                             type="checkbox"
-                            value={employee.employee_name}
-                            checked={TeamData.members.includes(employee.employee_name)}
+                            value={employee.username}
+                            checked={TeamData.members.includes(employee.username)}
                             onChange={(e) => {
                               const isChecked = e.target.checked;
                               const memberName = e.target.value;
@@ -192,7 +192,7 @@ const UpdateTeam = ({ open, setOpen, teamId, ManagerList, EmployeeList, ProjectL
                             }}
                             className="mr-2 w-4 h-4"
                           />
-                          <span className="text-sm">{employee.employee_name}</span>
+                          <span className="text-sm">{employee.username}</span>
                         </li>
                       ))}
                     </ul>

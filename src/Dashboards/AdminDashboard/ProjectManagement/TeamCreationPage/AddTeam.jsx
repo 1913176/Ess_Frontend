@@ -192,9 +192,9 @@ const AddTeam = ({
                     {EmployeeList.map((employee) => (
                       <SelectItem
                         key={employee.employee_id}
-                        value={employee.employee_name}
+                        value={employee.username}
                       >
-                        {employee.employee_name}
+                        {employee.username}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -241,7 +241,7 @@ const AddTeam = ({
                   <div className="absolute left-0 right-0 mt-2 w-full rounded-md bg-white shadow-lg border border-gray-300 z-50 max-h-60 overflow-y-auto">
                     <ul className="py-2">
                       {EmployeeList.map((employee) => {
-                        const memberName = employee.employee_name;
+                        const memberName = employee.username;
                         const isChecked = TeamData.members.includes(memberName);
                         return (
                           <li
