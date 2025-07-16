@@ -72,6 +72,11 @@ const AddHRManager = ({
     "Tickets",
     "Manager Performance",
     "Employee Performance",
+    "ManpowerPlanning",
+    "Payroll",
+    "Performance",
+    "Recruitment",
+    "Onboarding1",
   ];
   const subComponents = ["Admin", "Manager", "User", "Management"];
 

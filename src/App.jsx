@@ -203,6 +203,10 @@ import EmployeeHelpDesk from "./Dashboards/EmployeeDashboard/EmployeeHelpDesk/Em
 
 import { ErrorPage } from "./ErrorPage/ErrorPage";
 import { ChatProvider } from "./context/chatContext";
+
+import MManagerFeedback from "./Dashboards/ManagerDashboard/KpiAndFeedBack/MManagerFeedback.jsx";
+
+//HRDashboard
 import HrManagerManagementLayout from "./Dashboards/HrDashboard/ManagerPage/HrManagerManagementLayout.jsx";
 import HrManagerList from "./Dashboards/HrDashboard/ManagerPage/HrManagerList.jsx";
 import HrManagerAttendance from "./Dashboards/HrDashboard/ManagerPage/HrManagerAttendance.jsx";
@@ -221,8 +225,7 @@ import SupervisorHrLeave from "./Dashboards/HrDashboard/SupervisorPage/Superviso
 import SupervisorHrLeavePolicies from "./Dashboards/HrDashboard/SupervisorPage/SupervisorHrLeavePolicies";
 import SupervisorHrSalary from "./Dashboards/HrDashboard/SupervisorPage/SupervisorHrSalary";
 import SupervisorHrPayroll from "./Dashboards/HrDashboard/SupervisorPage/SupervisorHrPayroll";
-import MManagerFeedback from "./Dashboards/ManagerDashboard/KpiAndFeedBack/MManagerFeedback.jsx";
-
+import ManpowerPlanning from "./Dashboards/HrDashboard/ManpowerPlanning/ManpowerPlanning.jsx";
 import HRProgressLayout from "./Dashboards/HrDashboard/HrProcess/HRProgressLayout.jsx";
 import ProcessEvent from "./Dashboards/HrDashboard/HrProcess/ProcessEvent.jsx";
 import ProcessJob from "./Dashboards/HrDashboard/HrProcess/ProcessJob.jsx";
@@ -290,6 +293,10 @@ import AdminItemsPage from "./Dashboards/AdminDashboard/AdminInventory/Items/Ite
 import AdminItemDetails from "./Dashboards/AdminDashboard/AdminInventory/Items/ItemDetails.jsx";
 import AdminPurchaseHome from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseHome.jsx";
 import AdminPurchaseIcon from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseIcon.jsx";
+import HROnboarding1 from "./Dashboards/HrDashboard/HROnboarding1/HROnboarding1.jsx";
+import Recruitment from "./Dashboards/HrDashboard/Recruitment/Recruitment.jsx";
+import Payroll from "./Dashboards/HrDashboard/Payroll/Payroll.jsx";
+import Performance from "./Dashboards/HrDashboard/Performance/Performance.jsx";
 
 export default function App() {
   return (
@@ -658,6 +665,11 @@ export default function App() {
                   <Route path="event" element={<ProcessEvent />} />
                 </Route>
                 <Route path="onboarding" element={<HRonboarding />} />
+                <Route path="manpowerplanning" element={<ManpowerPlanning />} />
+                <Route path="hronboaring1" element={<HROnboarding1 />} />
+                <Route path="recruitment" element={<Recruitment />} />
+                <Route path="payroll" element={<Payroll />} />,
+                <Route path="performance" element={<Performance />} />,
                 <Route path="employees" element={<HrEmployees />} />
                 <Route path="attendance" element={<HrAttendanceLayout />}>
                   <Route index element={<HrAttendanceManagement />} />

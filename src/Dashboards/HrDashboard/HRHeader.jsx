@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ChatContext from "../../context/chatContext";
+import { Money, Person } from "@mui/icons-material";
 
 const side_bar = [
   { link: "/hr", name: "Dashboard", icon: <LayoutDashboardIcon /> },
@@ -43,6 +44,15 @@ const side_bar = [
     name: "Employee Performance",
     icon: <User />,
   },
+  {
+    link: "/hr/manpowerplanning",
+    name: "Manpower Planning",
+    icon: <User />,
+  },
+  { link: "/hr/onboarding1", name: "Onboarding", icon: <User /> },
+  { link: "/hr/recruitment", name: "Recruitment", icon: <Person /> },
+  { link: "/hr/performance", name: "Performance", icon: <User /> },
+  { link: "/hr/payroll", name: "Payroll", icon: <Money /> },
   { name: "Logout", icon: <LogOut />, action: "logout" },
 ];
 
