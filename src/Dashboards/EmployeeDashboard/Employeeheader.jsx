@@ -15,6 +15,7 @@ import {
   UserMinus,
   Users,
   CreditCard,
+  UserPlus,
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -43,6 +44,7 @@ const side_bar = [
   { link: "helpdesk", name: "Help Desk", icon: <HelpingHand /> },
   { link: "billing", name: "Billing", icon: <CreditCard /> },
   { link: "account-management", name: "Account Management", icon: <Users /> },
+  { link: "hire-request", name: "Hire Request", icon: <UserPlus /> },
   { name: "Logout", icon: <UserMinus />, action: "logout" },
 ];
 
@@ -50,42 +52,64 @@ const EmployeeHeader = () => {
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
   const [userData, setUserData] = useState({});
   const [purchasedIcons, setPurchasedIcons] = useState([]);
+  const [isTeamLeader, setIsTeamLeader] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = JSON.parse(sessionStorage.getItem("userdata") || "{}");
     setUserData(storedUser);
 
-    const Picons = Object.keys(storedUser.streams || {});
+    const checkTeamLeader = async () => {
+      try {
+        const response = await axios.get(`${baseApi}/check_team_leader/`, {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("token") || ""}`,
+          },
+        });
+        setIsTeamLeader(response.data.is_team_leader || false);
+      } catch (error) {
+        console.error("Error checking team leader status:", error);
+        setIsTeamLeader(false); // Default to false on error to avoid showing icon
+      }
+    };
 
+    if (storedUser.username) {
+      checkTeamLeader();
+    }
+
+    const Picons = Object.keys(storedUser.streams || {});
     const filteredIcons = side_bar.filter(
       (item) =>
         item.name === "Dashboard" ||
         item.name === "Logout" ||
-        Picons.includes(item.name),
+        (item.name === "Hire Request" && isTeamLeader) ||
+        Picons.includes(item.name)
     );
 
     setPurchasedIcons(filteredIcons);
-  }, []);
+  }, [isTeamLeader]);
 
   const HandleLogOut = async () => {
-    await axios.post(`${baseApi}/admin/logout/`);
-    toast("Logout so easy !!");
-    sessionStorage.clear();
-    navigate("/login");
+    try {
+      await axios.post(`${baseApi}/admin/logout/`);
+      toast("Logout so easy !!");
+      sessionStorage.clear();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast.error("Logout failed!");
+    }
   };
 
   return (
     <>
       <div className="header h-[50px] bg-white z-50 sticky top-0 left-0">
         <nav className="navbar flex justify-between items-center w-full bg-white py-2 px-2 gap-6 shadow-md relative">
-          {/* Logo */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <Link onClick={() => setIsOpenSidebar(!isOpenSidebar)}>
                 <img src={ess_logo} alt="Ess Logo" width={25} height={25} />
               </Link>
-
               <div className="flex justify-between items-center sm:w-[100px] md:w-[200px] lg:w-[150px]">
                 <strong className="leading-tight text-sm hidden md:block w-full">
                   Employee <br /> Self Services
@@ -93,8 +117,6 @@ const EmployeeHeader = () => {
               </div>
             </div>
           </div>
-
-          {/* Search and Profile */}
           <div className="flex justify-end lg:justify-between w-full">
             <form className="bg-blue-50 px-4 rounded-md flex items-center">
               <input
@@ -105,8 +127,6 @@ const EmployeeHeader = () => {
               />
               <Search height={15} width={15} />
             </form>
-
-            {/* Profile */}
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <div className="profile flex items-center gap-2 p-1 rounded-full">
@@ -133,8 +153,6 @@ const EmployeeHeader = () => {
             </DropdownMenu>
           </div>
         </nav>
-
-        {/* Sidebar */}
         <div
           className={`side_bar z-10 left-0 flex bg-white justify-center items-center transition-all overflow-hidden ease-in-out duration-300 h-screen ${
             isOpenSidebar ? "w-full opacity-100" : "w-0 opacity-0"
@@ -179,7 +197,7 @@ const EmployeeHeader = () => {
                     </span>
                   </div>
                 </NavLink>
-              ),
+              )
             )}
           </div>
         </div>
