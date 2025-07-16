@@ -49,3 +49,7 @@ jobs:
           source: "dist/"
           target: "/var/www/html/frontend"
           debug: true
+
+      - name: Install Vite (if needed)
+        run: npm install -g vite
+
