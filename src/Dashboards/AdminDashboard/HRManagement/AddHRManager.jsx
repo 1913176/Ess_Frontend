@@ -72,7 +72,7 @@ const AddHRManager = ({
     "Tickets",
     "Manager Performance",
     "Employee Performance",
-    "ManpowerPlanning",
+    "Manpower Planning",
     "Payroll",
     "Performance",
     "Recruitment",

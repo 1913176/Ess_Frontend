@@ -53,7 +53,7 @@ const UpdateHRManager = ({
     "Tickets",
     "Manager Performance",
     "Employee Performance",
-    "ManpowerPlanning",
+    "Manpower Planning",
     "Payroll",
     "Performance",
     "Recruitment",
