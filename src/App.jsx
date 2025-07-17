@@ -891,6 +891,7 @@ export default function App() {
                 <Route path="leave" element={<EmployeeLeave />} />
                 <Route path="salary" element={<EmployeeSalary />} />
                 <Route path="helpDesk" element={<EmployeeHelpDesk />} />
+                <Route path="hire-request" element={<ManpowerPlanning />} />
 
                 <Route
                   path="account-management"

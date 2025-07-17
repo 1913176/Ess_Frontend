@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { HiOutlinePlus } from "react-icons/hi";
 
 const initialEmployees = [
-  { id: 1, name: "Alice", jobTitle: "Developer", department: "IT", manager: "Bob", status: "Active" },
-  { id: 2, name: "John", jobTitle: "Designer", department: "Design", manager: "Sara", status: "Inactive" },
+  { id: 1, name: "Alice", jobTitle: "Developer", department: "IT", manager: "Bob", status: "Approved" },
+  { id: 2, name: "John", jobTitle: "Designer", department: "Design", manager: "Sara", status: "Rejected" },
+  { id: 3, name: "Ram", jobTitle: "Developer", department: "IT", manager: "Sam", status: "Forwardto"},
+
 ];
 
 const ManpowerPlanning = () => {
@@ -44,7 +46,7 @@ const ManpowerPlanning = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen font-sans">
+    <div className="p-6 bg-gray-50 min-h-screen font-sans relative">
      
       <div className="flex justify-between items-center mb-6">
         <div className="flex gap-2 items-center">
@@ -71,98 +73,100 @@ const ManpowerPlanning = () => {
         </button>
       </div>
 
+      {/* Overlay and Centered Popup */}
       {showForm && (
-        <div
-          className="mb-6 bg-white p-6 rounded shadow flex flex-col items-stretch"
-          style={{ width: 483, height: 578 }}
-        >
-          <div className="text-xl font-bold mb-4">Add Job</div>
-          <div className="mb-3">
-            <input
-              type="text"
-              name="title"
-              value={jobForm.title}
-              onChange={handleFormChange}
-              placeholder="Title"
-              className="w-full border border-gray-300 rounded px-3 py-2 placeholder-gray-400"
-            />
-          </div>
-          <div className="mb-3 relative">
-            <select
-              name="location"
-              value={jobForm.location}
-              onChange={handleFormChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 appearance-none bg-white text-gray-700"
-            >
-              <option value="" disabled>
-                Location
-              </option>
-              {locations.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
-              ))}
-            </select>
-            {/* Dropdown arrow */}
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">&#9662;</span>
-          </div>
-          <div className="mb-3">
-            <input
-              type="text"
-              name="experience"
-              value={jobForm.experience}
-              onChange={handleFormChange}
-              placeholder="Experience Level"
-              className="w-full border border-gray-300 rounded px-3 py-2 placeholder-gray-400"
-            />
-          </div>
-          <div className="mb-3">
-            <input
-              type="text"
-              name="jobType"
-              value={jobForm.jobType}
-              onChange={handleFormChange}
-              placeholder="Job Type"
-              className="w-full border border-gray-300 rounded px-3 py-2 placeholder-gray-400"
-            />
-          </div>
-          <div className="mb-3">
-            <input
-              type="text"
-              name="openings"
-              value={jobForm.openings}
-              onChange={handleFormChange}
-              placeholder="Openings"
-              className="w-full border border-gray-300 rounded px-3 py-2 placeholder-gray-400"
-            />
-          </div>
-          <div className="mb-6 relative">
-            <select
-              name="role"
-              value={jobForm.role}
-              onChange={handleFormChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 appearance-none bg-white text-gray-700"
-            >
-              <option value="" disabled>
-                Role
-              </option>
-              {roles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
-            {/* Dropdown arrow */}
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">&#9662;</span>
-          </div>
-          <button
-            className="mt-auto bg-blue-600 text-white px-4 py-2 rounded shadow font-semibold hover:bg-blue-700 transition"
-            style={{ width: "100%" }}
-            onClick={handleSave}
+        <>
+          <div className="fixed inset-0 bg-black bg-opacity-40 z-40"></div>
+          <div
+            className="fixed left-1/2 top-1/2 z-50 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded shadow flex flex-col items-stretch"
+            style={{ width: 483, height: 578 }}
           >
-            Save
-          </button>
-        </div>
+            <div className="text-xl font-bold mb-4">Add Job</div>
+            <div className="mb-3">
+              <input
+                type="text"
+                name="title"
+                value={jobForm.title}
+                onChange={handleFormChange}
+                placeholder="Title"
+                className="w-full border border-gray-300 rounded px-3 py-2 placeholder-gray-400"
+              />
+            </div>
+            <div className="mb-3 relative">
+              <select
+                name="location"
+                value={jobForm.location}
+                onChange={handleFormChange}
+                className="w-full border border-gray-300 rounded px-3 py-2 appearance-none bg-white text-gray-700"
+              >
+                <option value="" disabled>
+                  Location
+                </option>
+                {locations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </select>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">&#9662;</span>
+            </div>
+            <div className="mb-3">
+              <input
+                type="text"
+                name="experience"
+                value={jobForm.experience}
+                onChange={handleFormChange}
+                placeholder="Experience Level"
+                className="w-full border border-gray-300 rounded px-3 py-2 placeholder-gray-400"
+              />
+            </div>
+            <div className="mb-3">
+              <input
+                type="text"
+                name="jobType"
+                value={jobForm.jobType}
+                onChange={handleFormChange}
+                placeholder="Job Type"
+                className="w-full border border-gray-300 rounded px-3 py-2 placeholder-gray-400"
+              />
+            </div>
+            <div className="mb-3">
+              <input
+                type="text"
+                name="openings"
+                value={jobForm.openings}
+                onChange={handleFormChange}
+                placeholder="Openings"
+                className="w-full border border-gray-300 rounded px-3 py-2 placeholder-gray-400"
+              />
+            </div>
+            <div className="mb-6 relative">
+              <select
+                name="role"
+                value={jobForm.role}
+                onChange={handleFormChange}
+                className="w-full border border-gray-300 rounded px-3 py-2 appearance-none bg-white text-gray-700"
+              >
+                <option value="" disabled>
+                  Role
+                </option>
+                {roles.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">&#9662;</span>
+            </div>
+            <button
+              className="mt-auto bg-blue-600 text-white px-4 py-2 rounded shadow font-semibold hover:bg-blue-700 transition"
+              style={{ width: "100%" }}
+              onClick={handleSave}
+            >
+              Save
+            </button>
+          </div>
+        </>
       )}
 
       
