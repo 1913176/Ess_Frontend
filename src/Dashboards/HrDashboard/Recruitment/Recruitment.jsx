@@ -42,7 +42,7 @@ const Recruitment = () => {
     name: "",
     phone: "",
     jobTitle: "",
-    resumeLink: "",
+    resume: "",
     status: "",
   });
   const [editingCandidateId, setEditingCandidateId] = useState(null);
@@ -175,35 +175,74 @@ const Recruitment = () => {
   };
 
   const addCandidate = async () => {
-    try {
-      await axios.post(
-        `${apiBaseUrl}/candidate/create/${hrId}/`,
-        candidateFormData,
-      );
-      toast.success("Candidate added successfully");
-      fetchCandidates();
-      setShowAddCandidateModal(false);
-    } catch (error) {
-      toast.error("Error adding candidate");
-      console.error("Add Error:", error);
-    }
-  };
+  try {
+    const formData = new FormData();
+    formData.append("hr", hrId);
+    formData.append("name", candidateFormData.name);
+    formData.append("phone", candidateFormData.phone);
+    formData.append("jobTitle", candidateFormData.jobTitle);
+    formData.append("status", candidateFormData.status);
+    if (
+  candidateFormData.resume &&
+  typeof candidateFormData.resume !== "string"
+) {
+  formData.append("resume", candidateFormData.resume);
+}
+
+
+    await axios.post(`${apiBaseUrl}/candidate/create/${hrId}/`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    toast.success("Candidate added successfully");
+    fetchCandidates();
+    setShowAddCandidateModal(false);
+  } catch (error) {
+    toast.error("Error adding candidate");
+    console.error("Add Error:", error);
+  }
+};
+
 
   const updateCandidate = async () => {
-    try {
-      await axios.put(
-        `${apiBaseUrl}/candidate/update/${editingCandidateId}/`,
-        candidateFormData,
-      );
-      toast.success("Candidate updated successfully");
-      fetchCandidates();
-      setShowAddCandidateModal(false);
-      setEditingCandidateId(null);
-    } catch (error) {
-      toast.error("Error updating candidate");
-      console.error("Update Error:", error);
+  try {
+    const formData = new FormData();
+    formData.append("hr", hrId);
+    formData.append("name", candidateFormData.name);
+    formData.append("phone", candidateFormData.phone);
+    formData.append("jobTitle", candidateFormData.jobTitle);
+    formData.append("status", candidateFormData.status);
+
+    // ✅ Only add resume if it's a new file
+    if (
+      candidateFormData.resume &&
+      typeof candidateFormData.resume !== "string"
+    ) {
+      formData.append("resume", candidateFormData.resume);
     }
-  };
+
+    await axios.put(
+      `${apiBaseUrl}/candidate/update/${editingCandidateId}/`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    toast.success("Candidate updated successfully");
+    fetchCandidates();
+    setShowAddCandidateModal(false);
+    setEditingCandidateId(null);
+  } catch (error) {
+    toast.error("Error updating candidate");
+    console.error("Update Error:", error);
+  }
+};
+
 
   const handleDeleteCandidate = async (candidateId) => {
     try {
@@ -560,7 +599,7 @@ const Recruitment = () => {
                   name: "",
                   phone: "",
                   jobTitle: "",
-                  resumeLink: "",
+                  resume: "",
                   status: "",
                 });
                 setEditingCandidateId(null);
@@ -665,14 +704,21 @@ const Recruitment = () => {
                       {candidate.jobTitle}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                      <a
-                        href="#"
-                        className="flex items-center gap-1 hover:text-blue-800"
-                      >
-                        {candidate.resumeLink}
-                        <ExternalLink size={12} />
-                      </a>
-                    </td>
+  {candidate.resume ? (
+    <a
+      href={`${apiBaseUrl}/${candidate.resume}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-1 hover:text-blue-800"
+    >
+      View Resume
+      <ExternalLink size={12} />
+    </a>
+  ) : (
+    <span className="text-gray-400">No Resume</span>
+  )}
+</td>
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(candidate.status)}`}
@@ -689,7 +735,7 @@ const Recruitment = () => {
                               name: candidate.name,
                               phone: candidate.phone,
                               jobTitle: candidate.jobTitle,
-                              resumeLink: candidate.resumeLink,
+                              resume: candidate.resume,
                               status: candidate.status,
                             });
                             setEditingCandidateId(candidate.c_id);
@@ -931,14 +977,34 @@ const Recruitment = () => {
                   <option value="Backend Developer">Backend Developer</option>
                   <option value="UI/UX Designer">UI/UX Designer</option>
                 </select>
-                <input
-                  name="resumeLink"
-                  value={candidateFormData.resumeLink}
-                  onChange={handleCandidateInputChange}
-                  type="text"
-                  placeholder="Resume Link"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                />
+             {/* Show existing uploaded resume if editing */}
+{editingCandidateId && typeof candidateFormData.resume === "string" && (
+  <div className="mb-2 text-sm text-blue-600">
+    <a
+      href={`${apiBaseUrl}/${candidateFormData.resume}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:underline flex items-center gap-1"
+    >
+      View Uploaded Resume <ExternalLink size={12} />
+    </a>
+  </div>
+)}
+
+<input
+  name="resume"
+  type="file"
+  accept=".pdf"
+  onChange={(e) =>
+    setCandidateFormData((prevData) => ({
+      ...prevData,
+      resume: e.target.files[0],
+    }))
+  }
+  className="w-full px-4 py-2 border border-gray-300 rounded-md"
+/>
+
+
                 <select
                   name="status"
                   value={candidateFormData.status}
