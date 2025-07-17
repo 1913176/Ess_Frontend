@@ -97,16 +97,14 @@ const Recruitment = () => {
   };
 
   useEffect(() => {
-    fetchJobAlerts();
-  }, [hrId]);
+  if (!hrId) return;
 
-  useEffect(() => {
-    if (activeTab === "job-alerts") {
-      fetchJobAlerts();
-    } else {
-      fetchCandidates();
-    }
-  }, [activeTab]);
+  if (activeTab === "job-alerts") {
+    fetchJobAlerts();
+  } else {
+    fetchCandidates();
+  }
+}, [activeTab, hrId]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
