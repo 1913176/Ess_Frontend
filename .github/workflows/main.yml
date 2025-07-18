@@ -1,99 +1,51 @@
-name: Fullstack CI/CD Pipeline
+name: Frontend CI/CD Pipeline
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-  
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
-      - name: Install Frontend Dependencies
-        run: |
-          cd frontend
-          npm ci
+      - name: Install Dependencies
+        run: npm ci
 
-      - name: Build Frontend
-        run: |
-          cd frontend
-          npm run build
+      - name: Build Project
+        run: npm run build
 
-      - name: List Frontend Dist Files
-        run: ls -la frontend/dist
+      - name: Debug – List Dist Folder
+        run: ls -la dist
 
-      - name: Ensure frontend/backend directories exist on EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            sudo mkdir -p /var/www/html/frontend
-            sudo mkdir -p /var/www/html/backend
-            sudo chown -R ubuntu:ubuntu /var/www/html/frontend
-            sudo chown -R ubuntu:ubuntu /var/www/html/backend
+      - name: Ensure target directory exists on EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            sudo mkdir -p /var/www/html/frontend
+            sudo chown -R ubuntu:ubuntu /var/www/html/frontend
 
-      - name: Copy Frontend to EC2
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: "frontend/dist/"
-          target: "/var/www/html/frontend"
-          debug: true
-
-    
-      - name: Copy Backend to EC2
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: "backend/"
-          target: "/var/www/html/backend"
-          debug: true
-
-     
-      - name: Backend Install & Restart on EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            cd /var/www/html/backend
-
-            If Python backend (e.g., Django)
-            if [ -f "manage.py" ]; then
-              if [ ! -d "venv" ]; then
-                python3 -m venv venv
-              fi
-              source venv/bin/activate
-              pip install --upgrade pip
-              pip install -r requirements.txt
-              python manage.py migrate
-              pm2 restart backend || pm2 start gunicorn --name backend -- gunicorn myproject.wsgi:application --bind 0.0.0.0:8000
-            fi
-
-            # If Node.js backend (e.g., Express.js)
-            if [ -f "package.json" ]; then
-              npm install
-              pm2 restart backend || pm2 start index.js --name backend
-            fi
+      - name: Copy Build to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "dist/"
+          target: "/var/www/html/frontend"
+          debug: true
