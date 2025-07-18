@@ -1,47 +1,51 @@
-name: Build and Deploy Vite Frontend
+name: Frontend CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v3
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
-      - name: 📦 Install Dependencies
-        run: npm install
+      - name: Install Dependencies
+        run: npm ci
 
-      - name: ⚒️ Build Project
-        run: npm run build
+      - name: Build Project
+        run: npm run build
 
-      - name: 📤 Upload Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: vite-build
-          path: dist/
+      - name: Debug – List Dist Folder
+        run: ls -la dist
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
+      - name: Ensure target directory exists on EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            sudo mkdir -p /var/www/html/frontend
+            sudo chown -R ubuntu:ubuntu /var/www/html/frontend
 
-    steps:
-      - name: 📥 Download Build Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: vite-build
-          path: dist
-
-      # Example: Deploy to Vercel (Replace token)
-      - name: 🚀 Deploy to Vercel
-        run: npx vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --confirm
+      - name: Copy Build to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "dist/"
+          target: "/var/www/html/frontend"
+          debug: true
