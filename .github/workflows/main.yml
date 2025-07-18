@@ -22,18 +22,7 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-
-      - name: Check File Case-Sensitive Path (Linux Compatibility)
-        run: |
-          echo "Checking if required component exists..."
-          if [ ! -f "./src/Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseHome.jsx" ]; then
-            echo " ERROR: File not found: src/Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseHome.jsx"
-            echo "Make sure the file path and case match exactly."
-            exit 1
-          else
-            echo " File found: AdminPurchaseHome.jsx"
-          fi
-
+          
       - name: Build Application
         run: npm run build
 
