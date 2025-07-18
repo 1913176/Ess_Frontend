@@ -1,7 +1,7 @@
 import React from "react";
-import AttendanceContent from "../../SupervisorDashboard/Attendance/AttendanceContent";
-import AttendanceChart from "../../SupervisorDashboard/Attendance/AttendanceChart";
-import AttendanceForm from "../../SupervisorDashboard/Attendance/AttendanceForm";
+import AttendanceContent from "./AttendanceContent";
+import AttendanceChart from "./AttendanceChart";
+import AttendanceForm from "./AttendanceForm";
 import axios from "axios";
 
 axios.defaults.withCredentials = true;

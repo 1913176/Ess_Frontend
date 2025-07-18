@@ -333,10 +333,10 @@ export default function LoginForm() {
           // Navigate based on role
           const routes = {
             admin: "/admin",
-            hr: "/hr",
+            hr: "/user/hr",
             manager: "/manager",
-            employee: "/employee",
-            supervisor: "/supervisor",
+            employee: "/user/employee",
+            supervisor: "/user/supervisor",
           };
 
           const route = routes[loginUser.role];

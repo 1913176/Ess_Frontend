@@ -79,7 +79,6 @@ import CalendarEvent from "./Dashboards/AdminDashboard/Others/RoleCreationPage/C
 import Location from "./Dashboards/AdminDashboard/Others/LocationPage/Location.jsx";
 import Shift from "./Dashboards/AdminDashboard/Others/ShiftPage/Shift.jsx";
 
-import HRLayout from "./Dashboards/HrDashboard/HRLayout.jsx";
 import HRManagementLayout from "./Dashboards/AdminDashboard/HRManagement/HRManagementLayout";
 import ManagerHRAttendance from "./Dashboards/AdminDashboard/HRManagement/ManagerHRAttendance";
 import ManagerHRAttendanceReset from "./Dashboards/AdminDashboard/HRManagement/ManagerHRAttendanceReset";
@@ -112,12 +111,11 @@ import AccountReports from "./Dashboards/AdminDashboard/AccountManagement/Accoun
 // import AccountBillings from "./Dashboards/AdminDashboard/AccountManagement/AccountBillings.jsx";
 
 //employee dashboards imports
-
-import EmployeeAccountManagementLayout from "./Dashboards/EmployeeDashboard/AccountManagement/AccountManagementLayout";
-import EmployeeAccountManagementClientDash from "./Dashboards/EmployeeDashboard/AccountManagement/AccountClientDashboard.jsx";
-//  import EmployeeAccountManagementEmployeeDash from "./Dashboards/EmployeeDashboard/AccountManagement/AccountEmployeeDashboard.jsx";
+import EmployeeAccountManagementLayout from "./Dashboards/UserDashboard/EmployeeAccountManagement/AccountManagementLayout.jsx";
+import EmployeeAccountManagementClientDash from "./Dashboards/UserDashboard/EmployeeAccountManagement/AccountClientDashboard.jsx";
+//  import EmployeeAccountManagementEmployeeDash from "./Dashboards/UserDashboard/EmployeeAccountManagement/AccountEmployeeDashboard.jsx";
 // import AccountInvoices from "./Dashboards/AdminDashboard/AccountManagement/AccountInvoices.jsx";
-import EmployeeAccountReports from "./Dashboards/EmployeeDashboard/AccountManagement/AccountReports.jsx";
+import EmployeeAccountReports from "./Dashboards/UserDashboard/EmployeeAccountManagement/AccountReports.jsx";
 // import AccountBillings from "./Dashboards/AdminDashboard/AccountManagement/AccountBillings.jsx";
 
 // Manager Dashboards imports
@@ -147,59 +145,59 @@ import EmployeePermissionHours from "./Dashboards/ManagerDashboard/EmployeeAtten
 import MEmployeeLeaveManagement from "./Dashboards/ManagerDashboard/EmployeeAttendanceManagement/LeaveManagement/MEmployeeLeaveManagement.jsx";
 
 // HR Dashboards imports
-import HrDashboard from "./Dashboards/HrDashboard/HRDashboard/HrDashboard.jsx";
-// import HRprocess from "./Dashboards/HrDashboard/HrProcess/HRprocess.jsx";
-import HRonboarding from "./Dashboards/HrDashboard/HrOnboarding/HRonboarding.jsx";
-import HrEmployees from "./Dashboards/HrDashboard/HrEmployees/HrEmployees.jsx";
-// import HrAttendance from "./Dashboards/HrDashboard/HrAttendance/HrAttendance.jsx";
-import HrShift from "./Dashboards/HrDashboard/HrShift/HrShift.jsx";
-import HrOffers from "./Dashboards/HrDashboard/HrOffers/HrOffers.jsx";
-import HrHelpDesk from "./Dashboards/HrDashboard/HrHelpDesk/HrHelpDesk.jsx";
-import HrPayRoll from "./Dashboards/HrDashboard/HrPayroll/HrPayRoll.jsx";
-import HrTickets from "./Dashboards/HrDashboard/HrTickets/HrTickets.jsx";
-import HrManagerPerformanceLayout from "./Dashboards/HrDashboard/ManagerPerformancePage/HrManagerPerformanceLayout.jsx";
-import HrEmployeePerformanceLayout from "./Dashboards/HrDashboard/EmployeePerformancePage/HrEmployeePerformanceLayout.jsx";
-// import HrManagerChart from "./Dashboards/HrDashboard/HrAttendance/HrManagerChart.jsx";
-// import HrEmployeeChart from "./Dashboards/HrDashboard/HrAttendance/HrEmployeeChart.jsx";
-import Kpi_Layout from "./Dashboards/HrDashboard/KPI_Page/Kpi_Layout.jsx";
-import HrProgram from "./Dashboards/HrDashboard/KPI_Page/HrProgram.jsx";
-import HrTraining from "./Dashboards/HrDashboard/KPI_Page/HrTraining.jsx";
-import HrEnroll from "./Dashboards/HrDashboard/KPI_Page/HrEnroll.jsx";
-import HrCertificate from "./Dashboards/HrDashboard/KPI_Page/HrCertificate.jsx";
-import HrLeaveHistory from "./Dashboards/HrDashboard/HrLeave/HrLeaveHistory.jsx";
+import HrDashboard from "./Dashboards/UserDashboard/HRDashboard/HrDashboard.jsx";
+// import HRprocess from "./Dashboards/UserDashboard/HrProcess/HRprocess.jsx";
+import HRonboarding from "./Dashboards/UserDashboard/HrOnboarding/HRonboarding.jsx";
+import HrEmployees from "./Dashboards/UserDashboard/HrEmployees/HrEmployees.jsx";
+// import HrAttendance from "./Dashboards/UserDashboard/HrAttendance/HrAttendance.jsx";
+import HrShift from "./Dashboards/UserDashboard/HrShift/HrShift.jsx";
+import HrOffers from "./Dashboards/UserDashboard/HrOffers/HrOffers.jsx";
+import HrHelpDesk from "./Dashboards/UserDashboard/HrHelpDesk/HrHelpDesk.jsx";
+import HrPayRoll from "./Dashboards/UserDashboard/HrPayroll/HrPayRoll.jsx";
+import HrTickets from "./Dashboards/UserDashboard/HrTickets/HrTickets.jsx";
+import HrManagerPerformanceLayout from "./Dashboards/UserDashboard/HrManagerPerformancePage/HrManagerPerformanceLayout.jsx";
+import HrEmployeePerformanceLayout from "./Dashboards/UserDashboard/HrEmployeePerformancePage/HrEmployeePerformanceLayout.jsx";
+// import HrManagerChart from "./Dashboards/UserDashboard/HrAttendance/HrManagerChart.jsx";
+// import HrEmployeeChart from "./Dashboards/UserDashboard/HrAttendance/HrEmployeeChart.jsx";
+import Kpi_Layout from "./Dashboards/UserDashboard/HrKPI_Page/Kpi_Layout.jsx";
+import HrProgram from "./Dashboards/UserDashboard/HrKPI_Page/HrProgram.jsx";
+import HrTraining from "./Dashboards/UserDashboard/HrKPI_Page/HrTraining.jsx";
+import HrEnroll from "./Dashboards/UserDashboard/HrKPI_Page/HrEnroll.jsx";
+import HrCertificate from "./Dashboards/UserDashboard/HrKPI_Page/HrCertificate.jsx";
+import HrLeaveHistory from "./Dashboards/UserDashboard/HrLeave/HrLeaveHistory.jsx";
 
-// import HrManagerManagementLayout from "./Dashboards/HRDashboard/ManagerPage/HrManagerManagementLayout";
-// import HrManagerAttendance from "./Dashboards/HRDashboard/ManagerPage/HrManagerAttendance";
+// import HrManagerManagementLayout from "./Dashboards/UserDashboard/ManagerPage/HrManagerManagementLayout";
+// import HrManagerAttendance from "./Dashboards/UserDashboard/ManagerPage/HrManagerAttendance";
 // import HrManagerAttendanceReset from "./Dashboards/HRDashboard/ManagerPage/HrManagerAttendanceReset";
 
 // import HrManagerList from "./Dashboards/HRDashboard/ManagerPage/HrManagerList";
 
 // Supervisor Dashboards imports
-import SupervisorLayout from "./Dashboards/SupervisorDashboard/SupervisorLayout.jsx";
-import SupervisorHelpDesk from "./Dashboards/SupervisorDashboard/SupervisorHelpDesk/SupervisorHelpDesk.jsx";
-import SpSupervisorDashboard from "./Dashboards/SupervisorDashboard/SpSupervisorDashboard/SpSupervisorDashboard.jsx";
-import SpSupervisorProfile from "./Dashboards/SupervisorDashboard/Profile/Profile/SpSupervisorProfile.jsx";
-import SpSupervisorTodo from "./Dashboards/SupervisorDashboard/Todo/Todo/SpSupervisorTodo.jsx";
-import SpSupervisorAttendance from "./Dashboards/SupervisorDashboard/Attendance/SpSupervisorAttendance.jsx";
-import SpSupervisorLeave from "./Dashboards/SupervisorDashboard/SupervisorLeave/SpSupervisorLeave.jsx";
-import SpSupervisorNews from "./Dashboards/SupervisorDashboard/SpSupervisorNews/SpSupervisorNews.jsx";
-import SpSupervisorRequest from "./Dashboards/SupervisorDashboard/ViewRequest/ViewRequest/Content.jsx";
+import SupervisorLayout from "./Dashboards/UserDashboard/SupervisorLayout.jsx";
+import SupervisorHelpDesk from "./Dashboards/UserDashboard/SupervisorHelpDesk/SupervisorHelpDesk.jsx";
+import SpSupervisorDashboard from "./Dashboards/UserDashboard/SupervisorDashboard/SpSupervisorDashboard.jsx";
+import SpSupervisorProfile from "./Dashboards/UserDashboard/Profile/Profile/SpSupervisorProfile.jsx";
+import SpSupervisorTodo from "./Dashboards/UserDashboard/Todo/Todo/SpSupervisorTodo.jsx";
+import SpSupervisorAttendance from "./Dashboards/UserDashboard/SupervisorAttendance/SpSupervisorAttendance.jsx";
+import SpSupervisorLeave from "./Dashboards/UserDashboard/SupervisorLeave/SpSupervisorLeave.jsx";
+import SupervisorNews from "./Dashboards/UserDashboard/SupervisorNews/SpSupervisorNews.jsx";
+import SupervisorRequest from "./Dashboards/UserDashboard/ViewRequest/ViewRequest/Content.jsx";
 
-import EmployeeDashboardLayout from "./Dashboards/EmployeeDashboard/EmployeeDashboardLayout.jsx";
-import EmployeeDashboard from "./Dashboards/EmployeeDashboard/EmployeeDashboard/EmployeeDashboard.jsx";
-import EmployeeTodo from "./Dashboards/EmployeeDashboard/EmployeeTodo/EmployeeTodo.jsx";
-import EmployeeTask from "./Dashboards/EmployeeDashboard/EmployeeTask/EmployeeTask.jsx";
-import EmployeeLeave from "./Dashboards/EmployeeDashboard/EmployeeLeave/EmployeeLeave.jsx";
-import Employee_Attendance from "./Dashboards/EmployeeDashboard/EmployeeAttendance/Employee_Attendance.jsx";
-import EmployeeSalary from "./Dashboards/EmployeeDashboard/EmployeeSalary/EmployeeSalary.jsx";
+import EmployeeDashboardLayout from "./Dashboards/UserDashboard/EmployeeDashboardLayout.jsx";
+import EmployeeDashboard from "./Dashboards/UserDashboard/EmployeeDashboard/EmployeeDashboard.jsx";
+import EmployeeTodo from "./Dashboards/UserDashboard/EmployeeTodo/EmployeeTodo.jsx";
+import EmployeeTask from "./Dashboards/UserDashboard/EmployeeTask/EmployeeTask.jsx";
+import EmployeeLeave from "./Dashboards/UserDashboard/EmployeeLeave/EmployeeLeave.jsx";
+import Employee_Attendance from "./Dashboards/UserDashboard/EmployeeAttendance/Employee_Attendance.jsx";
+import EmployeeSalary from "./Dashboards/UserDashboard/EmployeeSalary/EmployeeSalary.jsx";
 import EmployeeLateLoginReason from "./Dashboards/AdminDashboard/EmployeePage/EmployeeLateLoginReason";
 
-import KPILayout from "./Dashboards/EmployeeDashboard/KPI_Page/KPILayout.jsx";
-import TrainingCertification from "./Dashboards/EmployeeDashboard/TrainingCertification/TrainingCertification.jsx";
-import PreformanceReviews from "./Dashboards/EmployeeDashboard/KPI_Page/PreformanceReviews.jsx";
-import GoalSetting from "./Dashboards/EmployeeDashboard/KPI_Page/GoalSetting.jsx";
-import FeedbackSystem from "./Dashboards/EmployeeDashboard/KPI_Page/FeedbackSystem.jsx";
-import EmployeeHelpDesk from "./Dashboards/EmployeeDashboard/EmployeeHelpDesk/EmployeeHelpDesk.jsx";
+import KPILayout from "./Dashboards/UserDashboard/EmployeeKPI_Page/KPILayout.jsx";
+// import TrainingCertification from "./Dashboards/UserDashboard/TrainingCertification/TrainingCertification.jsx";
+import PreformanceReviews from "./Dashboards/UserDashboard/EmployeeKPI_Page/PreformanceReviews.jsx";
+import GoalSetting from "./Dashboards/UserDashboard/EmployeeKPI_Page/GoalSetting.jsx";
+import FeedbackSystem from "./Dashboards/UserDashboard/EmployeeKPI_Page/FeedbackSystem.jsx";
+import EmployeeHelpDesk from "./Dashboards/UserDashboard/EmployeeHelpDesk/EmployeeHelpDesk.jsx";
 
 import { ErrorPage } from "./ErrorPage/ErrorPage";
 import { ChatProvider } from "./context/chatContext";
@@ -207,65 +205,63 @@ import { ChatProvider } from "./context/chatContext";
 import MManagerFeedback from "./Dashboards/ManagerDashboard/KpiAndFeedBack/MManagerFeedback.jsx";
 
 //HRDashboard
-import HrManagerManagementLayout from "./Dashboards/HrDashboard/ManagerPage/HrManagerManagementLayout.jsx";
-import HrManagerList from "./Dashboards/HrDashboard/ManagerPage/HrManagerList.jsx";
-import HrManagerAttendance from "./Dashboards/HrDashboard/ManagerPage/HrManagerAttendance.jsx";
-import HrManagerAttendanceReset from "./Dashboards/HrDashboard/ManagerPage/HrManagerAttendanceReset.jsx";
-import ManagerHrChart from "./Dashboards/HrDashboard/ManagerPage/ManagerHrChart";
-import ManagerHrLeavePolicies from "./Dashboards/HrDashboard/ManagerPage/ManagerHrLeavePolicies";
-import ManagerHrLeave from "./Dashboards/HrDashboard/ManagerPage/ManagerHrLeave";
-import ManagerHrSalary from "./Dashboards/HrDashboard/ManagerPage/ManagerHrSalary";
-import ManagerHrPayroll from "./Dashboards/HrDashboard/ManagerPage/ManagerHrPayroll";
-import HrSupervisorManagementLayout from "./Dashboards/HrDashboard/SupervisorPage/HrSupervisorManagementLayout.jsx";
-import HrSupervisorAttendance from "./Dashboards/HrDashboard/SupervisorPage/HrSupervisorAttendance.jsx";
-import HrSupervisorAttendanceReset from "./Dashboards/HrDashboard/SupervisorPage/HrSupervisorAttendanceReset.jsx";
-import HrSupervisorChart from "./Dashboards/HrDashboard/SupervisorPage/HrSupervisorChart.jsx";
-import HrSupervisorList from "./Dashboards/HrDashboard/SupervisorPage/HrSupervisorList.jsx";
-import SupervisorHrLeave from "./Dashboards/HrDashboard/SupervisorPage/SupervisorHrLeave";
-import SupervisorHrLeavePolicies from "./Dashboards/HrDashboard/SupervisorPage/SupervisorHrLeavePolicies";
-import SupervisorHrSalary from "./Dashboards/HrDashboard/SupervisorPage/SupervisorHrSalary";
-import SupervisorHrPayroll from "./Dashboards/HrDashboard/SupervisorPage/SupervisorHrPayroll";
-import ManpowerPlanning from "./Dashboards/HrDashboard/ManpowerPlanning/ManpowerPlanning.jsx";
-import HRProgressLayout from "./Dashboards/HrDashboard/HrProcess/HRProgressLayout.jsx";
-import ProcessEvent from "./Dashboards/HrDashboard/HrProcess/ProcessEvent.jsx";
-import ProcessJob from "./Dashboards/HrDashboard/HrProcess/ProcessJob.jsx";
-import ProcessSchedule from "./Dashboards/HrDashboard/HrProcess/ProcessSchedule.jsx";
+import HrManagerAttendance from "./Dashboards/UserDashboard/HrManagerPage/HrManagerAttendance.jsx";
+import HrManagerAttendanceReset from "./Dashboards/UserDashboard/HrManagerPage/HrManagerAttendanceReset.jsx";
+import ManagerHrChart from "./Dashboards/UserDashboard/HrManagerPage/ManagerHrChart.jsx";
+import ManagerHrLeavePolicies from "./Dashboards/UserDashboard/HrManagerPage/ManagerHrLeavePolicies.jsx";
+import ManagerHrLeave from "./Dashboards/UserDashboard/HrManagerPage/ManagerHrLeave.jsx";
+import ManagerHrSalary from "./Dashboards/UserDashboard/HrManagerPage/ManagerHrSalary.jsx";
+import ManagerHrPayroll from "./Dashboards/UserDashboard/HrManagerPage/ManagerHrPayroll.jsx";
+import HrSupervisorManagementLayout from "./Dashboards/UserDashboard/HrSupervisorPage/HrSupervisorManagementLayout.jsx";
+import HrSupervisorAttendance from "./Dashboards/UserDashboard/HrSupervisorPage/HrSupervisorAttendance.jsx";
+import HrSupervisorAttendanceReset from "./Dashboards/UserDashboard/HrSupervisorPage/HrSupervisorAttendanceReset.jsx";
+import HrSupervisorChart from "./Dashboards/UserDashboard/HrSupervisorPage/HrSupervisorChart.jsx";
+import HrSupervisorList from "./Dashboards/UserDashboard/HrSupervisorPage/HrSupervisorList.jsx";
+import SupervisorHrLeave from "./Dashboards/UserDashboard/HrSupervisorPage/SupervisorHrLeave.jsx";
+import SupervisorHrLeavePolicies from "./Dashboards/UserDashboard/HrSupervisorPage/SupervisorHrLeavePolicies.jsx";
+import SupervisorHrSalary from "./Dashboards/UserDashboard/HrSupervisorPage/SupervisorHrSalary.jsx";
+import SupervisorHrPayroll from "./Dashboards/UserDashboard/HrSupervisorPage/SupervisorHrPayroll.jsx";
+import ManpowerPlanning from "./Dashboards/UserDashboard/HrManpowerPlanning/ManpowerPlanning.jsx";
+import HRProgressLayout from "./Dashboards/UserDashboard/HrProcess/HRProgressLayout.jsx";
+import ProcessEvent from "./Dashboards/UserDashboard/HrProcess/ProcessEvent.jsx";
+import ProcessJob from "./Dashboards/UserDashboard/HrProcess/ProcessJob.jsx";
+import ProcessSchedule from "./Dashboards/UserDashboard/HrProcess/ProcessSchedule.jsx";
 
-import EmployeeHrManagement from "./Dashboards/HrDashboard/HrEmployees/EmployeeHrManagement.jsx";
-import EmployeeHrAttendance from "./Dashboards/HrDashboard/HrEmployees/EmployeeHrAttendance.jsx";
-import EmployeeHrAttendanceReset from "./Dashboards/HrDashboard/HrEmployees/EmployeeHrAttendanceReset.jsx";
-import EmployeeHrChart from "./Dashboards/HrDashboard/HrEmployees/EmployeeHrChart.jsx";
-import EmpHrLeavePolicies from "./Dashboards/HrDashboard/HrEmployees/EmpHrLeavePolicies.jsx";
-import EmpHrLeave from "./Dashboards/HrDashboard/HrEmployees/EmpHrLeave.jsx";
-import EmpHrSalary from "./Dashboards/HrDashboard/HrEmployees/EmpHrSalary.jsx";
-import EmpHrPayroll from "./Dashboards/HrDashboard/HrEmployees/EmpHrPayroll.jsx";
+import EmployeeHrManagement from "./Dashboards/UserDashboard/HrEmployees/EmployeeHrManagement.jsx";
+import EmployeeHrAttendance from "./Dashboards/UserDashboard/HrEmployees/EmployeeHrAttendance.jsx";
+import EmployeeHrAttendanceReset from "./Dashboards/UserDashboard/HrEmployees/EmployeeHrAttendanceReset.jsx";
+import EmployeeHrChart from "./Dashboards/UserDashboard/HrEmployees/EmployeeHrChart.jsx";
+import EmpHrLeavePolicies from "./Dashboards/UserDashboard/HrEmployees/EmpHrLeavePolicies.jsx";
+import EmpHrLeave from "./Dashboards/UserDashboard/HrEmployees/EmpHrLeave.jsx";
+import EmpHrSalary from "./Dashboards/UserDashboard/HrEmployees/EmpHrSalary.jsx";
+import EmpHrPayroll from "./Dashboards/UserDashboard/HrEmployees/EmpHrPayroll.jsx";
 
-import HrAttendanceLayout from "./Dashboards/HrDashboard/HrAttandanceManagement/HrAttandanceLayout.jsx";
-import HrAttendanceManagement from "./Dashboards/HrDashboard/HrAttandanceManagement/AttandanceManagement/HrAttendanceManagement.jsx";
-import HrLeaveManagement from "./Dashboards/HrDashboard/HrAttandanceManagement/LeaveManagement/HrLeaveManagement.jsx";
+import HrAttendanceLayout from "./Dashboards/UserDashboard/HrAttandanceManagement/HrAttandanceLayout.jsx";
+import HrAttendanceManagement from "./Dashboards/UserDashboard/HrAttandanceManagement/AttandanceManagement/HrAttendanceManagement.jsx";
+import HrLeaveManagement from "./Dashboards/UserDashboard/HrAttandanceManagement/LeaveManagement/HrLeaveManagement.jsx";
 import { AuthProvider } from "./context/authContext.jsx";
 import AdminOtherLayout from "./Dashboards/AdminDashboard/Others/AdminOtherLayout.jsx";
 import ProjectManagementLayout from "./Dashboards/AdminDashboard/ProjectManagement/ProjectManagementLayout.jsx";
 
 //Employee Billing Page imports
-import Billing from "./Dashboards/EmployeeDashboard/EmployeeBilling/Billing.jsx";
-import Parties from "./Dashboards/EmployeeDashboard/EmployeeBilling/Partiespage/Parties.jsx";
-import CreateParty from "./Dashboards/EmployeeDashboard/EmployeeBilling/Partiespage/CreateParty";
-import PartyDetails from "./Dashboards/EmployeeDashboard/EmployeeBilling/Partiespage/Partydetails";
-import CreateSalesInvoice from "./Dashboards/EmployeeDashboard/EmployeeBilling/Partiespage/CreateSalesInvoice";
-import ItemsPage from "./Dashboards/EmployeeDashboard/EmployeeBilling/Items/ItemsPage";
-import ItemDetails from "./Dashboards/EmployeeDashboard/EmployeeBilling/Items/ItemDetails";
-import SalesInvoice from "./Dashboards/EmployeeDashboard/EmployeeBilling/Sales/SalesInvoice";
-import PaymentIn from "./Dashboards/EmployeeDashboard/EmployeeBilling/PaymentIn/PaymentIn";
-import Quotation from "./Dashboards/EmployeeDashboard/EmployeeBilling/Quotation/Quotation";
-import QuotationEstimate from "./Dashboards/EmployeeDashboard/EmployeeBilling/Quotation/QuotationEstimate";
-import ProformaInvoice from "./Dashboards/EmployeeDashboard/EmployeeBilling/Proformainvoice/ProformaInvoice";
-import Invoice from "./Dashboards/EmployeeDashboard/EmployeeBilling/Proformainvoice/Invoice";
-import CreditNote from "./Dashboards/EmployeeDashboard/EmployeeBilling/CreditNote/CreditNote";
-import CreditInvoice from "./Dashboards/EmployeeDashboard/EmployeeBilling/CreditNote/CreditInvoice";
-import PaymentList from "./Dashboards/EmployeeDashboard/EmployeeBilling/PaymentIn/PaymentList";
-import CreateDeliverychallan from "./Dashboards/EmployeeDashboard/EmployeeBilling/DeliveryChallan/CreateDeliverychallan";
-import DeliveryChallan from "./Dashboards/EmployeeDashboard/EmployeeBilling/DeliveryChallan/DeliveryChallan";
+import Billing from "./Dashboards/UserDashboard/EmployeeBilling/Billing.jsx";
+import Parties from "./Dashboards/UserDashboard/EmployeeBilling/Partiespage/Parties.jsx";
+import CreateParty from "./Dashboards/UserDashboard/EmployeeBilling/Partiespage/CreateParty";
+import PartyDetails from "./Dashboards/UserDashboard/EmployeeBilling/Partiespage/Partydetails";
+import CreateSalesInvoice from "./Dashboards/UserDashboard/EmployeeBilling/Partiespage/CreateSalesInvoice";
+import ItemsPage from "./Dashboards/UserDashboard/EmployeeBilling/Items/ItemsPage";
+import ItemDetails from "./Dashboards/UserDashboard/EmployeeBilling/Items/ItemDetails";
+import SalesInvoice from "./Dashboards/UserDashboard/EmployeeBilling/Sales/SalesInvoice";
+import PaymentIn from "./Dashboards/UserDashboard/EmployeeBilling/PaymentIn/PaymentIn";
+import Quotation from "./Dashboards/UserDashboard/EmployeeBilling/Quotation/Quotation";
+import QuotationEstimate from "./Dashboards/UserDashboard/EmployeeBilling/Quotation/QuotationEstimate";
+import ProformaInvoice from "./Dashboards/UserDashboard/EmployeeBilling/Proformainvoice/ProformaInvoice";
+import Invoice from "./Dashboards/UserDashboard/EmployeeBilling/Proformainvoice/Invoice";
+import CreditNote from "./Dashboards/UserDashboard/EmployeeBilling/CreditNote/CreditNote";
+import CreditInvoice from "./Dashboards/UserDashboard/EmployeeBilling/CreditNote/CreditInvoice";
+import PaymentList from "./Dashboards/UserDashboard/EmployeeBilling/PaymentIn/PaymentList";
+import CreateDeliverychallan from "./Dashboards/UserDashboard/EmployeeBilling/DeliveryChallan/CreateDeliverychallan";
+import DeliveryChallan from "./Dashboards/UserDashboard/EmployeeBilling/DeliveryChallan/DeliveryChallan";
 
 //Manager Billing Page imports
 import ManagerBilling from "./Dashboards/ManagerDashboard/ManagerBilling/Billing.jsx";
@@ -293,10 +289,13 @@ import AdminItemsPage from "./Dashboards/AdminDashboard/AdminInventory/Items/Ite
 import AdminItemDetails from "./Dashboards/AdminDashboard/AdminInventory/Items/ItemDetails.jsx";
 import AdminPurchaseHome from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseHome.jsx";
 import AdminPurchaseIcon from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseIcon.jsx";
-import HROnboarding1 from "./Dashboards/HrDashboard/HROnboarding1/HROnboarding1.jsx";
-import Recruitment from "./Dashboards/HrDashboard/Recruitment/Recruitment.jsx";
-import Payroll from "./Dashboards/HrDashboard/Payroll/Payroll.jsx";
-import Performance from "./Dashboards/HrDashboard/Performance/Performance.jsx";
+import HROnboarding1 from "./Dashboards/UserDashboard/HROnboarding1/HROnboarding1.jsx";
+import Recruitment from "./Dashboards/UserDashboard/HrRecruitment/Recruitment.jsx";
+import Performance from "./Dashboards/UserDashboard/HrPerformance/Performance.jsx";
+import HRLayout from "./Dashboards/UserDashboard/HRLayout.jsx";
+import TrainingCertification from "./Dashboards/UserDashboard/EmployeeTrainingCertification/TrainingCertification.jsx";
+import HrManagerManagementLayout from "./Dashboards/UserDashboard/HrManagerPage/HrManagerManagementLayout.jsx";
+import HrManagerList from "./Dashboards/UserDashboard/HrManagerPage/HrManagerList.jsx";
 
 export default function App() {
   return (
@@ -471,7 +470,7 @@ export default function App() {
                   <Route path="chart" element={<SupervisorChart />} />
                   <Route
                     path="supervisor-leave"
-                    element={<SupervisorLeave />}
+                    element={<SpSupervisorLeave />}
                   />
                   <Route
                     path="supervisor-leave-policies"
@@ -655,7 +654,7 @@ export default function App() {
               </Route>
 
               {/* HR Dashboard */}
-              <Route path="hr" element={<HRLayout />}>
+              <Route path="user/hr" element={<HRLayout />}>
                 <Route index element={<HrDashboard />} />
                 <Route path="dashboard" element={<HrDashboard />} />
                 <Route path="process" element={<HRProgressLayout />}>
@@ -668,7 +667,6 @@ export default function App() {
                 <Route path="manpowerplanning" element={<ManpowerPlanning />} />
                 <Route path="hronboaring1" element={<HROnboarding1 />} />
                 <Route path="recruitment" element={<Recruitment />} />
-                <Route path="payroll" element={<Payroll />} />,
                 <Route path="performance" element={<Performance />} />,
                 <Route path="employees" element={<HrEmployees />} />
                 <Route path="attendance" element={<HrAttendanceLayout />}>
@@ -839,21 +837,21 @@ export default function App() {
               {/* </Route> */}
 
               {/* Supervisor Dashboard */}
-              <Route path="supervisor" element={<SupervisorLayout />}>
+              <Route path="user/supervisor" element={<SupervisorLayout />}>
                 <Route index element={<SpSupervisorDashboard />} />
                 <Route path="dashboard" element={<SpSupervisorDashboard />} />
-                <Route path="Attendance" element={<SpSupervisorAttendance />} />
+                <Route path="Attendance" element={<SupervisorAttendance />} />
                 <Route path="Profile" element={<SpSupervisorProfile />} />
-                <Route path="LeaveManagement" element={<SpSupervisorLeave />} />
+                <Route path="LeaveManagement" element={<SupervisorLeave />} />
                 <Route path="Todo" element={<SpSupervisorTodo />} />
-                <Route path="News" element={<SpSupervisorNews />} />
-                <Route path="viewRequest" element={<SpSupervisorRequest />} />
+                <Route path="News" element={<SupervisorNews />} />
+                <Route path="viewRequest" element={<SupervisorRequest />} />
                 <Route path="helpDesk" element={<SupervisorHelpDesk />} />
                 <Route path="*" element={<ErrorPage path={"/supervisor"} />} />
               </Route>
 
               {/* Employee Dashboard */}
-              <Route path="employee" element={<EmployeeDashboardLayout />}>
+              <Route path="user/employee" element={<EmployeeDashboardLayout />}>
                 {/* billing pages */}
                 <Route path="billing" element={<Billing />}>
                   <Route index element={<Parties />} />

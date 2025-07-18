@@ -1,9 +1,9 @@
 import React from "react";
-import Card from "../../SupervisorDashboard/SpSupervisorDashboard/Card";
-import Clock from "../../SupervisorDashboard/SpSupervisorDashboard/Clock";
+import Card from "./Card";
+import Clock from "./Clock";
 // import Task from "../../EmployeeDashboard/EmployeeDashboard/Task";
-import News from "../../SupervisorDashboard/SpSupervisorDashboard/News";
-import AttendanceChart from "../../SupervisorDashboard/SpSupervisorDashboard/AttendanceChart";
+import News from "./News";
+import AttendanceChart from "./AttendanceChart";
 
 const SpSupervisorDashboard = () => {
   return (

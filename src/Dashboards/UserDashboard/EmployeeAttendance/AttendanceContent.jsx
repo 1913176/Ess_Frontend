@@ -121,7 +121,7 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
         );
 
         if (response.status === 200) {
-          const records = response.data.records || [];
+          const records = response.data.all_records || []; 
           setAttendanceData(records);
           setFilteredData(records);
           calculateSummaryStats(records);
@@ -146,25 +146,27 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
       let late = 0;
       let absent = 0;
       let totalHours = 0;
-  
+
       records.forEach(record => {
         if (record.type === "leave") {
           absent += 1;
         } else if (record.type === "attendance") {
           present += 1;
-          
-          if (record.time_in) {
-            const [hours, minutes] = record.time_in.split(':').map(Number);
-            const loginTime = new Date();
-            loginTime.setHours(hours, minutes, 0, 0);
-            const targetTime = new Date();
-            targetTime.setHours(9, 0, 0, 0); // 9:00 AM
-            
-            if (loginTime > targetTime) {
+
+          if (record.time_in && record.shift_start_time) {
+            const [checkInHours, checkInMinutes] = record.time_in.split(':').map(Number);
+            const [shiftHours, shiftMinutes] = record.shift_start_time.split(':').map(Number);
+            const checkInTime = new Date();
+            checkInTime.setHours(checkInHours, checkInMinutes, 0, 0);
+            const shiftStart = new Date();
+            shiftStart.setHours(shiftHours, shiftMinutes, 0, 0);
+            const oneHourAfterShift = new Date(shiftStart.getTime() + 60 * 60 * 1000);
+
+            if (checkInTime > oneHourAfterShift) {
               late += 1;
             }
           }
-          
+
           if (record.total_working_hours) {
             const [hours, minutes, seconds] = record.total_working_hours.split(':').map(Number);
             const hoursInDecimal = hours + (minutes / 60) + (seconds / 3600);
@@ -172,7 +174,7 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
           }
         }
       });
-  
+
       setSummaryStats({
         present,
         late,
@@ -368,6 +370,30 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
     }
   };
 
+  const renderRecord = (record, index) => {
+    let statusText = "Present";
+    let isLate = false;
+
+    if (record.type === "leave") {
+      statusText = "Leave";
+    } else if (record.type === "attendance" && record.time_in && record.shift_start_time) {
+      const [checkInHours, checkInMinutes] = record.time_in.split(':').map(Number);
+      const [shiftHours, shiftMinutes] = record.shift_start_time.split(':').map(Number);
+      const checkInTime = new Date();
+      checkInTime.setHours(checkInHours, checkInMinutes, 0, 0);
+      const shiftStart = new Date();
+      shiftStart.setHours(shiftHours, shiftMinutes, 0, 0);
+      const oneHourAfterShift = new Date(shiftStart.getTime() + 60 * 60 * 1000);
+      isLate = checkInTime > oneHourAfterShift;
+      statusText = isLate ? "Late" : "Present";
+    }
+
+    const workingHoursColor = getWorkingHoursColor(record.total_working_hours);
+    const statusColor = getStatusColor(record.type, isLate);
+
+    return { statusText, isLate, workingHoursColor, statusColor };
+  };
+
   return (
     <div className="attendance-container p-2 sm:p-4">
       {/* Header Card */}
@@ -554,15 +580,7 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
                   {/* Mobile View - Card Layout */}
                   <div className="sm:hidden space-y-4 py-2">
                     {filteredData.map((record, index) => {
-                      const isLate = record.time_in && new Date(`2000-01-01T${record.time_in}`) > new Date(`2000-01-01T09:00:00`);
-                      
-                      let statusText = "Present";
-                      if (record.type === "leave") statusText = "Leave";
-                      else if (isLate) statusText = "Late";
-                      
-                      const workingHoursColor = getWorkingHoursColor(record.total_working_hours);
-                      const statusColor = getStatusColor(record.type, isLate);
-                      
+                      const { statusText, isLate, workingHoursColor, statusColor } = renderRecord(record, index);
                       return (
                         <div key={record.id || index} className="bg-white border rounded-lg p-4 shadow-sm">
                           <div className="flex items-center justify-between mb-3">
@@ -647,32 +665,15 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
                           >
                             Working Hours {getSortIcon('workingHours')}
                           </TableHead>
-                          <TableHead className="bg-gray-200 w-10">
+                           {/* <TableHead className="bg-gray-200 w-10">
                             Actions
-                          </TableHead>
+                          </TableHead> */}
                         </TableRow>
                       </TableHeader>
 
                       <TableBody>
                         {filteredData.map((record, index) => {
-                          let statusText = "Present";
-                          let isLate = false;
-                          
-                          if (record.type === "leave") {
-                            statusText = "Leave";
-                          } else if (record.type === "attendance" && record.time_in) {
-                            const [hours, minutes] = record.time_in.split(':').map(Number);
-                            const loginTime = new Date();
-                            loginTime.setHours(hours, minutes, 0, 0);
-                            const targetTime = new Date();
-                            targetTime.setHours(9, 0, 0, 0);
-                            isLate = loginTime > targetTime;
-                            statusText = isLate ? "Late" : "Present";
-                          }
-
-                          const workingHoursColor = getWorkingHoursColor(record.total_working_hours);
-                          const statusColor = getStatusColor(record.type, isLate);
-
+                          const { statusText, isLate, workingHoursColor, statusColor } = renderRecord(record, index);
                           return (
                             <TableRow key={record.id || index}>
                               <TableCell>{index + 1}</TableCell>
@@ -689,7 +690,7 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
                                   {record.total_working_hours || "0"}
                                 </span>
                               </TableCell>
-                              <TableCell>
+                              {/* <TableCell>
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
@@ -698,7 +699,7 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
                                 >
                                   <PencilIcon className="h-4 w-4" />
                                 </Button>
-                              </TableCell>
+                              </TableCell> */}
                             </TableRow>
                           );
                         })}

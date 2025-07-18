@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 import axios from "axios";
-import profile from "../images/profile.png";
+import profile from "../Hrimages/profile.png";
 const apiBaseUrl = process.env.VITE_BASE_API;
 
 const HrOffers = () => {

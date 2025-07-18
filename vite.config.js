@@ -19,4 +19,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    // 👇 This line ensures Vite serves index.html for all routes
+    historyApiFallback: true,
+  },
 });

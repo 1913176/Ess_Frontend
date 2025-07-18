@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Content from "./AttendanceContent";
-import AttendanceChart from "../../EmployeeDashboard/EmployeeAttendance/AttendanceChart";
-import AttendanceForm from "../../EmployeeDashboard/EmployeeAttendance/AttendanceForm";
+import AttendanceChart from "../../UserDashboard/EmployeeAttendance/AttendanceChart";
+import AttendanceForm from "../../UserDashboard/EmployeeAttendance/AttendanceForm";
 import axios from "axios";
 
 axios.defaults.withCredentials = true;

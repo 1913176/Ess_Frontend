@@ -1,9 +1,9 @@
 import React from "react";
-import Card from "../../EmployeeDashboard/EmployeeDashboard/Card";
-import Clock from "../../EmployeeDashboard/EmployeeDashboard/Clock";
-import Task from "../../EmployeeDashboard/EmployeeDashboard/Task";
-import News from "../../EmployeeDashboard/EmployeeDashboard/News";
-import AttendanceChart from "../../EmployeeDashboard/EmployeeDashboard/AttendanceChart";
+import Task from "../../UserDashboard/EmployeeDashboard/Task";
+import Clock from "../../UserDashboard/EmployeeDashboard/Clock";
+import Card from "../../UserDashboard/EmployeeDashboard/Card";
+import News from "../../UserDashboard/EmployeeDashboard/News";
+import AttendanceChart from "../../UserDashboard/EmployeeDashboard/AttendanceChart";
 
 const EmployeeDashboard = () => {
   return (
