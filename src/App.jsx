@@ -291,7 +291,7 @@ import ManagerDeliveryChallan from "./Dashboards/ManagerDashboard/ManagerBilling
 import AdminInventory from "./Dashboards/AdminDashboard/AdminInventory/Inventory.jsx";
 import AdminItemsPage from "./Dashboards/AdminDashboard/AdminInventory/Items/ItemsPage.jsx";
 import AdminItemDetails from "./Dashboards/AdminDashboard/AdminInventory/Items/ItemDetails.jsx";
-import AdminPurchaseHome from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseHome.jsx";
+import AdminPurchaseHome from "./Dashboards/AdminDashboard/PurchaseScreen/AdminPurchaseHome.jsx";
 import AdminPurchaseIcon from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseIcon.jsx";
 import HROnboarding1 from "./Dashboards/HrDashboard/HROnboarding1/HROnboarding1.jsx";
 import Recruitment from "./Dashboards/HrDashboard/Recruitment/Recruitment.jsx";
