@@ -20,6 +20,16 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+   
+      - name: Check Required Component File Exists
+        run: |
+          echo "Checking if required component exists..."
+          if [ ! -f src/Dashboards/AdminDashboard/PurchaseScreen/AdminPurchaseHome.jsx ]; then
+            echo "❌ ERROR: File not found: src/Dashboards/AdminDashboard/PurchaseScreen/AdminPurchaseHome.jsx"
+            echo "Make sure the file path and case match exactly."
+            exit 1
+          fi
+
       - name: Build Project
         run: npm run build
 
@@ -43,3 +53,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "dist/"
+          target: "/var/www/html/frontend"
+          debug: true
