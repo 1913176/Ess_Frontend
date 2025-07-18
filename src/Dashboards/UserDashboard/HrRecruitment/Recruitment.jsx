@@ -15,11 +15,11 @@ const Recruitment = () => {
   const [showAddCandidateModal, setShowAddCandidateModal] = useState(false);
   const [showAddJobAlertModal, setShowAddJobAlertModal] = useState(false);
 
-  // Filter state for Candidates tab
   const [candidateJobFilter, setCandidateJobFilter] = useState("");
   const [candidateStatusFilter, setCandidateStatusFilter] = useState("");
 
-  // Filter function for Candidates tab
+  const [candidateSearch, setCandidateSearch] = useState("");
+
   const filteredCandidates = useMemo(() => {
     return candidates.filter((candidate) => {
       const jobMatch = candidateJobFilter
@@ -28,24 +28,31 @@ const Recruitment = () => {
       const statusMatch = candidateStatusFilter
         ? candidate.status === candidateStatusFilter
         : true;
-      return jobMatch && statusMatch;
+      const searchMatch = candidateSearch
+        ? candidate.name.toLowerCase().includes(candidateSearch.toLowerCase())
+        : true;
+      return jobMatch && statusMatch && searchMatch;
     });
-  }, [candidates, candidateJobFilter, candidateStatusFilter]);
+  }, [candidates, candidateJobFilter, candidateStatusFilter, candidateSearch]);
 
   //Filter state for Job-Alerts tab
   const [jobTypeFilter, setJobTypeFilter] = useState("");
   const [jobStatusFilter, setJobStatusFilter] = useState("");
+  const [jobAlertSearch, setJobAlertSearch] = useState(""); // Add search state
 
-  //Filter function for Job-Alerts tab
+  //Filter function for Job-Alerts tab (search only by job title)
   const filteredJobAlerts = useMemo(() => {
     return jobAlerts.filter((job) => {
       const typeMatch = jobTypeFilter ? job.type === jobTypeFilter : true;
       const statusMatch = jobStatusFilter
         ? job.status === jobStatusFilter
         : true;
-      return typeMatch && statusMatch;
+      const searchMatch = jobAlertSearch
+        ? job.title.toLowerCase().includes(jobAlertSearch.toLowerCase())
+        : true;
+      return typeMatch && statusMatch && searchMatch;
     });
-  }, [jobAlerts, jobTypeFilter, jobStatusFilter]);
+  }, [jobAlerts, jobTypeFilter, jobStatusFilter, jobAlertSearch]);
 
   const [newJobAlert, setNewJobAlert] = useState({
     title: "",
@@ -390,48 +397,58 @@ const Recruitment = () => {
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Job Alerts</h2>
-          <div className="flex gap-4">
-          <select
-            value={jobTypeFilter}
-            onChange={(e) => setJobTypeFilter(e.target.value)}
-            className="px-3 py-2 border rounded-md text-sm text-gray-700"
-          >
-            <option value="">All Types</option>
-            <option value="Full-time">Full-time</option>
-            <option value="Contract">Contract</option>
-            <option value="Internship-full-time">Internship (Full-time)</option>
-            <option value="Internship-part-time">Internship (Part-time)</option>
-          </select>
-          <select
-            value={jobStatusFilter}
-            onChange={(e) => setJobStatusFilter(e.target.value)}
-            className="px-3 py-2 border rounded-md text-sm text-gray-700"
-          >
-            <option value="">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Paused">Paused</option>
-            <option value="Closed">Closed</option>
-          </select>
-          <button
-            onClick={() => {
-              setNewJobAlert({
-                title: "",
-                department: "",
-                location: "",
-                type: "",
-                posted: "",
-                applications: 0,
-                status: "Active",
-                job_id: null,
-              });
-              setShowAddJobAlertModal(true);
-            }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            disabled={!hrId || loading}
-          >
-            <Plus size={16} />
-            Add Job Alert
-          </button>
+          <div className="flex gap-4 items-center">
+            {/* Search column */}
+            <input
+              type="text"
+              value={jobAlertSearch}
+              onChange={e => setJobAlertSearch(e.target.value)}
+              placeholder="Search by Job Title"
+              className="px-3 py-2 border rounded-md text-sm text-gray-700 w-72"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <select
+              value={jobTypeFilter}
+              onChange={(e) => setJobTypeFilter(e.target.value)}
+              className="px-3 py-2 border rounded-md text-sm text-gray-700"
+            >
+              <option value="">All Types</option>
+              <option value="Full-time">Full-time</option>
+              <option value="Contract">Contract</option>
+              <option value="Internship-full-time">Internship (Full-time)</option>
+              <option value="Internship-part-time">Internship (Part-time)</option>
+            </select>
+            <select
+              value={jobStatusFilter}
+              onChange={(e) => setJobStatusFilter(e.target.value)}
+              className="px-3 py-2 border rounded-md text-sm text-gray-700"
+            >
+              <option value="">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Paused">Paused</option>
+              <option value="Closed">Closed</option>
+            </select>
+            <button
+              onClick={() => {
+                setNewJobAlert({
+                  title: "",
+                  department: "",
+                  location: "",
+                  type: "",
+                  posted: "",
+                  applications: 0,
+                  status: "Active",
+                  job_id: null,
+                });
+                setShowAddJobAlertModal(true);
+              }}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={!hrId || loading}
+            >
+              <Plus size={16} />
+              Add Job Alert
+            </button>
           </div>
         </div>
 
@@ -549,7 +566,17 @@ const Recruitment = () => {
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Candidates</h2>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
+            {/* Search column */}
+            <input
+              type="text"
+              value={candidateSearch}
+              onChange={e => setCandidateSearch(e.target.value)}
+              placeholder="Search by Candidate Name"
+              className="px-3 py-2 border rounded-md text-sm text-gray-700 w-64"
+              autoComplete="off"
+              spellCheck={false}
+            />
             <select
               value={candidateJobFilter}
               onChange={(e) => setCandidateJobFilter(e.target.value)}

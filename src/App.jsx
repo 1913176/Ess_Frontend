@@ -287,7 +287,6 @@ import ManagerDeliveryChallan from "./Dashboards/ManagerDashboard/ManagerBilling
 import AdminInventory from "./Dashboards/AdminDashboard/AdminInventory/Inventory.jsx";
 import AdminItemsPage from "./Dashboards/AdminDashboard/AdminInventory/Items/ItemsPage.jsx";
 import AdminItemDetails from "./Dashboards/AdminDashboard/AdminInventory/Items/ItemDetails.jsx";
-import AdminPurchaseHome from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseHome.jsx";
 import AdminPurchaseIcon from "./Dashboards/AdminDashboard/purchaseScreen/AdminPurchaseIcon.jsx";
 import HROnboarding1 from "./Dashboards/UserDashboard/HROnboarding1/HROnboarding1.jsx";
 import Recruitment from "./Dashboards/UserDashboard/HrRecruitment/Recruitment.jsx";
@@ -296,6 +295,7 @@ import HRLayout from "./Dashboards/UserDashboard/HRLayout.jsx";
 import TrainingCertification from "./Dashboards/UserDashboard/EmployeeTrainingCertification/TrainingCertification.jsx";
 import HrManagerManagementLayout from "./Dashboards/UserDashboard/HrManagerPage/HrManagerManagementLayout.jsx";
 import HrManagerList from "./Dashboards/UserDashboard/HrManagerPage/HrManagerList.jsx";
+import AdminPurchaseHome from "./Dashboards/AdminDashboard/PurchaseScreen/AdminPurchaseHome.jsx";
 
 export default function App() {
   return (
