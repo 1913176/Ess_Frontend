@@ -1,51 +1,47 @@
-name: Frontend CI/CD Pipeline
+name: Build and Deploy Vite Frontend
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 18
 
-      - name: Install Dependencies
-        run: npm ci
+      - name: 📦 Install Dependencies
+        run: npm install
 
-      - name: Build Project
+      - name: ⚒️ Build Project
         run: npm run build
 
-      - name: Debug – List Dist Folder
-        run: ls -la dist
-
-      - name: Ensure target directory exists on EC2
-        uses: appleboy/ssh-action@v1.0.0
+      - name: 📤 Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            sudo mkdir -p /var/www/html/frontend
-            sudo chown -R ubuntu:ubuntu /var/www/html/frontend
+          name: vite-build
+          path: dist/
 
-      - name: Copy Build to EC2
-        uses: appleboy/scp-action@v0.1.4
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: 📥 Download Build Artifact
+        uses: actions/download-artifact@v3
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: "dist/"
-          target: "/var/www/html/frontend"
-          debug: true                                   
+          name: vite-build
+          path: dist
+
+      # Example: Deploy to Vercel (Replace token)
+      - name: 🚀 Deploy to Vercel
+        run: npx vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --confirm
