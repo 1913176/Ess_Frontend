@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-          
+
       - name: Build Application
         run: npm run build
 
@@ -31,5 +31,3 @@ jobs:
         with:
           name: frontend-dist
           path: dist/
-
-      
