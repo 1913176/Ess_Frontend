@@ -1,35 +1,42 @@
-name: Deploy Frontend
+name: Frontend CI/CD Pipeline
 
 on:
   push:
-    paths:
-      - 'frontend/**'
+    branches: [main]
+  pull_request:
     branches: [main]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
-    - name: Install and Build
-      run: |
-        cd frontend
-        npm install
-        npm run build
+      - name: List project files (debug)
+        run: |
+          echo "\nProject structure:" && tree -L 3 src || ls -R src
 
-    - name: Deploy to EC2
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ubuntu
-        key: ${{ secrets.SSH_KEY }}
-        source: "frontend/dist/*"
-        target: "/home/ubuntu/frontend/dist"
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: build/
+
+      - name: Deploy to static hosting
+        run: |
+          echo "Deploy step placeholder"
