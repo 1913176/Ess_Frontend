@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import {
-  Search,
-  Plus,
-  Filter,
-  Edit,
-  Trash2,
-  Eye,
-  ExternalLink,
-} from "lucide-react";
+import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
 axios.defaults.withCredentials = true;
@@ -20,11 +12,41 @@ const Recruitment = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [candidates, setCandidates] = useState([]);
-  const [jobSearchTerm, setJobSearchTerm] = useState("");
-  const [candidateSearchTerm, setCandidateSearchTerm] = useState("");
-  const [jobTitleFilter, setJobTitleFilter] = useState("");
   const [showAddCandidateModal, setShowAddCandidateModal] = useState(false);
   const [showAddJobAlertModal, setShowAddJobAlertModal] = useState(false);
+
+  // Filter state for Candidates tab
+  const [candidateJobFilter, setCandidateJobFilter] = useState("");
+  const [candidateStatusFilter, setCandidateStatusFilter] = useState("");
+
+  // Filter function for Candidates tab
+  const filteredCandidates = useMemo(() => {
+    return candidates.filter((candidate) => {
+      const jobMatch = candidateJobFilter
+        ? candidate.jobTitle === candidateJobFilter
+        : true;
+      const statusMatch = candidateStatusFilter
+        ? candidate.status === candidateStatusFilter
+        : true;
+      return jobMatch && statusMatch;
+    });
+  }, [candidates, candidateJobFilter, candidateStatusFilter]);
+
+  //Filter state for Job-Alerts tab
+  const [jobTypeFilter, setJobTypeFilter] = useState("");
+  const [jobStatusFilter, setJobStatusFilter] = useState("");
+
+  //Filter function for Job-Alerts tab
+  const filteredJobAlerts = useMemo(() => {
+    return jobAlerts.filter((job) => {
+      const typeMatch = jobTypeFilter ? job.type === jobTypeFilter : true;
+      const statusMatch = jobStatusFilter
+        ? job.status === jobStatusFilter
+        : true;
+      return typeMatch && statusMatch;
+    });
+  }, [jobAlerts, jobTypeFilter, jobStatusFilter]);
+
   const [newJobAlert, setNewJobAlert] = useState({
     title: "",
     department: "",
@@ -35,7 +57,6 @@ const Recruitment = () => {
     status: "Active",
     job_id: null,
   });
-  const [toastMessage, setToastMessage] = useState({ type: "", text: "" });
 
   const [candidateFormData, setCandidateFormData] = useState({
     c_id: "",
@@ -50,16 +71,6 @@ const Recruitment = () => {
   // Get hr_id from sessionStorage
   const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
   const hrId = userInfo?.hr_id;
-
-  // Clear toast after 3 seconds
-  useEffect(() => {
-    if (toastMessage.text) {
-      const timer = setTimeout(() => {
-        setToastMessage({ type: "", text: "" });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toastMessage]);
 
   // Fetch job alerts
   const fetchJobAlerts = async () => {
@@ -97,14 +108,16 @@ const Recruitment = () => {
   };
 
   useEffect(() => {
-  if (!hrId) return;
-
-  if (activeTab === "job-alerts") {
     fetchJobAlerts();
-  } else {
-    fetchCandidates();
-  }
-}, [activeTab, hrId]);
+  }, [hrId]);
+
+  useEffect(() => {
+    if (activeTab === "job-alerts") {
+      fetchJobAlerts();
+    } else {
+      fetchCandidates();
+    }
+  }, [activeTab]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -151,10 +164,7 @@ const Recruitment = () => {
         job_id: null,
       });
       setError("");
-      setToastMessage({
-        type: "success",
-        text: "Job Alert created successfully",
-      });
+      toast.success("Job Alert created successfully");
     } catch (err) {
       setError(err.response?.data?.error || "Failed to create job alert.");
       console.error(err);
@@ -173,74 +183,71 @@ const Recruitment = () => {
   };
 
   const addCandidate = async () => {
-  try {
-    const formData = new FormData();
-    formData.append("hr", hrId);
-    formData.append("name", candidateFormData.name);
-    formData.append("phone", candidateFormData.phone);
-    formData.append("jobTitle", candidateFormData.jobTitle);
-    formData.append("status", candidateFormData.status);
-    if (
-  candidateFormData.resume &&
-  typeof candidateFormData.resume !== "string"
-) {
-  formData.append("resume", candidateFormData.resume);
-}
+    try {
+      const formData = new FormData();
+      formData.append("hr", hrId);
+      formData.append("name", candidateFormData.name);
+      formData.append("phone", candidateFormData.phone);
+      formData.append("jobTitle", candidateFormData.jobTitle);
+      formData.append("status", candidateFormData.status);
+      if (
+        candidateFormData.resume &&
+        typeof candidateFormData.resume !== "string"
+      ) {
+        formData.append("resume", candidateFormData.resume);
+      }
 
-
-    await axios.post(`${apiBaseUrl}/candidate/create/${hrId}/`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    toast.success("Candidate added successfully");
-    fetchCandidates();
-    setShowAddCandidateModal(false);
-  } catch (error) {
-    toast.error("Error adding candidate");
-    console.error("Add Error:", error);
-  }
-};
-
-
-  const updateCandidate = async () => {
-  try {
-    const formData = new FormData();
-    formData.append("hr", hrId);
-    formData.append("name", candidateFormData.name);
-    formData.append("phone", candidateFormData.phone);
-    formData.append("jobTitle", candidateFormData.jobTitle);
-    formData.append("status", candidateFormData.status);
-
-    // ✅ Only add resume if it's a new file
-    if (
-      candidateFormData.resume &&
-      typeof candidateFormData.resume !== "string"
-    ) {
-      formData.append("resume", candidateFormData.resume);
-    }
-
-    await axios.put(
-      `${apiBaseUrl}/candidate/update/${editingCandidateId}/`,
-      formData,
-      {
+      await axios.post(`${apiBaseUrl}/candidate/create/${hrId}/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+      });
+
+      toast.success("Candidate added successfully");
+      fetchCandidates();
+      setShowAddCandidateModal(false);
+    } catch (error) {
+      toast.error("Error adding candidate");
+      console.error("Add Error:", error);
+    }
+  };
+
+  const updateCandidate = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("hr", hrId);
+      formData.append("name", candidateFormData.name);
+      formData.append("phone", candidateFormData.phone);
+      formData.append("jobTitle", candidateFormData.jobTitle);
+      formData.append("status", candidateFormData.status);
+
+      // ✅ Only add resume if it's a new file
+      if (
+        candidateFormData.resume &&
+        typeof candidateFormData.resume !== "string"
+      ) {
+        formData.append("resume", candidateFormData.resume);
       }
-    );
 
-    toast.success("Candidate updated successfully");
-    fetchCandidates();
-    setShowAddCandidateModal(false);
-    setEditingCandidateId(null);
-  } catch (error) {
-    toast.error("Error updating candidate");
-    console.error("Update Error:", error);
-  }
-};
+      await axios.put(
+        `${apiBaseUrl}/candidate/update/${editingCandidateId}/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
 
+      toast.success("Candidate updated successfully");
+      fetchCandidates();
+      setShowAddCandidateModal(false);
+      setEditingCandidateId(null);
+    } catch (error) {
+      toast.error("Error updating candidate");
+      console.error("Update Error:", error);
+    }
+  };
 
   const handleDeleteCandidate = async (candidateId) => {
     try {
@@ -275,10 +282,7 @@ const Recruitment = () => {
       await axios.delete(`${apiBaseUrl}/job_alert/delete/${jobId}/`);
       setJobAlerts(jobAlerts.filter((job) => job.job_id !== jobId));
       setError("");
-      setToastMessage({
-        type: "success",
-        text: "Job Alert deleted successfully",
-      });
+      toast.success("Job Alert deleted successfully");
     } catch (err) {
       setError(err.response?.data?.error || "Failed to delete job alert.");
       console.error(err);
@@ -343,10 +347,7 @@ const Recruitment = () => {
         job_id: null,
       });
       setError("");
-      setToastMessage({
-        type: "success",
-        text: "Job Alert updated successfully",
-      });
+      toast.success("Job Alert updated successfully");
     } catch (err) {
       setError(err.response?.data?.error || "Failed to update job alert.");
       console.error(err);
@@ -384,213 +385,197 @@ const Recruitment = () => {
     }
   };
 
-  const filteredJobAlerts = useMemo(() => {
-    return jobAlerts.filter(
-      (job) =>
-        job.title.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
-        job.department.toLowerCase().includes(jobSearchTerm.toLowerCase()),
-    );
-  }, [jobAlerts, jobSearchTerm]);
-
-  const filteredCandidates = useMemo(() => {
-    return candidates
-      .filter(
-        (candidate) =>
-          candidate.name
-            .toLowerCase()
-            .includes(candidateSearchTerm.toLowerCase()) ||
-          candidate.jobTitle
-            .toLowerCase()
-            .includes(candidateSearchTerm.toLowerCase()),
-      )
-      .filter(
-        (candidate) =>
-          jobTitleFilter === "" ||
-          candidate.jobTitle
-            .toLowerCase()
-            .includes(jobTitleFilter.toLowerCase()),
-      );
-  }, [candidates, candidateSearchTerm, jobTitleFilter]);
-
-  const JobAlertsTab = React.memo(() => {
-    return (
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Job Alerts</h2>
-            <button
-              onClick={() => {
-                setNewJobAlert({
-                  title: "",
-                  department: "",
-                  location: "",
-                  type: "",
-                  posted: "",
-                  applications: 0,
-                  status: "Active",
-                  job_id: null,
-                });
-                setShowAddJobAlertModal(true);
-              }}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              disabled={!hrId || loading}
-            >
-              <Plus size={16} />
-              Add Job Alert
-            </button>
+  const JobAlertsTab = () => (
+    <div className="bg-white rounded-lg shadow-sm">
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Job Alerts</h2>
+          <div className="flex gap-4">
+          <select
+            value={jobTypeFilter}
+            onChange={(e) => setJobTypeFilter(e.target.value)}
+            className="px-3 py-2 border rounded-md text-sm text-gray-700"
+          >
+            <option value="">All Types</option>
+            <option value="Full-time">Full-time</option>
+            <option value="Contract">Contract</option>
+            <option value="Internship-full-time">Internship (Full-time)</option>
+            <option value="Internship-part-time">Internship (Part-time)</option>
+          </select>
+          <select
+            value={jobStatusFilter}
+            onChange={(e) => setJobStatusFilter(e.target.value)}
+            className="px-3 py-2 border rounded-md text-sm text-gray-700"
+          >
+            <option value="">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Paused">Paused</option>
+            <option value="Closed">Closed</option>
+          </select>
+          <button
+            onClick={() => {
+              setNewJobAlert({
+                title: "",
+                department: "",
+                location: "",
+                type: "",
+                posted: "",
+                applications: 0,
+                status: "Active",
+                job_id: null,
+              });
+              setShowAddJobAlertModal(true);
+            }}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            disabled={!hrId || loading}
+          >
+            <Plus size={16} />
+            Add Job Alert
+          </button>
           </div>
-
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1">
-              <Search
-                size={16}
-                className="absolute left-3 top-3 text-gray-400"
-              />
-              <input
-                type="text"
-                autoFocus
-                value={jobSearchTerm}
-                onChange={(e) => setJobSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-              <Filter size={16} />
-              Filter
-            </button>
-          </div>
-          {error && <p className="text-red-500 mt-2">{error}</p>}
-          {toastMessage.text && (
-            <p
-              className={`text-sm mt-2 ${toastMessage.type === "success" ? "text-green-500" : "text-red-500"}`}
-            >
-              {toastMessage.text}
-            </p>
-          )}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Job Title
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Department
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Location
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Posted
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Applications
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan="8"
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    Loading Job-Alerts Data...
-                  </td>
-                </tr>
-              ) : !hrId ? (
-                <tr>
-                  <td
-                    colSpan="8"
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    User information not found. Please log in.
-                  </td>
-                </tr>
-              ) : filteredJobAlerts.length > 0 ? (
-                filteredJobAlerts.map((job) => (
-                  <tr key={job.job_id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {job.title}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {job.department}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {job.location}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {job.type}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {job.posted}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {job.applications}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(job.status)}`}
-                      >
-                        {job.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleEditJob(job)}
-                          className="text-gray-600 hover:text-gray-800"
-                          disabled={loading}
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteJob(job.job_id)}
-                          className="text-red-600 hover:text-red-800"
-                          disabled={loading}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="8"
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    No job alerts found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
-    );
-  });
 
-  const CandidatesTab = React.memo(() => {
-    return (
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Candidates</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Job Title
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Department
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Location
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Posted
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Applications
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading ? (
+              <tr>
+                <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
+                  Loading...
+                </td>
+              </tr>
+            ) : !hrId ? (
+              <tr>
+                <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
+                  User information not found. Please log in.
+                </td>
+              </tr>
+            ) : filteredJobAlerts.length > 0 ? (
+              filteredJobAlerts.map((job) => (
+                <tr key={job.job_id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {job.title}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {job.department}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {job.location}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {job.type}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {job.posted}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {job.applications}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(job.status)}`}
+                    >
+                      {job.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleEditJob(job)}
+                        className="text-gray-600 hover:text-gray-800"
+                        disabled={loading}
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteJob(job.job_id)}
+                        className="text-red-600 hover:text-red-800"
+                        disabled={loading}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
+                  No job alerts found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const CandidatesTab = () => (
+    <div className="bg-white rounded-lg shadow-sm">
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Candidates</h2>
+          <div className="flex gap-4">
+            <select
+              value={candidateJobFilter}
+              onChange={(e) => setCandidateJobFilter(e.target.value)}
+              className="px-3 py-2 border rounded-md text-sm text-gray-700"
+            >
+              <option value="">All Job Titles</option>
+              <option value="Frontend Developer">Frontend Developer</option>
+              <option value="Backend Developer">Backend Developer</option>
+              <option value="UI/UX Designer">UI/UX Designer</option>
+            </select>
+            <select
+              value={candidateStatusFilter}
+              onChange={(e) => setCandidateStatusFilter(e.target.value)}
+              className="px-3 py-2 border rounded-md text-sm text-gray-700"
+            >
+              <option value="">All Statuses</option>
+              <option value="Resume In Review">Resume In Review</option>
+              <option value="Shortlisted">Shortlisted</option>
+              <option value="Interview - L1">Interview - L1</option>
+              <option value="Interview - L2">Interview - L2</option>
+              <option value="Interview - L3">Interview - L3</option>
+              <option value="Welcome Letter">Welcome Letter</option>
+              <option value="Document Collection">Document Collection</option>
+              <option value="Offer Letter">Offer Letter</option>
+              <option value="Onboarding">Onboarding</option>
+            </select>
             <button
               onClick={() => {
                 setCandidateFormData({
@@ -609,173 +594,139 @@ const Recruitment = () => {
               Add Candidate
             </button>
           </div>
-
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1">
-              <Search
-                size={16}
-                className="absolute left-3 top-3 text-gray-400"
-              />
-              <input
-                autoFocus
-                type="text"
-                placeholder="Search by name or job title..."
-                value={candidateSearchTerm}
-                onChange={(e) => setCandidateSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-            <select
-              value={jobTitleFilter}
-              onChange={(e) => setJobTitleFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:border-transparent"
-            >
-              <option value="">Job Title</option>
-              <option value="Product Designer">Product Designer</option>
-              <option value="Frontend Developer">Frontend Developer</option>
-              <option value="Backend Developer">Backend Developer</option>
-            </select>
-            <div className="text-sm text-gray-500">19 Jan, 2024</div>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone No
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Job Title
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Resume Link
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan="6"
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    Loading Candidates Data...
-                  </td>
-                </tr>
-              ) : filteredCandidates.length > 0 ? (
-                filteredCandidates.map((candidate) => (
-                  <tr key={candidate.c_id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-700">
-                              {candidate.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {candidate.name}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {candidate.phone}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {candidate.jobTitle}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-  {candidate.resume ? (
-    <a
-      href={`${apiBaseUrl}/${candidate.resume}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-1 hover:text-blue-800"
-    >
-      View Resume
-      <ExternalLink size={12} />
-    </a>
-  ) : (
-    <span className="text-gray-400">No Resume</span>
-  )}
-</td>
-
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(candidate.status)}`}
-                      >
-                        {candidate.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center gap-2">
-                        <button
-                          className="text-gray-600 hover:text-gray-800"
-                          onClick={() => {
-                            setCandidateFormData({
-                              name: candidate.name,
-                              phone: candidate.phone,
-                              jobTitle: candidate.jobTitle,
-                              resume: candidate.resume,
-                              status: candidate.status,
-                            });
-                            setEditingCandidateId(candidate.c_id);
-                            setShowAddCandidateModal(true);
-                          }}
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          className="text-red-600 hover:text-red-800"
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                "Are you sure you want to delete this candidate?",
-                              )
-                            ) {
-                              handleDeleteCandidate(candidate.c_id);
-                            }
-                          }}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="6"
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    No candidates found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
         </div>
       </div>
-    );
-  });
+
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Phone No
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Job Title
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Attachment Link
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                  Loading Candidates Data...
+                </td>
+              </tr>
+            ) : filteredCandidates.length > 0 ? (
+              filteredCandidates.map((candidate) => (
+                <tr key={candidate.c_id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                          <span className="text-sm font-medium text-gray-700">
+                            {candidate.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {candidate.name}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {candidate.phone}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {candidate.jobTitle}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                    {candidate.resume ? (
+                      <a
+                        href={`${apiBaseUrl}/${candidate.resume}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 hover:text-blue-800"
+                      >
+                        View Resume
+                        <ExternalLink size={12} />
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">No Resume</span>
+                    )}
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(candidate.status)}`}
+                    >
+                      {candidate.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="text-gray-600 hover:text-gray-800"
+                        onClick={() => {
+                          setCandidateFormData({
+                            name: candidate.name,
+                            phone: candidate.phone,
+                            jobTitle: candidate.jobTitle,
+                            resume: candidate.resume,
+                            status: candidate.status,
+                          });
+                          setEditingCandidateId(candidate.c_id);
+                          setShowAddCandidateModal(true);
+                        }}
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        className="text-red-600 hover:text-red-800"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Are you sure you want to delete this candidate?",
+                            )
+                          ) {
+                            handleDeleteCandidate(candidate.c_id);
+                          }
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                  No candidates found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -975,33 +926,33 @@ const Recruitment = () => {
                   <option value="Backend Developer">Backend Developer</option>
                   <option value="UI/UX Designer">UI/UX Designer</option>
                 </select>
-             {/* Show existing uploaded resume if editing */}
-{editingCandidateId && typeof candidateFormData.resume === "string" && (
-  <div className="mb-2 text-sm text-blue-600">
-    <a
-      href={`${apiBaseUrl}/${candidateFormData.resume}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="hover:underline flex items-center gap-1"
-    >
-      View Uploaded Resume <ExternalLink size={12} />
-    </a>
-  </div>
-)}
+                {/* Show existing uploaded resume if editing */}
+                {editingCandidateId &&
+                  typeof candidateFormData.resume === "string" && (
+                    <div className="mb-2 text-sm text-blue-600">
+                      <a
+                        href={`${apiBaseUrl}/${candidateFormData.resume}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline flex items-center gap-1"
+                      >
+                        View Uploaded Resume <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  )}
 
-<input
-  name="resume"
-  type="file"
-  accept=".pdf"
-  onChange={(e) =>
-    setCandidateFormData((prevData) => ({
-      ...prevData,
-      resume: e.target.files[0],
-    }))
-  }
-  className="w-full px-4 py-2 border border-gray-300 rounded-md"
-/>
-
+                <input
+                  name="resume"
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) =>
+                    setCandidateFormData((prevData) => ({
+                      ...prevData,
+                      resume: e.target.files[0],
+                    }))
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                />
 
                 <select
                   name="status"
