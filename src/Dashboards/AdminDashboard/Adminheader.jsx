@@ -61,11 +61,11 @@ const side_bar = [
     name: "Help Desk",
     icon: <HelpingHand />,
   },
-  {
-    link: "/admin/supervisor",
-    name: "Supervisor Management",
-    icon: <Users />,
-  },
+  // {
+  //   link: "/admin/supervisor",
+  //   name: "Supervisor Management",
+  //   icon: <Users />,
+  // },
   {
     link: "/admin/projectManagement",
     name: "Project Management",

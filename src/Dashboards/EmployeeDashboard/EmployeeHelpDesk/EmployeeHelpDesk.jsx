@@ -1,12 +1,31 @@
 import { useState, useEffect } from "react";
 import { Search, Edit, ChevronDown } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 import EmployeeTickets from "./EmployeeTickets";
@@ -26,7 +45,13 @@ const StatusProgressBar = ({ status }) => {
         <div
           className={`h-full ${isApproved ? "bg-green-500" : isReview ? "bg-orange-500" : isRequest ? "bg-blue-500" : "bg-gray-300"}`}
           style={{
-            width: isRequest ? "33%" : isReview ? "66%" : isApproved ? "100%" : "0%",
+            width: isRequest
+              ? "33%"
+              : isReview
+                ? "66%"
+                : isApproved
+                  ? "100%"
+                  : "0%",
           }}
         ></div>
       </div>
@@ -69,14 +94,22 @@ const ServiceCard = ({ service, onClick }) => (
     className="bg-white rounded-lg shadow-sm p-4 border border-gray-200 flex flex-col items-center text-center cursor-pointer hover:shadow-md transition-shadow"
     onClick={onClick}
   >
-    <div className={`${service.color} ${service.textColor} rounded-lg p-2 mb-2 w-full text-center`}>
+    <div
+      className={`${service.color} ${service.textColor} rounded-lg p-2 mb-2 w-full text-center`}
+    >
       <p className="text-sm font-medium">{service.sublabel}</p>
     </div>
     <p className="text-gray-900 font-semibold text-center">{service.label}</p>
   </div>
 );
 // Ticket Form Component
-const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) => {
+const TicketForm = ({
+  isOpen,
+  onClose,
+  selectedService,
+  services,
+  onSuccess,
+}) => {
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [serviceType, setServiceType] = useState("");
@@ -96,49 +129,54 @@ const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) =
       let idField;
 
       switch (selectedService) {
-        case 'admin':
-        case 'system':
-        case 'other':
-          endpoint = 'api/helpdesk/admin_list/';
-          nameField = 'username';
-          idField = 'user_id';
+        case "admin":
+        case "system":
+        case "other":
+          endpoint = "api/helpdesk/admin_list/";
+          nameField = "username";
+          idField = "user_id";
           break;
-        case 'hr':
-          endpoint = 'api/helpdesk/hr_list/';
-          nameField = 'hr_name';
-          idField = 'hr_id';
+        case "hr":
+          endpoint = "api/helpdesk/hr_list/";
+          nameField = "hr_name";
+          idField = "hr_id";
           break;
-        case 'supervisor':
-          endpoint = 'api/helpdesk/supervisor_list/';
-          nameField = 'supervisor_name';
-          idField = 'supervisor_id';
+        case "supervisor":
+          endpoint = "api/helpdesk/supervisor_list/";
+          nameField = "supervisor_name";
+          idField = "supervisor_id";
           break;
-        case 'manager':
-          endpoint = 'api/helpdesk/manager_list/';
-          nameField = 'manager_name';
-          idField = 'manager_id';
+        case "manager":
+          endpoint = "api/helpdesk/manager_list/";
+          nameField = "manager_name";
+          idField = "manager_id";
           break;
         default:
-          endpoint = 'api/helpdesk/admin_list/';
-          nameField = 'username';
-          idField = 'user_id';
+          endpoint = "api/helpdesk/admin_list/";
+          nameField = "username";
+          idField = "user_id";
       }
 
       const response = await axios.get(`${apiBaseUrl}/${endpoint}`);
       const mappedRecipients = response.data
         .map((recipient) => {
-          const value = recipient[idField] || String(recipient[nameField] || 'unknown-' + Math.random().toString(36).substr(2, 9));
-          const label = recipient[nameField] || 'Unknown';
+          const value =
+            recipient[idField] ||
+            String(
+              recipient[nameField] ||
+                "unknown-" + Math.random().toString(36).substr(2, 9),
+            );
+          const label = recipient[nameField] || "Unknown";
           return { value, label };
         })
-        .filter((recipient) => recipient.value && recipient.value !== '');
+        .filter((recipient) => recipient.value && recipient.value !== "");
 
       setRecipientList(mappedRecipients);
       setHasFetchedRecipients(true);
     } catch (error) {
-      console.error('Error fetching recipients:', error);
+      console.error("Error fetching recipients:", error);
       setRecipientList([]);
-      setError('Failed to load recipients. Please try again.');
+      setError("Failed to load recipients. Please try again.");
     }
   };
 
@@ -180,43 +218,46 @@ const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) =
     }
 
     const formData = new FormData();
-    formData.append('subject', subject);
-    formData.append('description', description);
-    formData.append('service_type', selectedService === 'other' ? serviceType : serviceType || 'other');
-    formData.append('raise_to', selectedRecipient);
-    const userData = JSON.parse(localStorage.getItem('userdata'));
+    formData.append("subject", subject);
+    formData.append("description", description);
+    formData.append(
+      "service_type",
+      selectedService === "other" ? serviceType : serviceType || "other",
+    );
+    formData.append("raise_to", selectedRecipient);
+    const userData = JSON.parse(localStorage.getItem("userdata"));
     const employeeId = userData?.employee_id;
     if (employeeId) {
-      formData.append('employee_id', employeeId);
+      formData.append("employee_id", employeeId);
     }
-    if (attachment) formData.append('attachment', attachment);
+    if (attachment) formData.append("attachment", attachment);
 
     try {
       let endpoint;
       switch (selectedService) {
-        case 'admin':
-          endpoint = 'tickets/admin/';
+        case "admin":
+          endpoint = "tickets/admin/";
           break;
-        case 'hr':
-          endpoint = 'tickets/hr/';
+        case "hr":
+          endpoint = "tickets/hr/";
           break;
-        case 'supervisor':
-          endpoint = 'tickets/supervisor/';
+        case "supervisor":
+          endpoint = "tickets/supervisor/";
           break;
-        case 'manager':
-          endpoint = 'tickets/manager/';
+        case "manager":
+          endpoint = "tickets/manager/";
           break;
-        case 'system':
-          endpoint = 'tickets/system/';
+        case "system":
+          endpoint = "tickets/system/";
           break;
         default:
-          endpoint = 'tickets/other/';
+          endpoint = "tickets/other/";
       }
 
       const response = await axios.post(
         `${apiBaseUrl}/api/${endpoint}`,
         formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
 
       if (response.data.ticket_id) {
@@ -224,11 +265,14 @@ const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) =
         onClose();
         if (onSuccess) onSuccess();
       } else {
-        setError('Ticket submission failed. No ticket ID returned.');
+        setError("Ticket submission failed. No ticket ID returned.");
       }
     } catch (error) {
-      console.error('Submission error:', error.response?.data || error);
-      setError('Error submitting ticket: ' + (error.response?.data?.raise_to?.[0] || 'Unknown error'));
+      console.error("Submission error:", error.response?.data || error);
+      setError(
+        "Error submitting ticket: " +
+          (error.response?.data?.raise_to?.[0] || "Unknown error"),
+      );
     }
   };
 
@@ -256,7 +300,9 @@ const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) =
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {selectedService !== "other" && service?.options && (
               <div>
-                <label className="block text-sm font-medium mb-1">Service Type</label>
+                <label className="block text-sm font-medium mb-1">
+                  Service Type
+                </label>
                 <Select value={serviceType} onValueChange={setServiceType}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a service type" />
@@ -274,7 +320,9 @@ const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) =
 
             {selectedService === "other" && (
               <div>
-                <label className="block text-sm font-medium mb-1">Other Service</label>
+                <label className="block text-sm font-medium mb-1">
+                  Other Service
+                </label>
                 <Input
                   type="text"
                   placeholder="Enter service type (e.g., General Inquiry)"
@@ -297,7 +345,9 @@ const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) =
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Raise Ticket To</label>
+              <label className="block text-sm font-medium mb-1">
+                Raise Ticket To
+              </label>
               <Select
                 value={selectedRecipient}
                 onValueChange={setSelectedRecipient}
@@ -314,7 +364,9 @@ const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) =
                 <SelectContent>
                   {recipientList.length === 0 && isRecipientDropdownOpen ? (
                     <div className="p-2 text-gray-500 text-sm">
-                      {hasFetchedRecipients ? "No recipients available" : "Loading recipients..."}
+                      {hasFetchedRecipients
+                        ? "No recipients available"
+                        : "Loading recipients..."}
                     </div>
                   ) : (
                     recipientList.map((recipient) => (
@@ -328,7 +380,9 @@ const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) =
             </div>
 
             <div className="md:col-span-2 lg:col-span-3">
-              <label className="block text-sm font-medium mb-1">Description</label>
+              <label className="block text-sm font-medium mb-1">
+                Description
+              </label>
               <Textarea
                 rows={6}
                 placeholder="Please describe your issue in detail"
@@ -339,7 +393,9 @@ const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) =
             </div>
 
             <div className="md:col-span-2 lg:col-span-3">
-              <label className="block text-sm font-medium mb-1">Attachment (Optional)</label>
+              <label className="block text-sm font-medium mb-1">
+                Attachment (Optional)
+              </label>
               <Input type="file" onChange={handleFileChange} />
               <p className="text-xs text-gray-500 mt-1">
                 You can upload screenshots or documents related to your issue
@@ -354,12 +410,16 @@ const TicketForm = ({ isOpen, onClose, selectedService, services, onSuccess }) =
               <span>Approval</span>
             </div>
             <div className="relative h-1 bg-gray-200 rounded-full">
-              <div className="absolute top-0 left-0 h-full bg-blue-500 rounded-full" style={{ width: "33%" }}></div>
+              <div
+                className="absolute top-0 left-0 h-full bg-blue-500 rounded-full"
+                style={{ width: "33%" }}
+              ></div>
             </div>
           </div>
 
           <p className="text-xs text-gray-500 mt-2">
-            Note: The support team will be notified about your ticket and will respond as soon as possible.
+            Note: The support team will be notified about your ticket and will
+            respond as soon as possible.
           </p>
 
           <DialogFooter>
@@ -383,13 +443,16 @@ const ReplyTicketDialog = ({ isOpen, onClose, ticket }) => {
       const response = await axios.post(
         `${apiBaseUrl}/api/tickets/${ticket?.id}/reply/`,
         { reply_text: replyText },
-        { headers: { 'Content-Type': 'application/json' } }
+        { headers: { "Content-Type": "application/json" } },
       );
-      alert('Reply submitted successfully!');
+      alert("Reply submitted successfully!");
       onClose();
     } catch (error) {
-      console.error('Error submitting reply:', error.response?.data || error);
-      alert('Failed to submit reply: ' + (error.response?.data?.error || 'Unknown error'));
+      console.error("Error submitting reply:", error.response?.data || error);
+      alert(
+        "Failed to submit reply: " +
+          (error.response?.data?.error || "Unknown error"),
+      );
     }
   };
 
@@ -399,25 +462,31 @@ const ReplyTicketDialog = ({ isOpen, onClose, ticket }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Reply to Ticket</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            Reply to Ticket
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <p>
-                <strong className="text-gray-700">Ticket ID:</strong> {ticket?.id || "N/A"}
+                <strong className="text-gray-700">Ticket ID:</strong>{" "}
+                {ticket?.id || "N/A"}
               </p>
               <p>
-                <strong className="text-gray-700">Subject:</strong> {ticket?.subject || "N/A"}
+                <strong className="text-gray-700">Subject:</strong>{" "}
+                {ticket?.subject || "N/A"}
               </p>
             </div>
             <div>
               <p>
-                <strong className="text-gray-700">Created On:</strong> {ticket?.created_on || "N/A"}
+                <strong className="text-gray-700">Created On:</strong>{" "}
+                {ticket?.created_on || "N/A"}
               </p>
               <p>
-                <strong className="text-gray-700">Last Updated:</strong> {ticket?.last_updated || "N/A"}
+                <strong className="text-gray-700">Last Updated:</strong>{" "}
+                {ticket?.last_updated || "N/A"}
               </p>
             </div>
           </div>
@@ -442,68 +511,74 @@ const ReplyTicketDialog = ({ isOpen, onClose, ticket }) => {
   );
 };
 // Edit Ticket Dialog Component
-const EditTicketDialog = ({ isOpen, onClose, ticket, setTicketData, setFilteredData }) => {
+const EditTicketDialog = ({
+  isOpen,
+  onClose,
+  ticket,
+  setTicketData,
+  setFilteredData,
+}) => {
   const [subject, setSubject] = useState("");
   const [serviceType, setServiceType] = useState("");
   const [error, setError] = useState("");
 
   const serviceTypeOptions = (() => {
     if (!ticket?.id) return [];
-    const ticketType = ticket.id.split('-')[1];
+    const ticketType = ticket.id.split("-")[1];
     switch (ticketType) {
-      case 'ADM':
+      case "ADM":
         return [
-          { value: 'password_change', label: 'Password Change' },
-          { value: 'username_change', label: 'Username Change' },
-          { value: 'location_change', label: 'Location Change' },
-          { value: 'shift_change', label: 'Shift Change' },
-          { value: 'team_related', label: 'Team Related' },
-          { value: 'task_related', label: 'Task Related' },
-          { value: 'project_related', label: 'Project Related' },
-          { value: 'others', label: 'Others' },
+          { value: "password_change", label: "Password Change" },
+          { value: "username_change", label: "Username Change" },
+          { value: "location_change", label: "Location Change" },
+          { value: "shift_change", label: "Shift Change" },
+          { value: "team_related", label: "Team Related" },
+          { value: "task_related", label: "Task Related" },
+          { value: "project_related", label: "Project Related" },
+          { value: "others", label: "Others" },
         ];
-      case 'HR':
+      case "HR":
         return [
-          { value: 'leave_policy', label: 'Leave Policy' },
-          { value: 'leave_request_related', label: 'Leave Request Related' },
-          { value: 'login_issue', label: 'Login Issue' },
-          { value: 'salary_related', label: 'Salary Related' },
-          { value: 'attendance_related', label: 'Attendance Related' },
-          { value: 'training_conflicts', label: 'Training Conflicts' },
-          { value: 'others', label: 'Others' },
+          { value: "leave_policy", label: "Leave Policy" },
+          { value: "leave_request_related", label: "Leave Request Related" },
+          { value: "login_issue", label: "Login Issue" },
+          { value: "salary_related", label: "Salary Related" },
+          { value: "attendance_related", label: "Attendance Related" },
+          { value: "training_conflicts", label: "Training Conflicts" },
+          { value: "others", label: "Others" },
         ];
-      case 'SUP':
+      case "SUP":
         return [
-          { value: 'reports_of_project', label: 'Reports of Project' },
-          { value: 'reports_of_tasks', label: 'Reports of Tasks' },
-          { value: 'team_conflicts', label: 'Team Conflicts' },
-          { value: 'communication_issue', label: 'Communication Issue' },
-          { value: 'performance_related', label: 'Performance Related' },
-          { value: 'others', label: 'Others' },
+          { value: "reports_of_project", label: "Reports of Project" },
+          { value: "reports_of_tasks", label: "Reports of Tasks" },
+          { value: "team_conflicts", label: "Team Conflicts" },
+          { value: "communication_issue", label: "Communication Issue" },
+          { value: "performance_related", label: "Performance Related" },
+          { value: "others", label: "Others" },
         ];
-      case 'MGR':
+      case "MGR":
         return [
-          { value: 'task_late_submission', label: 'Task Late Submission' },
-          { value: 'project_materials', label: 'Project Materials' },
-          { value: 'team_conflicts', label: 'Team Conflicts' },
-          { value: 'risk_management', label: 'Risk Management' },
-          { value: 'project_deadline', label: 'Project Deadline' },
-          { value: 'project_plan', label: 'Project Plan' },
-          { value: 'resource_allocation', label: 'Resource Allocation' },
-          { value: 'others', label: 'Others' },
+          { value: "task_late_submission", label: "Task Late Submission" },
+          { value: "project_materials", label: "Project Materials" },
+          { value: "team_conflicts", label: "Team Conflicts" },
+          { value: "risk_management", label: "Risk Management" },
+          { value: "project_deadline", label: "Project Deadline" },
+          { value: "project_plan", label: "Project Plan" },
+          { value: "resource_allocation", label: "Resource Allocation" },
+          { value: "others", label: "Others" },
         ];
-      case 'SYS':
+      case "SYS":
         return [
-          { value: 'slow_network', label: 'Slow Network' },
-          { value: 'system_performance', label: 'System Performance' },
-          { value: 'cyber_hacks', label: 'Cyber Hacks' },
-          { value: 'data_loss', label: 'Data Loss' },
-          { value: 'software_issue', label: 'Software Compatibility Issues' },
-          { value: 'trouble_shoot', label: 'Trouble Shoot' },
-          { value: 'hardware_issue', label: 'Hardware Issue' },
-          { value: 'others', label: 'Others' },
+          { value: "slow_network", label: "Slow Network" },
+          { value: "system_performance", label: "System Performance" },
+          { value: "cyber_hacks", label: "Cyber Hacks" },
+          { value: "data_loss", label: "Data Loss" },
+          { value: "software_issue", label: "Software Compatibility Issues" },
+          { value: "trouble_shoot", label: "Trouble Shoot" },
+          { value: "hardware_issue", label: "Hardware Issue" },
+          { value: "others", label: "Others" },
         ];
-      case 'OTH':
+      case "OTH":
         return []; // No dropdown options for Other tickets
       default:
         return [];
@@ -523,7 +598,8 @@ const EditTicketDialog = ({ isOpen, onClose, ticket, setTicketData, setFilteredD
 
     const payload = {};
     if (subject && subject !== ticket.subject) payload.subject = subject;
-    if (serviceType && serviceType !== ticket.service_type) payload.service_type = serviceType;
+    if (serviceType && serviceType !== ticket.service_type)
+      payload.service_type = serviceType;
 
     if (Object.keys(payload).length === 0) {
       setError("No changes made.");
@@ -534,7 +610,7 @@ const EditTicketDialog = ({ isOpen, onClose, ticket, setTicketData, setFilteredD
       const response = await axios.patch(
         `${apiBaseUrl}/api/tickets/${ticket.id}/`,
         payload,
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" } },
       );
 
       setTicketData((prevData) =>
@@ -546,8 +622,8 @@ const EditTicketDialog = ({ isOpen, onClose, ticket, setTicketData, setFilteredD
                 service_type: response.data.service_type,
                 last_updated: response.data.last_updated,
               }
-            : t
-        )
+            : t,
+        ),
       );
       setFilteredData((prevData) =>
         prevData.map((t) =>
@@ -558,32 +634,37 @@ const EditTicketDialog = ({ isOpen, onClose, ticket, setTicketData, setFilteredD
                 service_type: response.data.service_type,
                 last_updated: response.data.last_updated,
               }
-            : t
-        )
+            : t,
+        ),
       );
 
       alert("Ticket updated successfully!");
       onClose();
     } catch (err) {
-      console.error("Error updating ticket:", err.response?.data || err.message);
+      console.error(
+        "Error updating ticket:",
+        err.response?.data || err.message,
+      );
       setError(
         err.response?.data?.error ||
-        err.response?.data?.subject?.[0] ||
-        err.response?.data?.service_type?.[0] ||
-        "Failed to update ticket. Please try again."
+          err.response?.data?.subject?.[0] ||
+          err.response?.data?.service_type?.[0] ||
+          "Failed to update ticket. Please try again.",
       );
     }
   };
 
   if (!isOpen) return null;
 
-  const isOtherTicket = ticket?.id?.startsWith('TKT-OTH');
+  const isOtherTicket = ticket?.id?.startsWith("TKT-OTH");
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Edit Ticket</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            Edit Ticket
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -591,13 +672,16 @@ const EditTicketDialog = ({ isOpen, onClose, ticket, setTicketData, setFilteredD
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <p>
-                <strong className="text-gray-700">Ticket ID:</strong> {ticket?.id || "N/A"}
+                <strong className="text-gray-700">Ticket ID:</strong>{" "}
+                {ticket?.id || "N/A"}
               </p>
               <p>
-                <strong className="text-gray-700">Created On:</strong> {ticket?.created_on || "N/A"}
+                <strong className="text-gray-700">Created On:</strong>{" "}
+                {ticket?.created_on || "N/A"}
               </p>
               <p>
-                <strong className="text-gray-700">Last Updated:</strong> {ticket?.last_updated || "N/A"}
+                <strong className="text-gray-700">Last Updated:</strong>{" "}
+                {ticket?.last_updated || "N/A"}
               </p>
             </div>
             <div>
@@ -607,7 +691,9 @@ const EditTicketDialog = ({ isOpen, onClose, ticket, setTicketData, setFilteredD
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
               />
-              <label className="block text-sm font-medium mb-1 mt-4">Service Type</label>
+              <label className="block text-sm font-medium mb-1 mt-4">
+                Service Type
+              </label>
               {isOtherTicket ? (
                 <Input
                   type="text"
@@ -662,8 +748,49 @@ function EmployeeHelpDeskComponent() {
   const [activeTab, setActiveTab] = useState("open");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showHRMSForm, setShowHRMSForm] = useState(false);
+  const [hrmsFormData, setHrmsFormData] = useState({
+    title: "",
+    location: "",
+    experienceLevel: "",
+    jobType: "",
+    openings: "",
+    role: "",
+    hr: ""
+  });
+
+
+  const handleHRMSClick = () => {
+    setShowHRMSForm(true);
+  };
+
+  const handleHRMSFormChange = (e) => {
+    const { name, value } = e.target;
+    setHrmsFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleHRMSSave = () => {
+    console.log("HRMS Form Submitted", hrmsFormData);
+    setShowHRMSForm(false);
+  };
 
   const services = [
+    {
+      key: "hrms",
+      label: "Manpower Planning Services",
+      sublabel: "HRMS",
+      color: "bg-green-100",
+      textColor: "text-green-800",
+      options: [
+        { value: "leave_policy", label: "Leave Policy" },
+        { value: "leave_request_related", label: "Leave Request Related" },
+        { value: "login_issue", label: "Login Issue" },
+        { value: "salary_related", label: "Salary Related" },
+        { value: "attendance_related", label: "Attendance Related" },
+        { value: "training_conflicts", label: "Training Conflicts" },
+        { value: "others", label: "Others" },
+      ],
+    },
     {
       key: "admin",
       label: "Administrative Services",
@@ -795,7 +922,9 @@ function EmployeeHelpDeskComponent() {
     if (activeTab === "open") {
       filtered = filtered.filter((ticket) => ticket.status === "Request");
     } else if (activeTab === "closed") {
-      filtered = filtered.filter((ticket) => ticket.status === "Review" || ticket.status === "Approved");
+      filtered = filtered.filter(
+        (ticket) => ticket.status === "Review" || ticket.status === "Approved",
+      );
     }
 
     if (searchTerm) {
@@ -805,12 +934,15 @@ function EmployeeHelpDeskComponent() {
           ticket.subject?.toLowerCase().includes(term) ||
           ticket.id?.toString().includes(term) ||
           ticket.assigned_to?.toLowerCase().includes(term) ||
-          ticket.service_type?.toLowerCase().includes(term)
+          ticket.service_type?.toLowerCase().includes(term),
       );
     }
 
     if (selectedStatus !== "All") {
-      filtered = filtered.filter((ticket) => ticket.mappedStatus?.toLowerCase() === selectedStatus.toLowerCase());
+      filtered = filtered.filter(
+        (ticket) =>
+          ticket.mappedStatus?.toLowerCase() === selectedStatus.toLowerCase(),
+      );
     }
 
     const now = new Date();
@@ -856,28 +988,41 @@ function EmployeeHelpDeskComponent() {
     }
 
     setFilteredData(filtered);
-  }, [searchTerm, startDate, endDate, selectedFilter, selectedStatus, ticketData, activeTab]);
+  }, [
+    searchTerm,
+    startDate,
+    endDate,
+    selectedFilter,
+    selectedStatus,
+    ticketData,
+    activeTab,
+  ]);
 
   const calculateMetrics = () => {
     const today = new Date().toISOString().split("T")[0];
 
-    const ticketsCreatedToday = ticketData.filter((ticket) => ticket.created_on === today).length;
-
-    const ticketsClosedToday = ticketData.filter(
-      (ticket) => ticket.status === "Review" && ticket.last_updated === today
+    const ticketsCreatedToday = ticketData.filter(
+      (ticket) => ticket.created_on === today,
     ).length;
 
-    const openTickets = ticketData.filter((ticket) => ticket.status === "Request").length;
+    const ticketsClosedToday = ticketData.filter(
+      (ticket) => ticket.status === "Review" && ticket.last_updated === today,
+    ).length;
+
+    const openTickets = ticketData.filter(
+      (ticket) => ticket.status === "Request",
+    ).length;
 
     const openTicketsLast30Days = ticketData.filter((ticket) => {
       const createdDate = new Date(ticket.created_on);
       const todayDate = new Date();
-      const diffDays = (todayDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+      const diffDays =
+        (todayDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
       return diffDays <= 30 && ticket.status === "Request";
     }).length;
 
     const totalClosedTickets = ticketData.filter(
-      (ticket) => ticket.status === "Review" || ticket.status === "Approved"
+      (ticket) => ticket.status === "Review" || ticket.status === "Approved",
     ).length;
 
     return {
@@ -946,7 +1091,9 @@ function EmployeeHelpDeskComponent() {
       <div className="bg-white rounded-lg shadow-sm mb-6">
         <div className="flex flex-col sm:flex-row justify-between p-4 gap-4">
           <div>
-            <h5 className="font-semibold text-lg mb-1">Support Ticket Status</h5>
+            <h5 className="font-semibold text-lg mb-1">
+              Support Ticket Status
+            </h5>
             <p className="text-gray-500 text-sm">Data from all departments</p>
           </div>
           <div className="flex items-center justify-between sm:justify-end gap-4">
@@ -962,7 +1109,9 @@ function EmployeeHelpDeskComponent() {
                   A
                 </div>
               </div>
-              <span className="text-sm text-gray-500 hidden sm:inline">Ticket Status</span>
+              <span className="text-sm text-gray-500 hidden sm:inline">
+                Ticket Status
+              </span>
             </div>
           </div>
         </div>
@@ -995,7 +1144,9 @@ function EmployeeHelpDeskComponent() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Open Tickets (Last 30 days)</CardTitle>
+            <CardTitle className="text-lg">
+              Open Tickets (Last 30 days)
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{openTicketsLast30Days}</p>
@@ -1034,7 +1185,15 @@ function EmployeeHelpDeskComponent() {
         <CardContent className="p-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {services.map((service) => (
-              <ServiceCard key={service.key} service={service} onClick={() => handleServiceClick(service.key)} />
+              <ServiceCard
+                key={service.key}
+                service={service}
+                onClick={() =>
+                  service.sublabel === "HRMS"
+                    ? handleHRMSClick()
+                    : handleServiceClick(service.key)
+                }
+              />
             ))}
           </div>
         </CardContent>
@@ -1068,7 +1227,9 @@ function EmployeeHelpDeskComponent() {
                 {isDropdownOpen && (
                   <div className="absolute z-10 mt-2 right-0 bg-white rounded-lg shadow-xl p-4 w-72">
                     <div className="flex justify-between items-center mb-3">
-                      <span className="font-semibold text-purple-600">Date Filter</span>
+                      <span className="font-semibold text-purple-600">
+                        Date Filter
+                      </span>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -1078,11 +1239,19 @@ function EmployeeHelpDeskComponent() {
                         ✕
                       </Button>
                     </div>
-                    {["Last 7 days", "This month", "Last month", "This year", "Custom range"].map((option) => (
+                    {[
+                      "Last 7 days",
+                      "This month",
+                      "Last month",
+                      "This year",
+                      "Custom range",
+                    ].map((option) => (
                       <div
                         key={option}
                         className={`p-2 rounded cursor-pointer hover:bg-gray-100 ${
-                          selectedFilter === option ? "bg-gray-200 text-purple-600" : ""
+                          selectedFilter === option
+                            ? "bg-gray-200 text-purple-600"
+                            : ""
                         }`}
                         onClick={() => {
                           if (option !== "Custom range") {
@@ -1099,7 +1268,9 @@ function EmployeeHelpDeskComponent() {
                       <div className="mt-3">
                         <div className="flex gap-2">
                           <div>
-                            <label className="text-xs text-gray-500">From</label>
+                            <label className="text-xs text-gray-500">
+                              From
+                            </label>
                             <Input
                               type="date"
                               className="w-full text-sm"
@@ -1118,7 +1289,11 @@ function EmployeeHelpDeskComponent() {
                           </div>
                         </div>
                         <div className="flex justify-between mt-3">
-                          <Button variant="ghost" size="sm" onClick={handleResetFilter}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleResetFilter}
+                          >
                             Reset
                           </Button>
                           <Button size="sm" onClick={handleApplyCustomRange}>
@@ -1135,7 +1310,11 @@ function EmployeeHelpDeskComponent() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row justify-between mb-4 gap-4">
-            <Tabs defaultValue="open" className="w-full" onValueChange={setActiveTab}>
+            <Tabs
+              defaultValue="open"
+              className="w-full"
+              onValueChange={setActiveTab}
+            >
               <TabsList>
                 <TabsTrigger value="open">Open Tickets</TabsTrigger>
                 <TabsTrigger value="closed">Closed Tickets</TabsTrigger>
@@ -1153,10 +1332,16 @@ function EmployeeHelpDeskComponent() {
             </div>
           </div>
           <div className="border rounded-lg overflow-x-auto">
-            {loading && <p className="text-center text-blue-500 my-4">Loading ticket data...</p>}
+            {loading && (
+              <p className="text-center text-blue-500 my-4">
+                Loading ticket data...
+              </p>
+            )}
             {error && <p className="text-center text-red-500 my-4">{error}</p>}
             {!loading && !error && filteredData.length === 0 && (
-              <p className="text-center text-gray-500 my-4">No ticket data available for the selected criteria.</p>
+              <p className="text-center text-gray-500 my-4">
+                No ticket data available for the selected criteria.
+              </p>
             )}
             {!loading && !error && filteredData.length > 0 && (
               <Table>
@@ -1171,8 +1356,12 @@ function EmployeeHelpDeskComponent() {
                     <TableHead>SERVICE TYPE</TableHead>
                     <TableHead>CREATED ON</TableHead>
                     <TableHead>ASSIGNED TO</TableHead>
-                    {activeTab === "closed" && <TableHead>REPLY MESSAGE</TableHead>}
-                    {activeTab === "open" && <TableHead className="w-20">ACTIONS</TableHead>}
+                    {activeTab === "closed" && (
+                      <TableHead>REPLY MESSAGE</TableHead>
+                    )}
+                    {activeTab === "open" && (
+                      <TableHead className="w-20">ACTIONS</TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1187,7 +1376,10 @@ function EmployeeHelpDeskComponent() {
                     const avatarLetter = ticket.assigned_to?.charAt(0) || "U";
 
                     return (
-                      <TableRow key={ticket.id || index} className="hover:bg-gray-50">
+                      <TableRow
+                        key={ticket.id || index}
+                        className="hover:bg-gray-50"
+                      >
                         <TableCell>
                           <input type="checkbox" className="rounded" />
                         </TableCell>
@@ -1198,11 +1390,15 @@ function EmployeeHelpDeskComponent() {
                               In Progress
                             </span>
                           ) : (
-                            <StatusProgressBar status={ticket.mappedStatus || "Request"} />
+                            <StatusProgressBar
+                              status={ticket.mappedStatus || "Request"}
+                            />
                           )}
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium text-blue-600">{ticket.subject}</div>
+                          <div className="font-medium text-blue-600">
+                            {ticket.subject}
+                          </div>
                         </TableCell>
                         <TableCell>{ticket.service_type}</TableCell>
                         <TableCell>{ticket.created_on}</TableCell>
@@ -1214,14 +1410,18 @@ function EmployeeHelpDeskComponent() {
                               {avatarLetter}
                             </div>
                             <div>
-                              <div className="font-medium">{ticket.assigned_to}</div>
+                              <div className="font-medium">
+                                {ticket.assigned_to}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
                         {activeTab === "closed" && (
                           <TableCell>
                             {ticket.latest_reply ? (
-                              <div className="text-gray-600">{ticket.latest_reply}</div>
+                              <div className="text-gray-600">
+                                {ticket.latest_reply}
+                              </div>
                             ) : (
                               <div className="text-gray-400">No reply</div>
                             )}
@@ -1229,7 +1429,11 @@ function EmployeeHelpDeskComponent() {
                         )}
                         {activeTab === "open" && (
                           <TableCell>
-                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(ticket)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditClick(ticket)}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                           </TableCell>
@@ -1243,7 +1447,8 @@ function EmployeeHelpDeskComponent() {
           </div>
           <div className="flex justify-between mt-4">
             <div className="text-sm text-gray-500">
-              Showing {filteredData.length > 0 ? 1 : 0} to {Math.min(filteredData.length, rowsPerPage)} of{" "}
+              Showing {filteredData.length > 0 ? 1 : 0} to{" "}
+              {Math.min(filteredData.length, rowsPerPage)} of{" "}
               {filteredData.length} entries
             </div>
             <div className="flex items-center gap-2">
@@ -1255,24 +1460,62 @@ function EmployeeHelpDeskComponent() {
           </div>
         </CardContent>
       </Card>
-      <TicketForm 
-        isOpen={ticketPopup} 
-        onClose={() => setTicketPopup(false)} 
-        selectedService={selectedService} 
-        services={services} 
+      <TicketForm
+        isOpen={ticketPopup}
+        onClose={() => setTicketPopup(false)}
+        selectedService={selectedService}
+        services={services}
         onSuccess={fetchData}
       />
-      <ReplyTicketDialog isOpen={replyDialogOpen} onClose={() => setReplyDialogOpen(false)} ticket={selectedTicket} />
-      <EditTicketDialog 
-        isOpen={editDialogOpen} 
-        onClose={() => setEditDialogOpen(false)} 
-        ticket={selectedTicket} 
+      <ReplyTicketDialog
+        isOpen={replyDialogOpen}
+        onClose={() => setReplyDialogOpen(false)}
+        ticket={selectedTicket}
+      />
+      <EditTicketDialog
+        isOpen={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        ticket={selectedTicket}
         setTicketData={setTicketData}
         setFilteredData={setFilteredData}
       />
+
+      {showHRMSForm && (
+        <Dialog open={showHRMSForm} onOpenChange={setShowHRMSForm}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Add HRMS Job Request</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4">
+              <Input name="title" value={hrmsFormData.title} onChange={handleHRMSFormChange} placeholder="Title" />
+              <Input name="location" value={hrmsFormData.location} onChange={handleHRMSFormChange} placeholder="Location" />
+              <Input name="experienceLevel" value={hrmsFormData.experienceLevel} onChange={handleHRMSFormChange} placeholder="Experience Level" />
+              <Input name="jobType" value={hrmsFormData.jobType} onChange={handleHRMSFormChange} placeholder="Job Type" />
+              <Input name="openings" type="number" value={hrmsFormData.openings} onChange={handleHRMSFormChange} placeholder="Openings" />
+              <Input name="role" value={hrmsFormData.role} onChange={handleHRMSFormChange} placeholder="Role" />
+              <Select value={hrmsFormData.hr} onValueChange={(val) => setHrmsFormData((prev) => ({ ...prev, hr: val }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select HR" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hr1">HR 1</SelectItem>
+                  <SelectItem value="hr2">HR 2</SelectItem>
+                  <SelectItem value="hr3">HR 3</SelectItem>
+                </SelectContent>
+              </Select>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowHRMSForm(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleHRMSSave}>Save</Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
-};
+}
 
 export default function Page() {
   return (
