@@ -33,6 +33,8 @@ const SkeletonLoading = () => {
 
 const ProjectManagement = () => {
   const queryClient = useQueryClient();
+
+  //Query for projects
   const { data, isError, isFetching } = useQuery({
     queryKey: ["projects"],
     queryFn: GetProjects_status,

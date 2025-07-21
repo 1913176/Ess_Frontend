@@ -74,6 +74,7 @@ const EmployeeHeader = () => {
     };
 
     if (storedUser.username) {
+      console.log("uername", storedUser.username)
       checkTeamLeader();
     }
 

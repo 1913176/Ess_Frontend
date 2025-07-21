@@ -1,7 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 // Authentication imports
-import Login from "./Authentication/Login.jsx";
 import ForgetPassword from "./Authentication/ForgetPassword.jsx";
 import ResetPassword from "./Authentication/ResetPassword.jsx";
 
@@ -10,7 +9,7 @@ const Landing = lazy(() => import("./Landing/Landing.jsx"));
 // import Landing from "./Landing/Landing.jsx";
 
 // Admin Dashboards imports
-import AdminHome from "./Dashboards/AdminDashboard/AdminHome";
+// import AdminHome from "./Dashboards/AdminDashboard/AdminHome";
 import AdminHelpDesk from "./Dashboards/AdminDashboard/AdminHelpDesk/AdminHelpDesk.jsx";
 import AdminDashboard from "./Dashboards/AdminDashboard/AdminDashboard";
 import ManagerManagementLayout from "./Dashboards/AdminDashboard/ManagePage/ManagerManagementLayout";
@@ -145,7 +144,7 @@ import EmployeePermissionHours from "./Dashboards/ManagerDashboard/EmployeeAtten
 import MEmployeeLeaveManagement from "./Dashboards/ManagerDashboard/EmployeeAttendanceManagement/LeaveManagement/MEmployeeLeaveManagement.jsx";
 
 // HR Dashboards imports
-import HrDashboard from "./Dashboards/UserDashboard/HRDashboard/HrDashboard.jsx";
+// import HrDashboard from "./Dashboards/UserDashboard/HRDashboard/HrDashboard.jsx";
 // import HRprocess from "./Dashboards/UserDashboard/HrProcess/HRprocess.jsx";
 import HRonboarding from "./Dashboards/UserDashboard/HrOnboarding/HRonboarding.jsx";
 import HrEmployees from "./Dashboards/UserDashboard/HrEmployees/HrEmployees.jsx";
@@ -296,6 +295,9 @@ import TrainingCertification from "./Dashboards/UserDashboard/EmployeeTrainingCe
 import HrManagerManagementLayout from "./Dashboards/UserDashboard/HrManagerPage/HrManagerManagementLayout.jsx";
 import HrManagerList from "./Dashboards/UserDashboard/HrManagerPage/HrManagerList.jsx";
 import AdminPurchaseHome from "./Dashboards/AdminDashboard/PurchaseScreen/AdminPurchaseHome.jsx";
+import LoginForm from "./Authentication/Login.jsx";
+import HrDashboard from "./Dashboards/UserDashboard/HrDashboard/HrDashboard.jsx";
+import AdminHome from "./Dashboards/AdminDashboard/AdminHome.jsx";
 
 export default function App() {
   return (
@@ -308,7 +310,7 @@ export default function App() {
             <Routes>
               <Route index element={<Landing />} />
               {/* Authentication */}
-              <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<LoginForm />} />
               <Route path="/forgot-password" element={<ForgetPassword />} />
               <Route
                 path="/reset-password/:token"

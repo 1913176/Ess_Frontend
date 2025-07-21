@@ -34,24 +34,31 @@ import { GetEmployeeTicketList } from "@/api/ServerAction";
 const apiBaseUrl = process.env.VITE_BASE_API;
 
 // Status Progress Bar Component
-const StatusProgressBar = ({ status }) => {
-  const isApproved = status.toLowerCase() === "approved";
-  const isReview = status.toLowerCase() === "review";
-  const isRequest = status.toLowerCase() === "request";
+const StatusProgressBar = ({ status, type }) => {
+  let isRequest, isReview, isApproved;
+  if (type === "position_request") {
+    isRequest = status.toLowerCase() === "pending";
+    isReview = status.toLowerCase() === "hr_review";
+    isApproved = status.toLowerCase() === "approved" || status.toLowerCase() === "rejected";
+  } else {
+    isRequest = status.toLowerCase() === "request";
+    isReview = status.toLowerCase() === "review";
+    isApproved = status.toLowerCase() === "approved";
+  }
+
+  const progressColor = isApproved
+    ? status.toLowerCase() === "rejected" ? "bg-red-500" : "bg-green-500"
+    : isReview ? "bg-orange-500"
+    : isRequest ? "bg-blue-500"
+    : "bg-gray-300";
 
   return (
     <div className="relative w-[140px]">
       <div className="absolute top-3 left-6 right-6 h-[3px] bg-gray-200 z-0">
         <div
-          className={`h-full ${isApproved ? "bg-green-500" : isReview ? "bg-orange-500" : isRequest ? "bg-blue-500" : "bg-gray-300"}`}
+          className={`h-full ${progressColor}`}
           style={{
-            width: isRequest
-              ? "33%"
-              : isReview
-                ? "66%"
-                : isApproved
-                  ? "100%"
-                  : "0%",
+            width: isRequest ? "33%" : isReview ? "66%" : isApproved ? "100%" : "0%",
           }}
         ></div>
       </div>
@@ -77,11 +84,13 @@ const StatusProgressBar = ({ status }) => {
         <div className="flex flex-col items-center">
           <div
             className={`w-6 h-6 rounded-full flex items-center justify-center 
-            ${isApproved ? "bg-green-500" : "bg-gray-300"}`}
+            ${isApproved ? progressColor : "bg-gray-300"}`}
           >
             <span className="text-white text-xs">{isApproved ? "✓" : "3"}</span>
           </div>
-          <span className="text-[10px] mt-1 text-gray-600">Approved</span>
+          <span className="text-[10px] mt-1 text-gray-600">
+            {status.toLowerCase() === "rejected" ? "Rejected" : "Approved"}
+          </span>
         </div>
       </div>
     </div>
@@ -102,6 +111,7 @@ const ServiceCard = ({ service, onClick }) => (
     <p className="text-gray-900 font-semibold text-center">{service.label}</p>
   </div>
 );
+
 // Ticket Form Component
 const TicketForm = ({
   isOpen,
@@ -433,6 +443,7 @@ const TicketForm = ({
     </Dialog>
   );
 };
+
 // Reply Ticket Dialog Component
 const ReplyTicketDialog = ({ isOpen, onClose, ticket }) => {
   const [replyText, setReplyText] = useState("");
@@ -510,6 +521,7 @@ const ReplyTicketDialog = ({ isOpen, onClose, ticket }) => {
     </Dialog>
   );
 };
+
 // Edit Ticket Dialog Component
 const EditTicketDialog = ({
   isOpen,
@@ -730,8 +742,11 @@ const EditTicketDialog = ({
     </Dialog>
   );
 };
+
 function EmployeeHelpDeskComponent() {
   const [ticketData, setTicketData] = useState([]);
+  const [positionRequests, setPositionRequests] = useState([]);
+  const [combinedData, setCombinedData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -752,13 +767,201 @@ function EmployeeHelpDeskComponent() {
   const [hrmsFormData, setHrmsFormData] = useState({
     title: "",
     location: "",
-    experienceLevel: "",
+    experience: "",
     jobType: "",
     openings: "",
     role: "",
-    hr: ""
+    hr_reviewer: "",
   });
+  const [locations, setLocations] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [hrs, setHrs] = useState([]);
+  const [formError, setFormError] = useState("");
 
+  // Fetch locations on component mount
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await axios.get(`${apiBaseUrl}/admin/overall-location/`);
+        setLocations(response.data);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        setFormError("Failed to load locations.");
+      }
+    };
+    fetchLocations();
+  }, []);
+
+  // Fetch roles on component mount
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await axios.get(`${apiBaseUrl}/roles/list/`);
+        setRoles(response.data.roles || []);
+      } catch (error) {
+        console.error("Error fetching roles:", error);
+        setFormError("Failed to load roles.");
+      }
+    };
+    fetchRoles();
+  }, []);
+
+  // Fetch HRs on component mount
+  useEffect(() => {
+    const fetchHrs = async () => {
+      try {
+        const response = await axios.get(`${apiBaseUrl}/api/hr_list/`);
+        const hrData = response.data.hrs || response.data;
+        setHrs(Array.isArray(hrData) ? hrData : []);
+      } catch (error) {
+        console.error("Error fetching HRs:", error);
+        setFormError("Failed to load HR reviewers.");
+      }
+    };
+    fetchHrs();
+  }, []);
+
+  // Fetch position requests
+  useEffect(() => {
+    const fetchPositionRequests = async () => {
+      try {
+        const response = await axios.get(`${apiBaseUrl}/manpower/position-requests/`);
+        const mappedRequests = response.data.requests.map((request) => ({
+          id: request.request_id,
+          subject: request.title,
+          created_on: new Date(request.created_at).toISOString().split("T")[0],
+          assigned_to: request.hr_reviewer_name || "Unassigned",
+          status: request.status,
+          mappedStatus: request.status === "pending" ? "Request" :
+                        request.status === "hr_review" ? "Review" :
+                        request.status === "approved" || request.status === "rejected" ? "Approved" : "Request",
+          last_updated: new Date(request.created_at).toISOString().split("T")[0],
+          employee_name: request.requested_by_name || "N/A",
+          service_type: "Position Request",
+          type: "position_request",
+          latest_reply: null, // Position requests don't have replies
+        }));
+        setPositionRequests(mappedRequests);
+      } catch (error) {
+        console.error("Error fetching position requests:", error);
+        setError("Failed to load position requests. Please try again later.");
+      }
+    };
+    fetchPositionRequests();
+  }, []);
+
+  // Fetch tickets
+  const fetchData = async () => {
+    try {
+      const tickets = await GetEmployeeTicketList();
+      if (tickets == null) {
+        throw new Error("Failed to fetch tickets");
+      }
+      const mappedTickets = tickets.map((ticket) => ({
+        id: ticket.ticket_id,
+        subject: ticket.subject,
+        created_on: new Date(ticket.created_on).toISOString().split("T")[0],
+        assigned_to: ticket.raise_to || "Unassigned",
+        status: ticket.status,
+        mappedStatus: ticket.status,
+        last_updated: new Date(ticket.last_updated).toISOString().split("T")[0],
+        employee_name: ticket.employee_name || "N/A",
+        service_type: ticket.service_type || "N/A",
+        type: "ticket",
+        latest_reply: ticket.latest_reply?.reply_text || null,
+      }));
+      setTicketData(mappedTickets);
+    } catch (err) {
+      console.error("Error fetching tickets:", err);
+      setError("Failed to load tickets. Please try again later.");
+    }
+  };
+
+  // Combine tickets and position requests
+  useEffect(() => {
+    setCombinedData([...ticketData, ...positionRequests]);
+    setLoading(false);
+  }, [ticketData, positionRequests]);
+
+  // Filter combined data
+  useEffect(() => {
+    let filtered = [...combinedData];
+    if (activeTab === "open") {
+      filtered = filtered.filter((item) => item.mappedStatus === "Request" || item.status === "pending" || item.status === "hr_review");
+    } else if (activeTab === "closed") {
+      filtered = filtered.filter((item) => item.mappedStatus === "Review" || item.mappedStatus === "Approved" || item.status === "approved" || item.status === "rejected");
+    }
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.subject?.toLowerCase().includes(term) ||
+          item.id?.toString().includes(term) ||
+          item.assigned_to?.toLowerCase().includes(term) ||
+          item.service_type?.toLowerCase().includes(term),
+      );
+    }
+
+    if (selectedStatus !== "All") {
+      filtered = filtered.filter(
+        (item) =>
+          item.mappedStatus?.toLowerCase() === selectedStatus.toLowerCase(),
+      );
+    }
+
+    const now = new Date();
+    if (selectedFilter === "Last 7 days") {
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(now.getDate() - 7);
+      filtered = filtered.filter((item) => {
+        if (!item.created_on) return false;
+        const itemDate = new Date(item.created_on);
+        return itemDate >= sevenDaysAgo && itemDate <= now;
+      });
+    } else if (selectedFilter === "This month") {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      filtered = filtered.filter((item) => {
+        if (!item.created_on) return false;
+        const itemDate = new Date(item.created_on);
+        return itemDate >= firstDay && itemDate <= now;
+      });
+    } else if (selectedFilter === "Last month") {
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+      filtered = filtered.filter((item) => {
+        if (!item.created_on) return false;
+        const itemDate = new Date(item.created_on);
+        return itemDate >= lastMonthStart && itemDate <= lastMonthEnd;
+      });
+    } else if (selectedFilter === "This year") {
+      const yearStart = new Date(now.getFullYear(), 0, 1);
+      filtered = filtered.filter((item) => {
+        if (!item.created_on) return false;
+        const itemDate = new Date(item.created_on);
+        return itemDate >= yearStart && itemDate <= now;
+      });
+    } else if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59);
+      filtered = filtered.filter((item) => {
+        if (!item.created_on) return false;
+        const itemDate = new Date(item.created_on);
+        return itemDate >= start && itemDate <= end;
+      });
+    }
+
+    setFilteredData(filtered);
+  }, [
+    searchTerm,
+    startDate,
+    endDate,
+    selectedFilter,
+    selectedStatus,
+    combinedData,
+    activeTab,
+  ]);
 
   const handleHRMSClick = () => {
     setShowHRMSForm(true);
@@ -769,9 +972,107 @@ function EmployeeHelpDeskComponent() {
     setHrmsFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleHRMSSave = () => {
-    console.log("HRMS Form Submitted", hrmsFormData);
-    setShowHRMSForm(false);
+  const handleHRMSSave = async () => {
+    try {
+      if (!hrmsFormData.title) {
+        setFormError("Title is required.");
+        return;
+      }
+      if (!hrmsFormData.location) {
+        setFormError("Location is required.");
+        return;
+      }
+      if (!hrmsFormData.experience) {
+        setFormError("Experience level is required.");
+        return;
+      }
+      if (!hrmsFormData.jobType) {
+        setFormError("Job type is required.");
+        return;
+      }
+      if (!hrmsFormData.openings || hrmsFormData.openings <= 0) {
+        setFormError("Number of openings must be a positive integer.");
+        return;
+      }
+      if (!hrmsFormData.role) {
+        setFormError("Role is required.");
+        return;
+      }
+      if (!hrmsFormData.hr_reviewer) {
+        setFormError("HR reviewer is required.");
+        return;
+      }
+
+      const userData = JSON.parse(localStorage.getItem("userdata"));
+      const employeeId = userData?.employee_id;
+
+      const payload = {
+        title: hrmsFormData.title,
+        location: hrmsFormData.location,
+        experience_level: hrmsFormData.experience,
+        job_types: hrmsFormData.jobType,
+        opening_roles: parseInt(hrmsFormData.openings, 10),
+        role: hrmsFormData.role,
+        hr_reviewer: hrmsFormData.hr_reviewer,
+        requested_by: employeeId,
+      };
+
+      const response = await axios.post(
+        `${apiBaseUrl}/manpower/raise-position-request/`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      if (response.data.request_id) {
+        alert(`Position request submitted successfully! ID: ${response.data.request_id}`);
+        setShowHRMSForm(false);
+        setHrmsFormData({
+          title: "",
+          location: "",
+          experience: "",
+          jobType: "",
+          openings: "",
+          role: "",
+          hr_reviewer: "",
+        });
+        setFormError("");
+        // Refresh position requests
+        const fetchPositionRequests = async () => {
+          try {
+            const response = await axios.get(`${apiBaseUrl}/manpower/position-requests/`);
+            console.log("response.data.requests", response.data.requests.hr_reviewer_username)
+            const mappedRequests = response.data.requests.map((request) => ({
+              id: request.request_id,
+              subject: request.title,
+              created_on: new Date(request.created_at).toISOString().split("T")[0],
+              assigned_to: request.hr_reviewer_username,
+              status: request.status,
+              mappedStatus: request.status === "pending" ? "Request" :
+                            request.status === "hr_review" ? "Review" :
+                            request.status === "approved" || request.status === "rejected" ? "Approved" : "Request",
+              last_updated: new Date(request.created_at).toISOString().split("T")[0],
+              employee_name: request.requested_by_name || "N/A",
+              service_type: "Position Request",
+              type: "position_request",
+              latest_reply: null,
+            }));
+            setPositionRequests(mappedRequests);
+          } catch (error) {
+            console.error("Error fetching position requests:", error);
+            setError("Failed to load position requests. Please try again later.");
+          }
+        };
+        fetchPositionRequests();
+      } else {
+        setFormError("Position request submission failed. No request ID returned.");
+      }
+    } catch (error) {
+      console.error("Error submitting position request:", error.response?.data || error);
+      setFormError(
+        "Error submitting position request: " +
+          (error.response?.data?.errors || "Unknown error")
+      );
+    }
   };
 
   const services = [
@@ -883,146 +1184,36 @@ function EmployeeHelpDeskComponent() {
     },
   ];
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const tickets = await GetEmployeeTicketList();
-      if (tickets == null) {
-        throw new Error("Failed to fetch tickets");
-      }
-      const mappedTickets = tickets.map((ticket) => ({
-        id: ticket.ticket_id,
-        subject: ticket.subject,
-        created_on: new Date(ticket.created_on).toISOString().split("T")[0],
-        assigned_to: ticket.raise_to || "Unassigned",
-        status: ticket.status,
-        mappedStatus: ticket.status,
-        last_updated: new Date(ticket.last_updated).toISOString().split("T")[0],
-        employee_name: ticket.employee_name || "N/A",
-        service_type: ticket.service_type || "N/A",
-        latest_reply: ticket.latest_reply?.reply_text || null,
-      }));
-      setTicketData(mappedTickets);
-      setFilteredData(mappedTickets);
-    } catch (err) {
-      console.error("Error fetching tickets:", err);
-      setError("Failed to load tickets. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch tickets on mount
   useEffect(() => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    let filtered = [...ticketData];
-    if (activeTab === "open") {
-      filtered = filtered.filter((ticket) => ticket.status === "Request");
-    } else if (activeTab === "closed") {
-      filtered = filtered.filter(
-        (ticket) => ticket.status === "Review" || ticket.status === "Approved",
-      );
-    }
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (ticket) =>
-          ticket.subject?.toLowerCase().includes(term) ||
-          ticket.id?.toString().includes(term) ||
-          ticket.assigned_to?.toLowerCase().includes(term) ||
-          ticket.service_type?.toLowerCase().includes(term),
-      );
-    }
-
-    if (selectedStatus !== "All") {
-      filtered = filtered.filter(
-        (ticket) =>
-          ticket.mappedStatus?.toLowerCase() === selectedStatus.toLowerCase(),
-      );
-    }
-
-    const now = new Date();
-    if (selectedFilter === "Last 7 days") {
-      const sevenDaysAgo = new Date(now);
-      sevenDaysAgo.setDate(now.getDate() - 7);
-      filtered = filtered.filter((ticket) => {
-        if (!ticket.created_on) return false;
-        const ticketDate = new Date(ticket.created_on);
-        return ticketDate >= sevenDaysAgo && ticketDate <= now;
-      });
-    } else if (selectedFilter === "This month") {
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      filtered = filtered.filter((ticket) => {
-        if (!ticket.created_on) return false;
-        const ticketDate = new Date(ticket.created_on);
-        return ticketDate >= firstDay && ticketDate <= now;
-      });
-    } else if (selectedFilter === "Last month") {
-      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-      filtered = filtered.filter((ticket) => {
-        if (!ticket.created_on) return false;
-        const ticketDate = new Date(ticket.created_on);
-        return ticketDate >= lastMonthStart && ticketDate <= lastMonthEnd;
-      });
-    } else if (selectedFilter === "This year") {
-      const yearStart = new Date(now.getFullYear(), 0, 1);
-      filtered = filtered.filter((ticket) => {
-        if (!ticket.created_on) return false;
-        const ticketDate = new Date(ticket.created_on);
-        return ticketDate >= yearStart && ticketDate <= now;
-      });
-    } else if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59);
-      filtered = filtered.filter((ticket) => {
-        if (!ticket.created_on) return false;
-        const ticketDate = new Date(ticket.created_on);
-        return ticketDate >= start && ticketDate <= end;
-      });
-    }
-
-    setFilteredData(filtered);
-  }, [
-    searchTerm,
-    startDate,
-    endDate,
-    selectedFilter,
-    selectedStatus,
-    ticketData,
-    activeTab,
-  ]);
-
   const calculateMetrics = () => {
     const today = new Date().toISOString().split("T")[0];
 
-    const ticketsCreatedToday = ticketData.filter(
-      (ticket) => ticket.created_on === today,
+    const ticketsCreatedToday = combinedData.filter(
+      (item) => item.created_on === today,
     ).length;
 
-    const ticketsClosedToday = ticketData.filter(
-      (ticket) => ticket.status === "Review" && ticket.last_updated === today,
+    const ticketsClosedToday = combinedData.filter(
+      (item) => (item.mappedStatus === "Review" || item.status === "hr_review") && item.last_updated === today,
     ).length;
 
-    const openTickets = ticketData.filter(
-      (ticket) => ticket.status === "Request",
+    const openTickets = combinedData.filter(
+      (item) => item.mappedStatus === "Request" || item.status === "pending" || item.status === "hr_review",
     ).length;
 
-    const openTicketsLast30Days = ticketData.filter((ticket) => {
-      const createdDate = new Date(ticket.created_on);
+    const openTicketsLast30Days = combinedData.filter((item) => {
+      const createdDate = new Date(item.created_on);
       const todayDate = new Date();
       const diffDays =
         (todayDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
-      return diffDays <= 30 && ticket.status === "Request";
+      return diffDays <= 30 && (item.mappedStatus === "Request" || item.status === "pending" || item.status === "hr_review");
     }).length;
 
-    const totalClosedTickets = ticketData.filter(
-      (ticket) => ticket.status === "Review" || ticket.status === "Approved",
+    const totalClosedTickets = combinedData.filter(
+      (item) => item.mappedStatus === "Review" || item.mappedStatus === "Approved" || item.status === "approved" || item.status === "rejected",
     ).length;
 
     return {
@@ -1068,7 +1259,7 @@ function EmployeeHelpDeskComponent() {
     setSearchTerm("");
     setSelectedStatus("All");
     setSelectedFilter("Last 7 days");
-    setFilteredData(ticketData);
+    setFilteredData(combinedData);
   };
 
   const handleServiceClick = (serviceKey) => {
@@ -1076,14 +1267,18 @@ function EmployeeHelpDeskComponent() {
     setTicketPopup(true);
   };
 
-  const handleEditClick = (ticket) => {
-    setSelectedTicket(ticket);
-    setEditDialogOpen(true);
+  const handleEditClick = (item) => {
+    if (item.type === "ticket") {
+      setSelectedTicket(item);
+      setEditDialogOpen(true);
+    }
   };
 
-  const handleReplyClick = (ticket) => {
-    setSelectedTicket(ticket);
-    setReplyDialogOpen(true);
+  const handleReplyClick = (item) => {
+    if (item.type === "ticket") {
+      setSelectedTicket(item);
+      setReplyDialogOpen(true);
+    }
   };
 
   return (
@@ -1340,7 +1535,7 @@ function EmployeeHelpDeskComponent() {
             {error && <p className="text-center text-red-500 my-4">{error}</p>}
             {!loading && !error && filteredData.length === 0 && (
               <p className="text-center text-gray-500 my-4">
-                No ticket data available for the selected criteria.
+                No ticket or position request data available for the selected criteria.
               </p>
             )}
             {!loading && !error && filteredData.length > 0 && (
@@ -1365,7 +1560,7 @@ function EmployeeHelpDeskComponent() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredData.map((ticket, index) => {
+                  {filteredData.map((item, index) => {
                     const avatarColor = [
                       "bg-cyan-500",
                       "bg-blue-500",
@@ -1373,35 +1568,44 @@ function EmployeeHelpDeskComponent() {
                       "bg-green-500",
                       "bg-purple-500",
                     ][index % 5];
-                    const avatarLetter = ticket.assigned_to?.charAt(0) || "U";
+                    const avatarLetter = item.assigned_to?.charAt(0) || "U";
 
                     return (
                       <TableRow
-                        key={ticket.id || index}
+                        key={item.id || index}
                         className="hover:bg-gray-50"
                       >
                         <TableCell>
                           <input type="checkbox" className="rounded" />
                         </TableCell>
-                        <TableCell>{ticket.id}</TableCell>
                         <TableCell>
-                          {activeTab === "open" ? (
+                          {item.type === "position_request" ? (
+                            <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded">
+                              {item.id}
+                            </span>
+                          ) : (
+                            item.id
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {activeTab === "open" && item.type === "ticket" ? (
                             <span className="bg-yellow-100 text-yellow-800 w-24 text-center justify-center rounded inline-block px-2 py-0.5">
                               In Progress
                             </span>
                           ) : (
                             <StatusProgressBar
-                              status={ticket.mappedStatus || "Request"}
+                              status={item.status || "Request"}
+                              type={item.type}
                             />
                           )}
                         </TableCell>
                         <TableCell>
                           <div className="font-medium text-blue-600">
-                            {ticket.subject}
+                            {item.subject}
                           </div>
                         </TableCell>
-                        <TableCell>{ticket.service_type}</TableCell>
-                        <TableCell>{ticket.created_on}</TableCell>
+                        <TableCell>{item.service_type}</TableCell>
+                        <TableCell>{item.created_on}</TableCell>
                         <TableCell>
                           <div className="flex items-center">
                             <div
@@ -1411,16 +1615,16 @@ function EmployeeHelpDeskComponent() {
                             </div>
                             <div>
                               <div className="font-medium">
-                                {ticket.assigned_to}
+                                {item.assigned_to}
                               </div>
                             </div>
                           </div>
                         </TableCell>
                         {activeTab === "closed" && (
                           <TableCell>
-                            {ticket.latest_reply ? (
+                            {item.latest_reply ? (
                               <div className="text-gray-600">
-                                {ticket.latest_reply}
+                                {item.latest_reply}
                               </div>
                             ) : (
                               <div className="text-gray-400">No reply</div>
@@ -1429,13 +1633,15 @@ function EmployeeHelpDeskComponent() {
                         )}
                         {activeTab === "open" && (
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEditClick(ticket)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
+                            {item.type === "ticket" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEditClick(item)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            )}
                           </TableCell>
                         )}
                       </TableRow>
@@ -1487,22 +1693,110 @@ function EmployeeHelpDeskComponent() {
               <DialogTitle>Add HRMS Job Request</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4">
-              <Input name="title" value={hrmsFormData.title} onChange={handleHRMSFormChange} placeholder="Title" />
-              <Input name="location" value={hrmsFormData.location} onChange={handleHRMSFormChange} placeholder="Location" />
-              <Input name="experienceLevel" value={hrmsFormData.experienceLevel} onChange={handleHRMSFormChange} placeholder="Experience Level" />
-              <Input name="jobType" value={hrmsFormData.jobType} onChange={handleHRMSFormChange} placeholder="Job Type" />
-              <Input name="openings" type="number" value={hrmsFormData.openings} onChange={handleHRMSFormChange} placeholder="Openings" />
-              <Input name="role" value={hrmsFormData.role} onChange={handleHRMSFormChange} placeholder="Role" />
-              <Select value={hrmsFormData.hr} onValueChange={(val) => setHrmsFormData((prev) => ({ ...prev, hr: val }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select HR" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hr1">HR 1</SelectItem>
-                  <SelectItem value="hr2">HR 2</SelectItem>
-                  <SelectItem value="hr3">HR 3</SelectItem>
-                </SelectContent>
-              </Select>
+              {formError && <p className="text-red-500 text-sm">{formError}</p>}
+              <div>
+                <label className="block text-sm font-medium mb-1">Title</label>
+                <Input
+                  name="title"
+                  value={hrmsFormData.title}
+                  onChange={handleHRMSFormChange}
+                  placeholder="Title"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Location</label>
+                <Select
+                  value={hrmsFormData.location}
+                  onValueChange={(val) => setHrmsFormData((prev) => ({ ...prev, location: val }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.length === 0 ? (
+                      <div className="p-2 text-gray-500 text-sm">No locations available</div>
+                    ) : (
+                      locations.map((loc) => (
+                        <SelectItem key={loc.id} value={loc.id}>
+                          {loc.location_name || "Unknown"}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Experience Level</label>
+                <Input
+                  name="experience"
+                  value={hrmsFormData.experience}
+                  onChange={handleHRMSFormChange}
+                  placeholder="Experience Level (e.g., 2-5 years)"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Job Type</label>
+                <Input
+                  name="jobType"
+                  value={hrmsFormData.jobType}
+                  onChange={handleHRMSFormChange}
+                  placeholder="Job Type (e.g., Full-Time, Remote)"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Openings</label>
+                <Input
+                  name="openings"
+                  type="number"
+                  value={hrmsFormData.openings}
+                  onChange={handleHRMSFormChange}
+                  placeholder="Openings"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Role</label>
+                <Select
+                  value={hrmsFormData.role}
+                  onValueChange={(val) => setHrmsFormData((prev) => ({ ...prev, role: val }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.length === 0 ? (
+                      <div className="p-2 text-gray-500 text-sm">No roles available</div>
+                    ) : (
+                      roles.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.role_name || "Unknown"}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">HR Reviewer</label>
+                <Select
+                  value={hrmsFormData.hr_reviewer}
+                  onValueChange={(val) => setHrmsFormData((prev) => ({ ...prev, hr_reviewer: val }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select HR" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hrs.length === 0 ? (
+                      <div className="p-2 text-gray-500 text-sm">No HR reviewers available</div>
+                    ) : (
+                      hrs.map((hr) => (
+                        <SelectItem key={hr.hr_id} value={hr.hr_id}>
+                          {hr.hr_name || hr.name || "Unknown"}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setShowHRMSForm(false)}>
                   Cancel

@@ -24,15 +24,15 @@ import { Money, Person } from "@mui/icons-material";
 const side_bar = [
   { link: "/hr", name: "Dashboard", icon: <LayoutDashboardIcon /> },
   { link: "/hr/process", name: "Process", icon: <User /> },
-  { link: "/hr/onboarding", name: "Onboarding", icon: <User /> },
-  { link: "/hr/hrManager", name: "Manager Management", icon: <Users2 /> },
+  { link: "onboarding", name: "Onboarding", icon: <User /> },
+  { link: "hrManager", name: "Manager Management", icon: <Users2 /> },
   { link: "/hr/hr-employee", name: "Employee Management", icon: <User /> },
   { link: "/hr/hrsupervisor", name: "Supervisor Management", icon: <Users2 /> },
   { link: "/hr/LeaveManagement", name: "Leave Management", icon: <User /> },
   { link: "/hr/attendance", name: "Attendance", icon: <User /> },
   { link: "/hr/shift", name: "Shift", icon: <User /> },
   { link: "/hr/Offers", name: "Offers", icon: <User /> },
-  { link: "/hr/helpDesk", name: "HelpDesk", icon: <User /> },
+  { link: "helpDesk", name: "HelpDesk", icon: <User /> },
   { link: "/hr/tickets", name: "Tickets", icon: <User /> },
   {
     link: "/hr/ManagerPerformance",
@@ -45,14 +45,14 @@ const side_bar = [
     icon: <User />,
   },
   {
-    link: "/hr/manpowerplanning",
+    link: "manpowerplanning",
     name: "Manpower Planning",
     icon: <User />,
   },
-  { link: "/hr/onboarding1", name: "Onboarding", icon: <User /> },
-  { link: "/hr/recruitment", name: "Recruitment", icon: <Person /> },
-  { link: "/hr/performance", name: "Performance", icon: <User /> },
-  { link: "/hr/payroll", name: "Payroll", icon: <Money /> },
+  { link: "onboarding1", name: "Onboarding1", icon: <User /> },
+  { link: "recruitment", name: "Recruitment", icon: <Person /> },
+  { link: "performance", name: "Performance", icon: <User /> },
+  { link: "payroll", name: "Payroll", icon: <Money /> },
   { name: "Logout", icon: <LogOut />, action: "logout" },
 ];
 
@@ -74,6 +74,7 @@ const HRHeader = () => {
       (item) =>
         item.name === "Dashboard" ||
         item.name === "Logout" ||
+        item.name === "HelpDesk" ||
         accessibleFeatures.includes(item.name),
     );
 

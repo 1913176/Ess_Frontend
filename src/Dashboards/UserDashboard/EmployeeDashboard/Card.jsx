@@ -7,6 +7,8 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
 
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
+
 const Card = () => {
   const [employeeData, setEmployeeData] = useState({
     employee: {
@@ -29,6 +31,7 @@ const Card = () => {
   axios.defaults.withCredentials = true;
 
   const fetchEmployeeData = async () => {
+    console.log("get employee data API hitted")
     try {
       setLoading(true);
       setError(null);
@@ -45,6 +48,7 @@ const Card = () => {
           ...(res.data.leave_balance || {})
         }
       }));
+      console.log(employeeData, "EMPDATA")
     } catch (err) {
       setError(err.message || "Failed to fetch employee data");
       console.error(err);
@@ -145,7 +149,7 @@ const Card = () => {
       </div>
 
       {/* Total Absent Days Card */}
-      <div className="bg-white rounded-xl shadow-md p-8 flex items-center h-full">
+      {/* <div className="bg-white rounded-xl shadow-md p-8 flex items-center h-full">
         <div className="bg-red-100 p-5 rounded-full mr-6">
           <Calendar className="text-red-600 w-8 h-8" />
         </div>
@@ -155,7 +159,7 @@ const Card = () => {
             {total_absent_days}
           </p>
         </div>
-      </div>
+      </div> */}
 
       {/* Vacation Leave Card */}
       <div className="bg-white rounded-xl shadow-md p-8 flex items-center h-full">
