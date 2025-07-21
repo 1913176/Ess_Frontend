@@ -121,28 +121,6 @@ const AttendanceCard = ({ record, index }) => (
     return "border-2 rounded-xl border-blue-600 text-blue-600";
   };
 
-  return (
-    <Card className="shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-base">Record #{index + 1}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <p><strong>Employee:</strong> {record.employee_name}</p>
-        <p><strong>Date:</strong> {record.date}</p>
-        <p>
-          <strong>Status:</strong>{" "}
-          <Badge variant="outline" className={getStatusColor(record)}>
-            {getStatusText(record)}
-          </Badge>
-        </p>
-        <p><strong>Check In:</strong> {record.time_in || "-"}</p>
-        <p><strong>Check Out:</strong> {record.time_out || "-"}</p>
-        <p><strong>Working Hours:</strong> {record.total_working_hours || "-"}</p>
-        <p><strong>Over Time:</strong> {record.overtime || "-"}</p>
-      </CardContent>
-    </Card>
-  );
-
 const EmployeeAttendanceRecords = ({ allRecords, selectedEmployeeId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
