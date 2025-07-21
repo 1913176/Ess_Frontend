@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import axios from "axios";
-import { GetHRTicketRequestList } from "@/api/ServerAction";
+
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -17,8 +17,8 @@ export default function HrTickets() {
   const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [managers, setManagers] = useState([]);
-  const [selectedManagerMap, setSelectedManagerMap] = useState({});
+  
+  
 
   const categories = ["Supervisor", "Manager", "Employee", "System"];
   const apiBaseUrl = import.meta.env.VITE_BASE_API;

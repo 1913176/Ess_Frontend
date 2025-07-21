@@ -32,6 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 import HrTickets from "./HrTickets";
 import { GetHRTicketList } from "@/api/ServerAction";
+import { GetHRTicketRequestList } from "@/api/ServerAction";
 
 const apiBaseUrl = process.env.VITE_BASE_API;
 
@@ -505,6 +506,7 @@ const EditTicketDialog = ({
     }
   })();
 
+
   useEffect(() => {
     if (ticket) {
       setSubject(ticket.subject || "");
@@ -670,6 +672,9 @@ function HrHelpDeskComponent() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [isReplyOpen, setIsReplyOpen] = useState(false);
   const [positionRequests, setPositionRequests] = useState([]);
+  const [managers, setManagers] = useState([]);
+  const [selectedManagerMap, setSelectedManagerMap] = useState({});
+  const [data, setData] = useState([]);
 
   const services = [
     {
@@ -715,6 +720,18 @@ function HrHelpDeskComponent() {
       options: [],
     },
   ];
+  const renderStatusBadge = (status) => {
+    const statusColor = {
+      Request: "bg-transparent text-blue-800",
+      Review: "text-orange-800",
+      Approved: "bg-transparent text-green-800",
+      Open: "bg-transparent text-yellow-800",
+      Rejected: "text-red-800",
+    };
+
+    const color = statusColor[status] || "text-gray-800";
+    return <span className={`${color} font-medium`}>{status}</span>;
+  };
 
   const handleReplySubmit = async () => {
     try {
