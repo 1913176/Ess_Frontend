@@ -56,29 +56,53 @@ const fetchEmployees = async () => {
   return data || [];
 };
 
-const fetchAllAttendanceRecords = async () => {
-  const { data } = await axios.get(`${apiBaseUrl}/employee/all-employee-attendance-history/`);
+const fetchAttendanceRecords = async (employeeId) => {
+  if (employeeId === "all") {
+    const { data } = await axios.get(`${apiBaseUrl}/employee/all-employee-attendance-history/`);
+    return data.records?.map((record, index) => ({
+      id: `${record.employee_id || 'all'}-${record.date}-${index}`,
+      ...record,
+    })) || [];
+  }
+
+  const { data } = await axios.get(`${apiBaseUrl}/employee/employee-attendance-history/`, {
+    params: { employee_id: employeeId },
+  });
+
   return data.all_records?.map((record, index) => ({
     id: `${record.employee_id || 'all'}-${record.date}-${index}`,
     ...record,
   })) || [];
 };
 
-const AttendanceCard = ({ record, index }) => {
-  const getStatusText = (record) => {
-    if (record.type === "leave") return "Leave";
-    if (record.time_in && record.shift_start_time) {
-      const [checkInHours, checkInMinutes] = record.time_in.split(':').map(Number);
-      const [shiftHours, shiftMinutes] = record.shift_start_time.split(':').map(Number);
-      const checkInTime = new Date();
-      checkInTime.setHours(checkInHours, checkInMinutes, 0, 0);
-      const shiftStart = new Date();
-      shiftStart.setHours(shiftHours, shiftMinutes, 0, 0);
-      const oneHourAfterShift = new Date(shiftStart.getTime() + 60 * 60 * 1000);
-      return checkInTime > oneHourAfterShift ? "Late" : "Present";
-    }
-    return "Present";
-  };
+
+const AttendanceCard = ({ record, index }) => (
+  <Card className="shadow-sm">
+    <CardHeader>
+      <CardTitle className="text-base">Record #{index + 1}</CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-2">
+      <p><strong>Employee:</strong> {record.employee_name}</p>
+      <p><strong>Date:</strong> {record.date}</p>
+      <p>
+        <strong>Type:</strong>{" "}
+        {record.type === "on leave" ? (
+          <Badge variant="outline" className="border-2 rounded-xl border-red-600 text-red-600">
+            Leave
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="border-2 rounded-xl border-blue-600 text-blue-600">
+            Present
+          </Badge>
+        )}
+      </p>
+      <p><strong>Time In:</strong> {record.time_in || "-"}</p>
+      <p><strong>Time Out:</strong> {record.time_out || "-"}</p>
+      <p><strong>Work Time:</strong> {record.total_working_hours || "-"}</p>
+      <p><strong>Over Time:</strong> {record.overtime || "-"}</p>
+    </CardContent>
+  </Card>
+);
 
   const getStatusColor = (record) => {
     if (record.type === "leave") return "border-2 rounded-xl border-red-600 text-red-600";
@@ -118,7 +142,6 @@ const AttendanceCard = ({ record, index }) => {
       </CardContent>
     </Card>
   );
-};
 
 const EmployeeAttendanceRecords = ({ allRecords, selectedEmployeeId }) => {
   const [searchTerm, setSearchTerm] = useState("");

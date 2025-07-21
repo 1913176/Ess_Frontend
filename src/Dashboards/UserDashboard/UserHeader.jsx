@@ -55,39 +55,39 @@ const UserHeader = () => {
   const [isTeamLeader, setIsTeamLeader] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const storedUser = JSON.parse(sessionStorage.getItem("userdata") || "{}");
-    setUserData(storedUser);
+  // useEffect(() => {
+  //   const storedUser = JSON.parse(sessionStorage.getItem("userdata") || "{}");
+  //   setUserData(storedUser);
 
-    const checkTeamLeader = async () => {
-      try {
-        const response = await axios.get(`${baseApi}/check_team_leader/`, {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("token") || ""}`,
-          },
-        });
-        setIsTeamLeader(response.data.is_team_leader || false);
-      } catch (error) {
-        console.error("Error checking team leader status:", error);
-        setIsTeamLeader(false); // Default to false on error to avoid showing icon
-      }
-    };
+  //   const checkTeamLeader = async () => {
+  //     try {
+  //       const response = await axios.get(`${baseApi}/check_team_leader/`, {
+  //         headers: {
+  //           Authorization: `Bearer ${sessionStorage.getItem("token") || ""}`,
+  //         },
+  //       });
+  //       setIsTeamLeader(response.data.is_team_leader || false);
+  //     } catch (error) {
+  //       console.error("Error checking team leader status:", error);
+  //       setIsTeamLeader(false); // Default to false on error to avoid showing icon
+  //     }
+  //   };
 
-    if (storedUser.username) {
-      checkTeamLeader();
-    }
+  //   if (storedUser.username) {
+  //     checkTeamLeader();
+  //   }
 
-    const Picons = Object.keys(storedUser.streams || {});
-    const filteredIcons = side_bar.filter(
-      (item) =>
-        item.name === "Dashboard" ||
-        item.name === "Logout" ||
-        (item.name === "Hire Request" && isTeamLeader) ||
-        Picons.includes(item.name)
-    );
+  //   const Picons = Object.keys(storedUser.streams || {});
+  //   const filteredIcons = side_bar.filter(
+  //     (item) =>
+  //       item.name === "Dashboard" ||
+  //       item.name === "Logout" ||
+  //       (item.name === "Hire Request" && isTeamLeader) ||
+  //       Picons.includes(item.name)
+  //   );
 
-    setPurchasedIcons(filteredIcons);
-  }, [isTeamLeader]);
+  //   setPurchasedIcons(filteredIcons);
+  // }, [isTeamLeader]);
 
   const HandleLogOut = async () => {
     try {
