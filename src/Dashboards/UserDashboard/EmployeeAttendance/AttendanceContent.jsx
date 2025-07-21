@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 axios.defaults.withCredentials = true;
 const apiBaseUrl = process.env.VITE_BASE_API;
 
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
+
 const SkeletonLoading = () => {
   return (
     <div className="space-y-4">
@@ -113,6 +115,8 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
     totalHours: 0
   });
 
+  console.log("employee_id", userInfo.employee_id);
+
   useEffect(() => {
     const fetchAttendanceData = async () => {
       try {
@@ -121,10 +125,21 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
         );
 
         if (response.status === 200) {
-          const records = response.data.all_records || []; 
-          setAttendanceData(records);
-          setFilteredData(records);
-          calculateSummaryStats(records);
+          const records = response.data.all_records || [];
+          // Ensure one record per day by keeping the first record for each date
+          const uniqueRecords = [];
+          const dateMap = new Map();
+          
+          records.forEach(record => {
+            if (record.date && !dateMap.has(record.date)) {
+              dateMap.set(record.date, true);
+              uniqueRecords.push(record);
+            }
+          });
+
+          setAttendanceData(uniqueRecords);
+          setFilteredData(uniqueRecords);
+          calculateSummaryStats(uniqueRecords);
         } else {
           setError("Failed to fetch attendance data.");
         }
@@ -358,9 +373,20 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
           record.id === editRecord.id ? response.data.updated_record : record
         );
         
-        setAttendanceData(updatedData);
-        setFilteredData(updatedData);
-        calculateSummaryStats(updatedData);
+        // Ensure one record per day after update
+        const uniqueRecords = [];
+        const dateMap = new Map();
+        
+        updatedData.forEach(record => {
+          if (record.date && !dateMap.has(record.date)) {
+            dateMap.set(record.date, true);
+            uniqueRecords.push(record);
+          }
+        });
+        
+        setAttendanceData(uniqueRecords);
+        setFilteredData(uniqueRecords);
+        calculateSummaryStats(uniqueRecords);
         setIsEditDialogOpen(false);
       }
     } catch (err) {
@@ -561,7 +587,7 @@ const EmployeeAttendanceContent = ({ setIsOpenForm }) => {
 
                 <button 
                   onClick={handleResetFilter}
-                  className="px-4 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+                  className="px-4 py-1 bg-gray-200 hover:bg artifact_id-gray-300 rounded text-sm"
                 >
                   Reset
                 </button>

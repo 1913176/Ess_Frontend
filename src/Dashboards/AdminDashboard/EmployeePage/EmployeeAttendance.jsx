@@ -56,68 +56,102 @@ const fetchEmployees = async () => {
   return data || [];
 };
 
-const fetchAttendanceRecords = async (employeeId) => {
-  if (employeeId === "all") {
-    const { data } = await axios.get(`${apiBaseUrl}/admin/employee-attendance-history/`);
-    return data.all_records?.map((record, index) => ({
-      id: `${record.employee_id || 'all'}-${record.date}-${index}`,
-      ...record,
-    })) || [];
-  }
-  const { data } = await axios.get(`${apiBaseUrl}/admin/employee-attendance-history/`, {
-    params: { employee_id: employeeId },
-  });
+const fetchAllAttendanceRecords = async () => {
+  const { data } = await axios.get(`${apiBaseUrl}/employee/all-employee-attendance-history/`);
   return data.all_records?.map((record, index) => ({
-    id: `${employeeId}-${record.date}-${index}`,
+    id: `${record.employee_id || 'all'}-${record.date}-${index}`,
     ...record,
   })) || [];
 };
 
-const AttendanceCard = ({ record, index }) => (
-  <Card className="shadow-sm">
-    <CardHeader>
-      <CardTitle className="text-base">Record #{index + 1}</CardTitle>
-    </CardHeader>
-    <CardContent className="space-y-2">
-      <p><strong>Employee:</strong> {record.employee_name}</p>
-      <p><strong>Date:</strong> {record.date}</p>
-      <p>
-        <strong>Type:</strong>{" "}
-        {record.type === "on leave" ? (
-          <Badge variant="outline" className="border-2 rounded-xl border-red-600 text-red-600">
-            Leave
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="border-2 rounded-xl border-blue-600 text-blue-600">
-            Present
-          </Badge>
-        )}
-      </p>
-      <p><strong>Time In:</strong> {record.time_in || "-"}</p>
-      <p><strong>Time Out:</strong> {record.time_out || "-"}</p>
-      <p><strong>Work Time:</strong> {record.total_working_hours || "-"}</p>
-      <p><strong>Over Time:</strong> {record.overtime || "-"}</p>
-    </CardContent>
-  </Card>
-);
+const AttendanceCard = ({ record, index }) => {
+  const getStatusText = (record) => {
+    if (record.type === "leave") return "Leave";
+    if (record.time_in && record.shift_start_time) {
+      const [checkInHours, checkInMinutes] = record.time_in.split(':').map(Number);
+      const [shiftHours, shiftMinutes] = record.shift_start_time.split(':').map(Number);
+      const checkInTime = new Date();
+      checkInTime.setHours(checkInHours, checkInMinutes, 0, 0);
+      const shiftStart = new Date();
+      shiftStart.setHours(shiftHours, shiftMinutes, 0, 0);
+      const oneHourAfterShift = new Date(shiftStart.getTime() + 60 * 60 * 1000);
+      return checkInTime > oneHourAfterShift ? "Late" : "Present";
+    }
+    return "Present";
+  };
 
-const EmployeeAttendanceRecords = ({ employeeId }) => {
+  const getStatusColor = (record) => {
+    if (record.type === "leave") return "border-2 rounded-xl border-red-600 text-red-600";
+    if (record.time_in && record.shift_start_time) {
+      const [checkInHours, checkInMinutes] = record.time_in.split(':').map(Number);
+      const [shiftHours, shiftMinutes] = record.shift_start_time.split(':').map(Number);
+      const checkInTime = new Date();
+      checkInTime.setHours(checkInHours, checkInMinutes, 0, 0);
+      const shiftStart = new Date();
+      shiftStart.setHours(shiftHours, shiftMinutes, 0, 0);
+      const oneHourAfterShift = new Date(shiftStart.getTime() + 60 * 60 * 1000);
+      return checkInTime > oneHourAfterShift
+        ? "border-2 rounded-xl border-amber-600 text-amber-600"
+        : "border-2 rounded-xl border-blue-600 text-blue-600";
+    }
+    return "border-2 rounded-xl border-blue-600 text-blue-600";
+  };
+
+  return (
+    <Card className="shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-base">Record #{index + 1}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <p><strong>Employee:</strong> {record.employee_name}</p>
+        <p><strong>Date:</strong> {record.date}</p>
+        <p>
+          <strong>Status:</strong>{" "}
+          <Badge variant="outline" className={getStatusColor(record)}>
+            {getStatusText(record)}
+          </Badge>
+        </p>
+        <p><strong>Check In:</strong> {record.time_in || "-"}</p>
+        <p><strong>Check Out:</strong> {record.time_out || "-"}</p>
+        <p><strong>Working Hours:</strong> {record.total_working_hours || "-"}</p>
+        <p><strong>Over Time:</strong> {record.overtime || "-"}</p>
+      </CardContent>
+    </Card>
+  );
+};
+
+const EmployeeAttendanceRecords = ({ allRecords, selectedEmployeeId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 12;
 
-  const { data: attendanceRecords = [], isFetching, isError } = useQuery({
-    queryKey: ["employee_attendance", employeeId],
-    queryFn: () => fetchAttendanceRecords(employeeId),
-    placeholderData: [],
-    staleTime: 5000,
-    refetchOnWindowFocus: false,
-    enabled: !!employeeId, // Only fetch when employeeId is defined
-  });
-
   const filteredData = useMemo(() => {
-    let filtered = [...attendanceRecords];
+    let filtered = [...allRecords];
+
+    // Group records by employee_id and date, keeping the earliest check-in
+    const groupedRecords = {};
+    filtered.forEach((record) => {
+      const key = `${record.employee_id}-${record.date}`;
+      if (
+        !groupedRecords[key] ||
+        (record.time_in &&
+          (!groupedRecords[key].time_in ||
+            record.time_in < groupedRecords[key].time_in))
+      ) {
+        groupedRecords[key] = record;
+      }
+    });
+    filtered = Object.values(groupedRecords);
+
+    // Filter by selected employee if not "all"
+    if (selectedEmployeeId !== "all") {
+      filtered = filtered.filter(
+        (record) => record.employee_id === selectedEmployeeId
+      );
+    }
+
+    // Apply search term filter
     if (searchTerm) {
       filtered = filtered.filter(
         (record) =>
@@ -125,17 +159,29 @@ const EmployeeAttendanceRecords = ({ employeeId }) => {
           record.date?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
+
+    // Apply sorting
     if (sortConfig.key) {
       filtered.sort((a, b) => {
         const valueA = a[sortConfig.key] || "";
         const valueB = b[sortConfig.key] || "";
+        if (sortConfig.key === "date") {
+          return sortConfig.direction === "asc"
+            ? new Date(valueA) - new Date(valueB)
+            : new Date(valueB) - new Date(valueA);
+        }
+        if (sortConfig.key === "total_working_hours" || sortConfig.key === "overtime") {
+          const numA = parseFloat(valueA) || 0;
+          const numB = parseFloat(valueB) || 0;
+          return sortConfig.direction === "asc" ? numA - numB : numB - numA;
+        }
         return sortConfig.direction === "asc"
           ? valueA.toString().localeCompare(valueB.toString())
           : valueB.toString().localeCompare(valueA.toString());
       });
     }
     return filtered;
-  }, [searchTerm, sortConfig, attendanceRecords]);
+  }, [searchTerm, sortConfig, allRecords, selectedEmployeeId]);
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -163,22 +209,100 @@ const EmployeeAttendanceRecords = ({ employeeId }) => {
   };
 
   const calculateSummaryStats = () => {
-    const totalRecords = filteredData.length;
-    const presentRecords = filteredData.filter((r) => r.type !== "on leave").length;
-    const leaveRecords = filteredData.filter((r) => r.type === "on leave").length;
-    const totalWorkHours = filteredData.reduce((sum, r) => sum + (parseFloat(r.total_working_hours) || 0), 0);
-    return { totalRecords, presentRecords, leaveRecords, totalWorkHours };
-  };
+  const totalRecords = filteredData.length;
+
+  const presentRecords = filteredData.filter((r) => {
+    if (r.type === "leave" || !r.time_in || !r.shift_start_time) return false;
+
+    const [inHour, inMinute] = r.time_in.split(':').map(Number);
+    const [shiftHour, shiftMinute] = r.shift_start_time.split(':').map(Number);
+
+    const checkIn = new Date();
+    checkIn.setHours(inHour, inMinute, 0, 0);
+
+    const shiftStart = new Date();
+    shiftStart.setHours(shiftHour, shiftMinute, 0, 0);
+
+    const oneHourAfterShift = new Date(shiftStart.getTime() + 60 * 60 * 1000);
+
+    return checkIn <= oneHourAfterShift;
+  }).length;
+
+  const leaveRecords = filteredData.filter((r) => r.type === "leave").length;
+
+  const lateRecords = filteredData.filter((r) => {
+    if (r.type === "leave" || !r.time_in || !r.shift_start_time) return false;
+
+    const [inHour, inMinute] = r.time_in.split(':').map(Number);
+    const [shiftHour, shiftMinute] = r.shift_start_time.split(':').map(Number);
+
+    const checkIn = new Date();
+    checkIn.setHours(inHour, inMinute, 0, 0);
+
+    const shiftStart = new Date();
+    shiftStart.setHours(shiftHour, shiftMinute, 0, 0);
+
+    const oneHourAfterShift = new Date(shiftStart.getTime() + 60 * 60 * 1000);
+
+    return checkIn > oneHourAfterShift;
+  }).length;
+
+  // Convert HH:MM:SS to hours (decimal) for summation
+  const totalWorkHours = filteredData.reduce((sum, r) => {
+    if (r.total_working_hours && r.total_working_hours !== "00:00:00") {
+      const [hours, minutes, seconds] = r.total_working_hours.split(':').map(Number);
+      const hoursInDecimal = hours + minutes / 60 + seconds / 3600;
+      return sum + hoursInDecimal;
+    }
+    return sum;
+  }, 0);
+
+  return { totalRecords, presentRecords, leaveRecords, lateRecords, totalWorkHours };
+};
+
 
   const stats = calculateSummaryStats();
 
+  const getWorkingHoursColor = (hours) => {
+    const numericHours = parseFloat(hours) || 0;
+    return numericHours < 8 ? "bg-rose-600 text-white" : "bg-emerald-600 text-white";
+  };
+
+  const getStatusColor = (record) => {
+    if (record.type === "leave") return "bg-rose-600 text-white";
+    if (record.time_in && record.shift_start_time) {
+      const [checkInHours, checkInMinutes] = record.time_in.split(':').map(Number);
+      const [shiftHours, shiftMinutes] = record.shift_start_time.split(':').map(Number);
+      const checkInTime = new Date();
+      checkInTime.setHours(checkInHours, checkInMinutes, 0, 0);
+      const shiftStart = new Date();
+      shiftStart.setHours(shiftHours, shiftMinutes, 0, 0);
+      const oneHourAfterShift = new Date(shiftStart.getTime() + 60 * 60 * 1000);
+      return checkInTime > oneHourAfterShift ? "bg-amber-600 text-white" : "bg-emerald-600 text-white";
+    }
+    return "bg-emerald-600 text-white";
+  };
+
+  const getStatusText = (record) => {
+    if (record.type === "leave") return "Leave";
+    if (record.time_in && record.shift_start_time) {
+      const [checkInHours, checkInMinutes] = record.time_in.split(':').map(Number);
+      const [shiftHours, shiftMinutes] = record.shift_start_time.split(':').map(Number);
+      const checkInTime = new Date();
+      checkInTime.setHours(checkInHours, checkInMinutes, 0, 0);
+      const shiftStart = new Date();
+      shiftStart.setHours(shiftHours, shiftMinutes, 0, 0);
+      const oneHourAfterShift = new Date(shiftStart.getTime() + 60 * 60 * 1000);
+      return checkInTime > oneHourAfterShift ? "Late" : "Present";
+    }
+    return "Present";
+  };
+
   return (
     <div className="p-2 sm:p-4">
-      {isFetching ? (
-        <SkeletonLoading />
-      ) : isError ? (
+      {allRecords.length === 0 ? (
         <Alert variant="destructive" className="text-center my-4">
-          Failed to load attendance records. Please try again.
+          No attendance records available.
         </Alert>
       ) : (
         <>
@@ -190,7 +314,7 @@ const EmployeeAttendanceRecords = ({ employeeId }) => {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <div className="grid grid-cols-2 md:grid-cols-4 border-t min-w-full" style={{ minWidth: "600px" }}>
+              <div className="grid grid-cols-5 border-t min-w-full" style={{ minWidth: "750px" }}>
                 <div className="p-4 text-center border-r">
                   <p className="text-gray-500 text-sm">Total Records</p>
                   <p className="text-xl sm:text-2xl font-semibold">
@@ -205,7 +329,16 @@ const EmployeeAttendanceRecords = ({ employeeId }) => {
                   <p className="text-xl sm:text-2xl font-semibold">
                     {stats.presentRecords}
                     <span className="text-xs font-normal bg-green-500 text-white px-2 py-1 rounded-full ml-1">
-                      Present
+                      {Math.round((stats.presentRecords / (stats.totalRecords || 1)) * 100)}%
+                    </span>
+                  </p>
+                </div>
+                <div className="p-4 text-center border-r">
+                  <p className="text-gray-500 text-sm">Late</p>
+                  <p className="text-xl sm:text-2xl font-semibold">
+                    {stats.lateRecords}
+                    <span className="text-xs font-normal bg-amber-500 text-white px-2 py-1 rounded-full ml-1">
+                      {Math.round((stats.lateRecords / (stats.totalRecords || 1)) * 100)}%
                     </span>
                   </p>
                 </div>
@@ -214,16 +347,16 @@ const EmployeeAttendanceRecords = ({ employeeId }) => {
                   <p className="text-xl sm:text-2xl font-semibold">
                     {stats.leaveRecords}
                     <span className="text-xs font-normal bg-red-500 text-white px-2 py-1 rounded-full ml-1">
-                      Leave
+                      {Math.round((stats.leaveRecords / (stats.totalRecords || 1)) * 100)}%
                     </span>
                   </p>
                 </div>
                 <div className="p-4 text-center">
-                  <p className="text-gray-500 text-sm">Total Work Hours</p>
+                  <p className="text-gray-500 text-sm">Total Hours</p>
                   <p className="text-xl sm:text-2xl font-semibold">
                     {stats.totalWorkHours.toFixed(2)}
-                    <span className="text-xs font-normal bg-orange-500 text-white px-2 py-1 rounded-full ml-1">
-                      Hours
+                    <span className="text-xs font-normal bg-gray-500 text-white px-2 py-1 rounded-full ml-1">
+                      Hrs
                     </span>
                   </p>
                 </div>
@@ -267,9 +400,15 @@ const EmployeeAttendanceRecords = ({ employeeId }) => {
                 </Button>
               </div>
             </div>
-            {attendanceRecords.length === 0 && !isFetching && !isError ? (
+            {filteredData.length === 0 ? (
               <div className="text-center text-gray-500 my-4">
-                <p>No attendance records available.</p>
+                <p>No attendance records found.</p>
+                <Button
+                  onClick={handleResetFilter}
+                  className="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700"
+                >
+                  Clear Filters
+                </Button>
               </div>
             ) : (
               <Tabs defaultValue="list" className="min-h-full">
@@ -280,100 +419,101 @@ const EmployeeAttendanceRecords = ({ employeeId }) => {
                   </TabsList>
                 </div>
                 <TabsContent value="list">
-                  {filteredData.length === 0 ? (
-                    <div className="text-center text-gray-500 my-4">
-                      <p>No attendance records found.</p>
-                      <Button
-                        onClick={handleResetFilter}
-                        className="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700"
-                      >
-                        Clear Filters
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="border rounded-md bg-white">
-                      <Table className="table-auto">
-                        <TableHeader>
-                          <TableRow className="text-base bg-slate-100">
-                            <TableCell onClick={() => handleSort("id")} className="cursor-pointer">
-                              S.No {getSortIcon("id")}
-                            </TableCell>
-                            <TableCell onClick={() => handleSort("employee_name")} className="cursor-pointer">
-                              Employee Name {getSortIcon("employee_name")}
-                            </TableCell>
-                            <TableCell onClick={() => handleSort("date")} className="cursor-pointer">
-                              Date {getSortIcon("date")}
-                            </TableCell>
-                            <TableCell onClick={() => handleSort("type")} className="cursor-pointer">
-                              Type {getSortIcon("type")}
-                            </TableCell>
-                            <TableCell onClick={() => handleSort("time_in")} className="cursor-pointer">
-                              Time In {getSortIcon("time_in")}
-                            </TableCell>
-                            <TableCell onClick={() => handleSort("time_out")} className="cursor-pointer">
-                              Time Out {getSortIcon("time_out")}
-                            </TableCell>
-                            <TableCell onClick={() => handleSort("total_working_hours")} className="cursor-pointer">
-                              Work Time {getSortIcon("total_working_hours")}
-                            </TableCell>
-                            <TableCell onClick={() => handleSort("overtime")} className="cursor-pointer">
-                              Over Time {getSortIcon("overtime")}
-                            </TableCell>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {currentAttendance.map((record, index) => (
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table className="table-auto">
+                      <TableHeader>
+                        <TableRow className="bg-gray-200">
+                          <TableHead
+                            className="bg-gray-200 cursor-pointer"
+                            onClick={() => handleSort("id")}
+                          >
+                            S.No {getSortIcon("id")}
+                          </TableHead>
+                          <TableHead
+                            className="bg-gray-200 cursor-pointer"
+                            onClick={() => handleSort("employee_name")}
+                          >
+                            Employee Name {getSortIcon("employee_name")}
+                          </TableHead>
+                          <TableHead
+                            className="bg-gray-200 cursor-pointer"
+                            onClick={() => handleSort("date")}
+                          >
+                            Date {getSortIcon("date")}
+                          </TableHead>
+                          <TableHead
+                            className="bg-gray-200 cursor-pointer"
+                            onClick={() => handleSort("type")}
+                          >
+                            Status {getSortIcon("type")}
+                          </TableHead>
+                          <TableHead
+                            className="bg-gray-200 cursor-pointer"
+                            onClick={() => handleSort("time_in")}
+                          >
+                            Check In {getSortIcon("time_in")}
+                          </TableHead>
+                          <TableHead
+                            className="bg-gray-200 cursor-pointer"
+                            onClick={() => handleSort("time_out")}
+                          >
+                            Check Out {getSortIcon("time_out")}
+                          </TableHead>
+                          <TableHead
+                            className="bg-gray-200 cursor-pointer"
+                            onClick={() => handleSort("total_working_hours")}
+                          >
+                            Working Hours {getSortIcon("total_working_hours")}
+                          </TableHead>
+                          <TableHead
+                            className="bg-gray-200 cursor-pointer"
+                            onClick={() => handleSort("overtime")}
+                          >
+                            Over Time {getSortIcon("overtime")}
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {currentAttendance.map((record, index) => {
+                          const statusText = getStatusText(record);
+                          const statusColor = getStatusColor(record);
+                          const workingHoursColor = getWorkingHoursColor(record.total_working_hours);
+                          return (
                             <TableRow key={record.id} className="text-base">
                               <TableCell>{indexOfFirstPost + index + 1}</TableCell>
                               <TableCell>{record.employee_name}</TableCell>
-                              <TableCell>{record.date}</TableCell>
+                              <TableCell>{record.date || new Date().toLocaleDateString()}</TableCell>
                               <TableCell>
-                                {record.type === "on leave" ? (
-                                  <Badge
-                                    variant="outline"
-                                    className="border-2 rounded-xl border-red-600 text-red-600"
-                                  >
-                                    Leave
-                                  </Badge>
-                                ) : (
-                                  <Badge
-                                    variant="outline"
-                                    className="border-2 rounded-xl border-blue-600 text-blue-600"
-                                  >
-                                    Present
-                                  </Badge>
-                                )}
+                                <span
+                                  className={`${statusColor} px-3 py-1 rounded-md text-xs inline-block w-20 text-center`}
+                                >
+                                  {statusText}
+                                </span>
                               </TableCell>
-                              <TableCell>{record.time_in || "-"}</TableCell>
-                              <TableCell>{record.time_out || "-"}</TableCell>
-                              <TableCell>{record.total_working_hours || "-"}</TableCell>
-                              <TableCell>{record.overtime || "-"}</TableCell>
+                              <TableCell>{record.time_in || "N/A"}</TableCell>
+                              <TableCell>{record.time_out || "N/A"}</TableCell>
+                              <TableCell>
+                                <span
+                                  className={`${workingHoursColor} px-3 py-1 rounded-md text-xs inline-block w-20 text-center`}
+                                >
+                                  {record.total_working_hours || "0"}
+                                </span>
+                              </TableCell>
+                              <TableCell>{record.overtime || "N/A"}</TableCell>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </TabsContent>
                 <TabsContent value="card">
                   <ScrollArea className="h-[calc(100vh-14rem)] w-full">
-                    {filteredData.length === 0 ? (
-                      <div className="text-center text-gray-500 my-4">
-                        <p>No attendance records found.</p>
-                        <Button
-                          onClick={handleResetFilter}
-                          className="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700"
-                        >
-                          Clear Filters
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-                        {currentAttendance.map((record, index) => (
-                          <AttendanceCard key={record.id} record={record} index={indexOfFirstPost + index} />
-                        ))}
-                      </div>
-                    )}
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+                      {currentAttendance.map((record, index) => (
+                        <AttendanceCard key={record.id} record={record} index={indexOfFirstPost + index} />
+                      ))}
+                    </div>
                   </ScrollArea>
                 </TabsContent>
               </Tabs>
@@ -420,18 +560,26 @@ const EmployeeAttendance = () => {
     refetchOnWindowFocus: false,
   });
 
+  const { data: allRecords = [], isFetching: isFetchingRecords, isError: isErrorRecords } = useQuery({
+    queryKey: ["all_employee_attendance"],
+    queryFn: fetchAllAttendanceRecords,
+    placeholderData: [],
+    staleTime: 5000,
+    refetchOnWindowFocus: false,
+  });
+
   const handleRefresh = () => {
     queryClient.invalidateQueries(["employees"]);
-    queryClient.invalidateQueries(["employee_attendance"]);
+    queryClient.invalidateQueries(["all_employee_attendance"]);
   };
 
   return (
     <div className="p-2 sm:p-4 min-h-screen">
-      {isFetchingEmployees ? (
+      {(isFetchingEmployees || isFetchingRecords) ? (
         <SkeletonLoading />
-      ) : isErrorEmployees ? (
+      ) : isErrorEmployees || isErrorRecords ? (
         <Alert variant="destructive" className="text-center my-4">
-          Failed to load employee list. Please try again.
+          Failed to load data. Please try again.
         </Alert>
       ) : (
         <div className="bg-white rounded-lg shadow-sm p-4">
@@ -471,7 +619,7 @@ const EmployeeAttendance = () => {
               </Button>
             </div>
           </div>
-          <EmployeeAttendanceRecords employeeId={selectedEmployeeId} />
+          <EmployeeAttendanceRecords allRecords={allRecords} selectedEmployeeId={selectedEmployeeId} />
         </div>
       )}
     </div>
