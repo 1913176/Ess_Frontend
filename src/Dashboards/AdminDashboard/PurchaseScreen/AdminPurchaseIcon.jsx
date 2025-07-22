@@ -58,6 +58,11 @@ const AdminPurchaseIcon = () => {
 
     const side_bar = [
         {
+            link: "/admin/user",
+            name: "User Dashboard",
+            icon: <Users size={20} />,
+        },
+        {
             link: "/admin/manager",
             name: "Manager Dashboard",
             icon: <Users size={20} />,

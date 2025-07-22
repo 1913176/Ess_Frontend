@@ -58,6 +58,7 @@ const AdminPurchaseHome = () => {
     };
 
     const featureMap = {
+        "User Dashboard": { icon: <Users size={24} />, color: "bg-blue-500"},
         "Manager Dashboard": { icon: <Users size={24} />, color: "bg-blue-500" },
         "HR-Management": { icon: <Users size={24} />, color: "bg-green-500" },
         "Employment Management": { icon: <Users size={24} />, color: "bg-purple-500" },
@@ -74,6 +75,7 @@ const AdminPurchaseHome = () => {
     };
 
     const featureRoutes = {
+        "User Dashboard": "/admin/user",
         "Manager Dashboard": "/admin/manager",
         "HR-Management": "/admin/hr-management",
         "Employment Management": "/admin/employee",
