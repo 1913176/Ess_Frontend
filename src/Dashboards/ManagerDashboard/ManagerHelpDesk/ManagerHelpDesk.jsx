@@ -477,7 +477,7 @@ const ReplyTicketDialog = ({ isOpen, onClose, ticket }) => {
                 {ticket?.created_on || "N/A"}
               </p>
               <p>
-                <strong classnumero class="text-gray-700">
+                <strong className="text-gray-700">
                   Last Updated:
                 </strong>{" "}
                 {ticket?.last_updated || "N/A"}
@@ -734,9 +734,7 @@ function ManagerHelpDeskComponent() {
   const [activeTab, setActiveTab] = useState("open");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [selectedRequestId, setSelectedRequestId] = useState(null);
-  const [rejectionReason, setRejectionReason] = useState("");
-  const [closedTickets, setClosedTickets] = useState([]);
+  const queryClient = useQueryClient();
 
   const {
     data: positionRequestData,
@@ -769,7 +767,6 @@ function ManagerHelpDeskComponent() {
                   ? "Rejected"
                   : "Unknown",
           last_updated: request.created_at,
-          rejection_reason: request.rejection_reason || "N/A",
         }));
       }
       throw new Error(
@@ -1068,44 +1065,38 @@ function ManagerHelpDeskComponent() {
 
   const handleApproveRequest = async (id) => {
     try {
-      await axios.post(
-        `${apiBaseUrl}/api/position-requests/${id}/approve`,
-        {},
+      const response = await axios.post(
+        `${apiBaseUrl}/manpower/approve-position-request/${id}/`,
+        { action: "approve" },
         {
           headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
           },
         },
       );
 
-      // Move to closed tickets
-      const approvedTicket = positionRequestData.find((item) => item.id === id);
-      if (approvedTicket) {
-        setClosedTickets([
-          ...closedTickets,
-          { ...approvedTicket, status: "Approved" },
-        ]);
-        setPositionRequestData(
-          positionRequestData.filter((item) => item.id !== id),
+      if (response.data.success) {
+        queryClient.setQueryData(["managerPositionRequests"], (oldData) =>
+          oldData.map((request) =>
+            request.id === id
+              ? { ...request, status: "Approved", last_updated: new Date().toISOString().split("T")[0] }
+              : request
+          )
         );
+        alert("Request approved successfully!");
       }
-
-      toast.success("Request approved and moved to closed!");
     } catch (error) {
       console.error("Error approving request:", error);
-      toast.error("Failed to approve request.");
+      alert("Failed to approve request.");
     }
   };
 
-  const handleRejectRequest = async () => {
-    if (!rejectionReason.trim()) {
-      toast.error("Please provide a rejection reason.");
-      return;
-    }
+  const handleRejectRequest = async (id) => {
     try {
       const response = await axios.post(
-        `${apiBaseUrl}/manpower/approve-position-request/${selectedRequestId}/`,
-        { action: "reject", rejection_reason: rejectionReason },
+        `${apiBaseUrl}/manpower/approve-position-request/${id}/`,
+        { action: "reject" },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -1114,19 +1105,20 @@ function ManagerHelpDeskComponent() {
         },
       );
       if (response.data.success) {
-        toast.success(
-          response.data.message || "Request rejected successfully.",
+        alert("Request rejected successfully!");
+        queryClient.setQueryData(["managerPositionRequests"], (oldData) =>
+          oldData.map((request) =>
+            request.id === id
+              ? { ...request, status: "Rejected", last_updated: new Date().toISOString().split("T")[0] }
+              : request
+          )
         );
-        setRejectionReason("");
-        setSelectedRequestId(null);
-        queryClient.invalidateQueries(["managerPositionRequests"]);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error rejecting request.");
       console.error("Error rejecting request:", error);
+      alert(error.response?.data?.message || "Error rejecting request.");
     }
   };
-
 
   const renderStatusBadge = (status) => {
     switch (status) {
@@ -1240,22 +1232,22 @@ function ManagerHelpDeskComponent() {
             <p className="text-3xl font-bold">{totalClosedTickets}</p>
           </CardContent>
         </Card>
-        {/* <Card>
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Avg. First Response Time</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{avgFirstResponseTime} mins</p>
           </CardContent>
-        </Card> */}
-        {/* <Card>
+        </Card>
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Avg. Resolution Time</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{avgResolutionTime} mins</p>
           </CardContent>
-        </Card> */}
+        </Card>
       </div>
 
       <Card className="mb-6">
@@ -1553,9 +1545,8 @@ function ManagerHelpDeskComponent() {
                   <th className="px-4 py-2 text-left">TITLE</th>
                   <th className="px-4 py-2 text-left">CREATED ON</th>
                   <th className="px-4 py-2 text-left">REQUESTED BY</th>
-                  <th className="px-4 py-2 text-left">HR REVIEWER</th>
+                  <th className="px-4 py-2 text-left">ASSIGNED TO</th>
                   <th className="px-4 py-2 text-left">STATUS</th>
-                  <th className="px-4 py-2 text-left">REJECTION REASON</th>
                   <th className="px-4 py-2 text-left">LAST UPDATED</th>
                   <th className="px-4 py-2 text-left">ACTIONS</th>
                 </tr>
@@ -1573,7 +1564,6 @@ function ManagerHelpDeskComponent() {
                     <td className="px-4 py-2">
                       {renderStatusBadge(request.status)}
                     </td>
-                    <td className="px-4 py-2">{request.rejection_reason}</td>
                     <td className="px-4 py-2">
                       {formatDate(request.last_updated)}
                     </td>
@@ -1588,7 +1578,7 @@ function ManagerHelpDeskComponent() {
                           </button>
                           <button
                             className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
-                            onClick={handleRejectRequest}
+                            onClick={() => handleRejectRequest(request.id)}
                           >
                             Reject
                           </button>
@@ -1606,36 +1596,6 @@ function ManagerHelpDeskComponent() {
           )}
         </div>
       </div>
-
-      {closedTickets.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm mb-4">
-          <div className="p-4">
-            <h5 className="font-semibold text-lg mb-4">Closed Tickets</h5>
-            <table className="min-w-full table-auto">
-              <thead>
-                <tr className="border-b">
-                  <th className="px-4 py-2 text-left">REQUEST ID</th>
-                  <th className="px-4 py-2 text-left">TITLE</th>
-                  <th className="px-4 py-2 text-left">STATUS</th>
-                  <th className="px-4 py-2 text-left">LAST UPDATED</th>
-                </tr>
-              </thead>
-              <tbody>
-                {closedTickets.map((ticket) => (
-                  <tr key={ticket.id}>
-                    <td className="px-4 py-2">{ticket.id}</td>
-                    <td className="px-4 py-2">{ticket.title}</td>
-                    <td className="px-4 py-2">
-                      {renderStatusBadge(ticket.status)}
-                    </td>
-                    <td className="px-4 py-2">{ticket.last_updated}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
       <TicketForm
         isOpen={ticketPopup}

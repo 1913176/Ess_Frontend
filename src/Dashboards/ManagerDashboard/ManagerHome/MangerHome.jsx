@@ -13,9 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 axios.defaults.withCredentials = true;
 const apiBaseUrl = process.env.VITE_BASE_API;
+
+const userInfo = JSON.parse(sessionStorage.getItem("userdata"));
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { GetProjects, GetProjects_status } from "@/api/ServerAction";
 
@@ -421,7 +422,7 @@ const AttendanceChart = () => {
 
   useEffect(() => {
     fetchAttendanceData();
-  }, [viewType, timeOffset]);
+  }, [viewType, timeOffset, userInfo.manager_id]);
 
   // const CustomTooltip = ({ active, payload, label }) => {
   //   if (active && payload && payload.length) {

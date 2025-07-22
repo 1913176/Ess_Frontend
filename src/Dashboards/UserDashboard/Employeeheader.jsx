@@ -29,7 +29,7 @@ import {
 const baseApi = process.env.VITE_BASE_API;
 
 const side_bar = [
-  { link: "/employee", name: "Dashboard", icon: <LayoutDashboardIcon /> },
+  { link: "", name: "Dashboard", icon: <LayoutDashboardIcon /> },
   { link: "task", name: "Task", icon: <Folder /> },
   { link: "todo", name: "Todo", icon: <ListTodo /> },
   { link: "attendance", name: "Attendance", icon: <User /> },

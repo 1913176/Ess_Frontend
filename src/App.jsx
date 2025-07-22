@@ -298,6 +298,16 @@ import AdminPurchaseHome from "./Dashboards/AdminDashboard/PurchaseScreen/AdminP
 import LoginForm from "./Authentication/Login.jsx";
 import HrDashboard from "./Dashboards/UserDashboard/HrDashboard/HrDashboard.jsx";
 import AdminHome from "./Dashboards/AdminDashboard/AdminHome.jsx";
+import UserManagementLayout from "./Dashboards/AdminDashboard/UserPage/UserManagementLayout.jsx";
+import UserList from "./Dashboards/AdminDashboard/UserPage/UserList.jsx";
+import UserAttendance from "./Dashboards/AdminDashboard/UserPage/UserAttendance.jsx";
+import UserLateLoginReason from "./Dashboards/AdminDashboard/UserPage/UserLateLoginReason.jsx";
+import UserAttendanceReset from "./Dashboards/AdminDashboard/UserPage/UserAttendanceReset.jsx";
+import UserChart from "./Dashboards/AdminDashboard/UserPage/UserChart.jsx";
+import UserLeavePolicies from "./Dashboards/AdminDashboard/UserPage/UserLeavePolicies.jsx";
+import UserLeave from "./Dashboards/AdminDashboard/UserPage/UserLeave.jsx";
+import UserSalary from "./Dashboards/AdminDashboard/UserPage/UserSalary.jsx";
+import UserPayroll from "./Dashboards/AdminDashboard/UserPage/UserPayroll.jsx";
 
 export default function App() {
   return (
@@ -319,6 +329,7 @@ export default function App() {
 
               {/* Admin Dashboard */}
               <Route path="admin" element={<AdminDashboard />}>
+              
                 <Route index element={<AdminPurchaseHome />} />
                 <Route path="purchase-icon" element={<AdminPurchaseIcon />} />
                 <Route path="home" element={<AdminHome />} />
@@ -454,6 +465,27 @@ export default function App() {
                   <Route path="employee-leave" element={<EmpLeave />} />
                   <Route path="employee-salary" element={<Salary />} />
                   <Route path="employee-payroll" element={<EmpPayroll />} />
+                </Route>
+
+                <Route path="user" element={<UserManagementLayout />}>
+                  <Route index element={<UserList />} />
+                  <Route path="user-attendance" element={<UserAttendance />} />
+                  <Route
+                    path="user-latelogin-reason"
+                    element={<UserLateLoginReason />}
+                  />
+                  <Route
+                    path="user-attendance-reset"
+                    element={<UserAttendanceReset />}
+                  />
+                  <Route path="user-chart" element={<UserChart />} />
+                  <Route
+                    path="user-leave-policies"
+                    element={<UserLeavePolicies />}
+                  />
+                  <Route path="user-leave" element={<UserLeave />} />
+                  <Route path="user-salary" element={<UserSalary />} />
+                  <Route path="user-payroll" element={<UserPayroll />} />
                 </Route>
                 <Route
                   path="supervisor"
@@ -851,6 +883,8 @@ export default function App() {
                 <Route path="helpDesk" element={<SupervisorHelpDesk />} />
                 <Route path="*" element={<ErrorPage path={"/supervisor"} />} />
               </Route>
+
+              {/* User Dashboard */}
 
               {/* Employee Dashboard */}
               <Route path="user/employee" element={<EmployeeDashboardLayout />}>

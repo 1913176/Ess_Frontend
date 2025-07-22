@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const side_bar = [
-  { link: "/manager", name: "Dashboard", icon: <LayoutDashboardIcon /> },
+  { link: "", name: "Dashboard", icon: <LayoutDashboardIcon /> },
   { link: "/manager/projectManagement", name: "Project Management", icon: <Folder /> },
   { link: "/manager/ManagerTask", name: "Manager Task", icon: <File /> },
   { link: "/manager/EmployeeTask", name: "Employee Task", icon: <File /> },

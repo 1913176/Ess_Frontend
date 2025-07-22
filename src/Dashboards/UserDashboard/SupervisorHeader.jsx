@@ -26,7 +26,7 @@ const baseApi = process.env.VITE_BASE_API;
 
 const side_bar = [
   {
-    link: "/supervisor",
+    link: "",
     name: "Dashboard",
     icon: <LayoutDashboardIcon />,
   },
