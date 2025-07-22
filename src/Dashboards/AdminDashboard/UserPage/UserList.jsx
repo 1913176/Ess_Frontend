@@ -50,7 +50,7 @@ const SkeletonLoading = () => {
 };
 
 const fetchUserList = async () => {
-  const { data } = await axios.get(`${apiBaseUrl}/api/employee_list/`);
+  const { data } = await axios.get(`${apiBaseUrl}/api/users_list/`);
   return data || [];
 };
 

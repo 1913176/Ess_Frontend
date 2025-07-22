@@ -217,7 +217,7 @@ const AddUser = ({
 
     try {
       const response = await axios.post(
-        `${apiBaseUrl}/admin/employees/add/`,
+        `${apiBaseUrl}/admin/add_user/`,
         formData,
         {
           headers: {
