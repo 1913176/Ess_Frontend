@@ -293,6 +293,7 @@ export default function LoginForm() {
         data.employees.find((u) => u.employee_id === loginUser.user_id) ||
         data.supervisors.find((u) => u.supervisor_id === loginUser.user_id)
       );
+      
     } catch (error) {
       console.error("Error fetching user details:", error);
       toast.error("Error fetching user details. Please try again later.");
@@ -328,27 +329,36 @@ export default function LoginForm() {
 
     if (loginUser && loginUser.designation) {
       sessionStorage.setItem("loginUser", JSON.stringify(loginUser));
+      console.log("llll", loginUser.user_id);
+      const user = await fetchDetails(loginUser);
 
-      const routes = {
-        admin: "/admin",
-        hr: "/user/hr",
-        manager: "/manager",
-        employee: "/user/employee",
-        supervisor: "/user/supervisor",
-        ar: "/user/ar", // Add route if you support AR
-      };
+      if (user) {
+        sessionStorage.setItem("userdata", JSON.stringify(user));
 
-      const designationKey = loginUser.designation.toLowerCase().replace(/\s+/g, '');
-      const route = routes[designationKey];
+        // Navigate based on role or designation
+        const routes = {
+          admin: "/admin",
+          hr: "/user/hr",
+          manager: "/manager",
+          employee: "/user/employee",
+          supervisor: "/user/supervisor",
+        };
 
-      if (route) {
-        router(route);
-        toast.success(`Welcome Back ${data.username} 👋`);
+        const roleKey = loginUser.role?.toLowerCase();
+        const designationKey = loginUser.designation?.toLowerCase().replace(/\s+/g, '');
+        const route = routes[roleKey] || routes[designationKey];
+
+        if (route) {
+          router(route);
+          toast.success(`Welcome Back ${data.username} 👋`);
+        } else {
+          toast.error("Role not recognized. Please contact support.");
+        }
       } else {
-        toast.error("Role not recognized. Please contact support.");
+        throw new Error("Invalid credentials or no role");
       }
     } else {
-      throw new Error("Invalid credentials or no role");
+      throw new Error("Invalid credentials or no designation");
     }
   } catch (error) {
     console.error("Login error:", error);
@@ -357,7 +367,6 @@ export default function LoginForm() {
     setLoading(false);
   }
 };
-
 
   return (
     <div className="flex overflow-clip min-h-screen">

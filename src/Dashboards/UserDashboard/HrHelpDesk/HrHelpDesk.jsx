@@ -733,6 +733,40 @@ function HrHelpDeskComponent() {
     return <span className={`${color} font-medium`}>{status}</span>;
   };
 
+   const handleForwardToManager = async (requestId) => {
+    const managerId = selectedManagerMap[requestId];
+    if (!requestId || !managerId) {
+      toast.error("Please select a manager.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${apiBaseUrl}/manpower/forward-to-management/${requestId}/`,
+        { manager_id: managerId },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (response.data.success) {
+        toast.success("Ticket forwarded successfully.");
+        setSelectedManagerMap((prev) => ({ ...prev, [requestId]: "" }));
+        setPositionRequests((prev) =>
+          prev.map((r) =>
+            r.id === requestId ? { ...r, status: "Review" } : r,
+          ),
+        );
+      }
+    } catch (err) {
+      console.error("Error forwarding:", err);
+      toast.error(err.response?.data?.message || "Forwarding failed");
+    }
+  };
+  
   const handleReplySubmit = async () => {
     try {
       await axios.post(
@@ -768,39 +802,108 @@ function HrHelpDeskComponent() {
     }
   };
 
-  const handleForwardToManager = async (requestId) => {
-    const managerId = selectedManagerMap[requestId];
-    if (!requestId || !managerId) {
-      toast.error("Please select a manager.");
-      return;
-    }
+  useEffect(() => {
+    const fetchTickets = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const tickets = await GetHRTicketRequestList();
+        const mappedTickets = tickets.map((ticket) => ({
+          id: ticket.ticket_id,
+          title: ticket.subject,
+          created_on: ticket.created_on.split("T")[0],
+          assigned_to: ticket.raise_to || "N/A",
+          status: ticket.status,
+          last_updated: ticket.last_updated.split("T")[0],
+          name: ticket.supervisor_id
+            ? ticket.supervisor_name || "N/A"
+            : ticket.manager_id
+              ? ticket.manager_name || "N/A"
+              : ticket.employee_id
+                ? ticket.employee_name || "N/A"
+                : "N/A",
+          description: ticket.description || "No description provided.",
+          service_type: ticket.service_type || "Others",
+          category: ticket.supervisor_id
+            ? "Supervisor"
+            : ticket.manager_id
+              ? "Manager"
+              : ticket.employee_id
+                ? "Employee"
+                : "System",
+        }));
+        setData(mappedTickets);
+      } catch (err) {
+        console.error("Error fetching tickets:", err);
+        setError("Failed to load tickets.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTickets();
+  }, []);
 
-    try {
-      const response = await axios.post(
-        `${apiBaseUrl}/manpower/forward-to-management/${requestId}/`,
-        { manager_id: managerId },
-        {
+  useEffect(() => {
+    const fetchManagers = async () => {
+      try {
+        const apiUrl = `${apiBaseUrl}/api/manager_list/`;
+        const response = await axios.get(apiUrl, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
           },
-        },
-      );
-
-      if (response.data.success) {
-        toast.success("Ticket forwarded successfully.");
-        setSelectedManagerMap((prev) => ({ ...prev, [requestId]: "" }));
-        setPositionRequests((prev) =>
-          prev.map((r) =>
-            r.id === requestId ? { ...r, status: "Review" } : r,
-          ),
-        );
+        });
+        setManagers(response.data);
+      } catch (error) {
+        console.error("Error fetching managers:", error);
+        toast.error("Failed to load manager list. Please try again.");
       }
-    } catch (err) {
-      console.error("Error forwarding:", err);
-      toast.error(err.response?.data?.message || "Forwarding failed");
-    }
-  };
+    };
+    fetchManagers();
+  }, []);
+
+  useEffect(() => {
+    const fetchPositionRequests = async () => {
+      try {
+        const apiUrl = `${apiBaseUrl}/manpower/hr-position-requests/`;
+        const response = await axios.get(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (response.data.success) {
+          setPositionRequests(
+            response.data.requests.map((request) => ({
+              id: request.request_id,
+              title: request.title,
+              created_on: request.created_at,
+              assigned_to: request.hr_reviewer_name || "Unassigned",
+              status:
+                request.status === "pending"
+                  ? "Open"
+                  : request.status === "hr_review"
+                    ? "Review"
+                    : request.status === "approved"
+                      ? "Approved"
+                      : request.status === "rejected"
+                        ? "Rejected"
+                        : "Open",
+              last_updated: request.created_at,
+              employee_name: request.requested_by_name || "N/A",
+            })),
+          );
+        } else {
+          throw new Error("Failed to fetch position requests.");
+        }
+      } catch (error) {
+        setError(error.message || "Error fetching position requests.");
+        console.error("Error fetching position requests:", error);
+        toast.error("Failed to load position requests. Please try again.");
+      }
+    };
+
+    fetchPositionRequests();
+  }, []);
 
   useEffect(() => {
     const fetchTickets = async () => {

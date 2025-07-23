@@ -1232,22 +1232,22 @@ function ManagerHelpDeskComponent() {
             <p className="text-3xl font-bold">{totalClosedTickets}</p>
           </CardContent>
         </Card>
-        <Card>
+        {/* <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Avg. First Response Time</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{avgFirstResponseTime} mins</p>
           </CardContent>
-        </Card>
-        <Card>
+        </Card> */}
+        {/* <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Avg. Resolution Time</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{avgResolutionTime} mins</p>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       <Card className="mb-6">
